@@ -1,0 +1,118 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Offensive back-kick",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"BL Lock Set Left",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"BB Jumping Monkey",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"Reverse front-kick groin",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Y-left, R/kick",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Langka 3A (cinch, then grind,cinch-n'shuffle)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"OR KTS 7-count",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"OR Two-hand grab B",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"7:00" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Baseball bat defense",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Offensive back-kick(man)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Offensive back-kick(bag)",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"BL Lock Set Left",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"OR Two-hand grab B",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

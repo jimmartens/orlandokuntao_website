@@ -1,0 +1,138 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Shell drill (elbow)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"PU Kick Combo #2",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"L/rev-punches (power) (air shield)",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"BR Arnis inside (baton)",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"BR Arnis inside (hand)",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Principle: Capturing the Limb",
+          "starttime":""
+        },
+        {
+          "name":"Small Hokkien Tiger (3C)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Leg Man (11th series)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Gun defense block-left",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"Gun defense Enam Matjan",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"BR Kilap 10",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Sombrada Knife",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Shell drill (elbow)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"BR Arnis inside (baton)",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"Principle: Capturing the limb",
+          "starttime":"" 
+        },
+        {
+          "name":"Sml Hokkien Tiger (3C)",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Leg Maneuvers (11th)",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"BR Kilap 10",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

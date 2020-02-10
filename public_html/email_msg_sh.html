@@ -1,0 +1,462 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, email_msg.sh</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="email_msg, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, email_msg.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_email_msg_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              EM_name="<b>EMAIL_MSG</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$EM_name\(\)\{$'`" != . ] &amp;&amp; EM_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$EM_name'[=\(]?/'`" != . ] &amp;&amp; EM_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$EM_name'[=\(]?/'`" != . ] &amp;&amp; EM_loaded=1
+                 fi
+              fi
+              if [ 0${EM_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>EMAIL_MSG</b>() # Function documentation located at bottom.                #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                #------------------------------------#
+                # Try to use mailx except on Linux.  #
+                #------------------------------------#
+                OZ=`uname -s 2&gt; /dev/null|tr '[A-Z]' '[a-z]' 2&gt; /dev/null`
+                [ ."$OZ" = ."linux" ] &amp;&amp; MAIL=/bin/mail || MAIL=/usr/bin/mailx
+
+                . $SHLIB/exit.sh # Function dependencies
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${host:=`hostname`}
+                : ${script_name:=`basename $0`}
+                : ${yymmddhhmiss:=`date '+%y''%m%d%H''%M''%S'`}
+                : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${notify:=$LOGNAME@`uname -n`}
+                : ${tmp:=/var/tmp}
+                : ${sp:="                    "}
+                : ${true:=1}
+                : ${false:=0}
+                : ${success:=0}
+                : ${failure:=1}
+                if [ ."${log}" = . ]; then
+                   log=$tmp/$name_root"_log."$Xtimestamp
+                   [ ."${teelog}" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                EM_ID="$script_name($EM_name)"
+
+                #--------------------------------------------------------------------#
+                # Attempting to generate a unique timestamps for $mailmsg and msgtxt.#
+                #--------------------------------------------------------------------#
+                EM_timestamp=$$"_"`date '+%Y''%m%d%H''%M''%S'`
+                EM_random=`$AWK 'BEGIN {
+                                         srand()
+                                         random=rand()
+                                         sub(/^0\./,"",random)
+                                         print random
+                                       }'`
+                EM_mailmsg_root=$tmp/$name_root"_m"$EM_random"_"$id_hex"."
+                EM_mailmsg=${EM_mailmsg_root}$Xtimestamp
+
+                sleep 1 # Wait a second before getting the next random number.
+
+                EM_timestamp=$$"_"`date '+%Y''%m%d%H''%M''%S'`
+                EM_random=`$AWK 'BEGIN {
+                                         srand()
+                                         random=rand()
+                                         sub(/^0\./,"",random)
+                                         print random
+                                       }'`
+                EM_msgtxt_root=$tmp/$name_root"_mtxt"$EM_random"_"$id_hex"."
+                EM_msgtxt=${EM_msgtxt_root}$Xtimestamp
+                EM_teemsg="tee -ai $EM_msgtxt"
+
+                #--------------------------------#
+                # Parse this function's options. #
+                #--------------------------------#
+                EM_always_mail=0
+                EM_arg_words=`   echo $1|wc -w`
+                EM_arg_1st_char=`echo $1|cut -c1`
+                #--------------------------------------------------------------#
+                # If the number of words in $1 equals one and that word begins #
+                # with a hyphen, then parse the dog as our own option list.    #
+                #--------------------------------------------------------------#
+                if [ $EM_arg_words -eq 1 -a ."$EM_arg_1st_char" = .'-' ]; then
+                   EM_root=$tmp/$name_root"_EM_go_"$id_hex
+                   EM_err=$EM_root"."$Xtimestamp
+                   while getopts m EM_option 2&gt;&gt; $EM_err
+                   do
+                      case $EM_option in
+                         m ) EM_always_mail=1
+                             ;;
+                        \? ) echo "$EM_ID" \
+                               "Invalid option: -`sed 's/^.*-- //' $EM_err`" 1&gt;&2
+                             ;;
+                         * ) ;;
+                      esac
+                   done
+                   shift `expr $OPTIND - 1` # Shift past options to remaining args
+
+                   #----------------------------------------------------------------#
+                   # Must reset this dog if this function is apt to be called again #
+                   OPTIND=1  # (try and find this fact documented anywhere else).   #
+                   #----------------------------------------------------------------#
+
+                   [ ."${EM_root}" != . ] &amp;&amp; \rm -f $EM_root* &gt; /dev/null 2&gt;&1
+                fi
+
+                #------------------------------------#
+                # Showem basic command usage/syntax. #
+                #------------------------------------#
+                if [ $# -lt 1 ]; then
+                   echo "`date '+%Y-%m-%d %T'`" \
+                        "FATAL ERROR (Function): $host:$EM_ID"             1&gt;&2
+                   echo "${sp}Insufficient args."                          1&gt;&2
+                   echo "${sp}Usage: $EM_name [-m] 'subj' 'text line' ..." 1&gt;&2
+                   echo "${sp}          -m  Always notify by mail."        1&gt;&2
+                   echo "${sp}$script_name terminated."                    1&gt;&2
+                   [ ."${EM_mailmsg_root}" != . ] &amp;&amp; \rm -f $EM_mailmsg_root* &gt;/dev/null 2&gt;&1
+                   [ ."${EM_msgtxt_root}"  != . ] &amp;&amp; \rm -f $EM_msgtxt_root*  &gt;/dev/null 2&gt;&1
+                   EXIT 1
+                fi
+
+                #----------------------------------------------------------#
+                # If we can't touch even $log or our work files, then spew #
+                # everything out (this error and mail message) via stderr. #
+                #----------------------------------------------------------#
+                for EM_file in $log $EM_msgtxt $EM_mailmsg
+                do
+                   EM_stderr=`touch -- "$EM_file" 2&gt;&1`
+                   EM_status=$?
+                   if [ $EM_status -ne 0 ]; then
+                      echo "`date '+%Y-%m-%d %T'` FATAL ERROR: $EM_ID" 1&gt;&2
+                      echo "${sp}Unable to 'touch' \"$EM_file\"."      1&gt;&2
+                      echo "${sp}ERROR=$EM_stderr"                     1&gt;&2
+                      echo "${sp}mail message is as follows:"          1&gt;&2
+                      echo "${sp}$dashes"                              1&gt;&2
+                      for EM_arg
+                      do
+                         EM_ECHO_MSG "$EM_arg"                         1&gt;&2
+                      done
+                      echo "${sp}$dashes"                              1&gt;&2
+                      echo "${sp}$script_name terminated."             1&gt;&2
+
+                      [ ."${EM_mailmsg_root}" != . ] \
+                        &amp;&amp; \rm -f $EM_mailmsg_root* &gt;/dev/null 2&gt;&1
+
+                      [ ."${EM_msgtxt_root}"  != . ] \
+                        &amp;&amp; \rm -f $EM_msgtxt_root*  &gt;/dev/null 2&gt;&1
+                      EXIT 1
+                   fi
+                done
+
+                #------------------------------------------------------------------#
+                # Save the $teelog variable because the user may specify "NO_LOG"  #
+                # as an argument to this function (meaning that he doesn't want    #
+                # what's being mailed to be placed in $log, perhaps redundantly.   #
+                # (If we change teelog here, we'll restore it before returning.)   #
+                #------------------------------------------------------------------#
+                EM_saved_teelog="$teelog"
+
+                EM_subject="`uname -n` $1"               # Assign $1 to subject,
+                EM_dated_subj="`date '+%Y-%m-%d %T'` $1" # assign dated subject,
+                echo "$EM_dated_subj" | $teelog          # display and log it,
+                shift                                    # then shift past $1.
+
+                #------------------------------------------------------------------#
+                # Remove duplicate recipients and assign $emailee to $EM_to_whom.  #
+                #------------------------------------------------------------------#
+                 EM_to_whom=`echo $notify | sed "s/  */ /g" | tr " " "\012" \
+                  | sort | uniq | tr "\012" " "`
+
+                #----------------------------------------------------------------#
+                # If, for whatever reason, we have no mail recipients, then spit #
+                # out an error, BUT continue processing (the given notice will   #
+                # still be written to the log).                                  #
+                #----------------------------------------------------------------#
+                if [ `echo $EM_to_whom|wc -w` -eq 0 ]; then
+                   echo "`date '+%Y-%m-%d %T'` ERROR $EM_ID" | $teelog 1&gt;&2
+                   echo "${sp}Mail recipients missing."      \
+                     "Notification impossible."              | $teelog 1&gt;&2
+                   echo "${sp}Logging is our only option."   \
+                     "Processing continues."                 | $teelog 1&gt;&2
+                   EM_mail_ready=$false
+                else
+                   EM_mail_ready=$true
+                fi
+
+                #--------------------------------------------------------------------#
+                # If running from cron (."$TERM" = .), or user specifically requests #
+                # mail (calling this function with the -m option), AND (see the -a   #
+                # [and] option in our test) we have mail recipients, then notify via #
+                # mail. Else, notification is performed simply in logging the output.#
+                #--------------------------------------------------------------------#
+                if [ \( ."${TERM}" = . -o $EM_always_mail -eq 1 \) \
+                     -a $EM_mail_ready = $true ]; then
+                   #-------------------------------------------------------------#
+                   # We're using mail to communicate.  Make sure that we have    #
+                   # write permissions for $EM_msgtxt by zeroing it, changing    #
+                   # its mode and testing the status of each of those operations.#
+                   # If any problems doing that, then fuss at the user and exit. #
+                   #-------------------------------------------------------------#
+                   cp /dev/null $EM_msgtxt 2&gt;&1
+                   EM_status=$?
+                   EM_stderr=`chmod 640 $EM_msgtxt`
+                   EM_status=`expr $EM_status + $?`
+                   if [ $EM_status -ne 0 ]; then
+                      /bin/echo "`date '+%Y-%m-%d %T'`"                     \
+                        "FATAL ERROR: $EM_ID"                               \
+                        "\n${sp}Problem opening $EM_msgtxt. Error follows:" \
+                        "\n${sp}ERROR=$EM_stderr"                           \
+                        "\n${sp}$dashes"                                    \
+                        "\n${sp}Mail (message text) follows:"               \
+                        "\n${sp}$dashes" | $teelog 1&gt;&2
+                      #------------------------------------------------------#
+                      # Before exiting, echo the mail message via stderr.    #
+                      # ($log is fine--that's why we can still use $teelog-- #
+                      # we just can't open $EM_msgtxt.)                      #
+                      #------------------------------------------------------#
+                      for EM_arg
+                      do
+                         EM_ECHO_MSG "$EM_arg"             | $teelog 1&gt;&2
+                      done
+                      echo "${sp}$dashes"                  | $teelog 1&gt;&2
+                      echo "${sp}$script_name terminated." | $teelog 1&gt;&2
+
+                      [ ."${EM_mailmsg_root}" != . ] \
+                        &amp;&amp; \rm -f $EM_mailmsg_root* &gt;/dev/null 2&gt;&1
+
+                      [ ."${EM_msgtxt_root}"  != . ] \
+                        &amp;&amp; \rm -f $EM_msgtxt_root*  &gt;/dev/null 2&gt;&1
+                      EXIT $failure
+                   fi
+
+                   #-----------------------------------------------------------#
+                   # OK, $EM_msgtxt looks OK.  Loop thru each arg, displaying  #
+                   # each one (each arg is often several words) for the log    #
+                   # and simultaneously writing it to the mail file.           #
+                   #-----------------------------------------------------------#
+                   [ ."${TERM}" = . ] &amp;&amp; echo "$EM_dated_subj" 2&gt;&1 &gt;&gt; $EM_msgtxt
+                   for EM_arg
+                   do
+                      if [ ."${EM_arg}" = ."NO_LOG" ]; then
+                         teelog=cat # We'll restore this before returning/exiting.
+                         continue   # Iterate the loop (get the next string).
+                      fi
+                      EM_ECHO_MSG "$EM_arg" 2&gt;&1 | $teelog | $EM_teemsg
+                   done
+
+                   #-------------------------------------------------------------#
+                   # If $teelog was changed, then restore it to original setting.#
+                   #-------------------------------------------------------------#
+                    [ ."${teelog}" = ."cat" -o ."${teelog}" = ."sed" ] \
+                      &amp;&amp; teelog="$EM_saved_teelog"
+
+                   #-----------------------------------------------#
+                   # Do we strip leading spaces from mailed text?  #
+                   #-----------------------------------------------#
+                   $AWK -v sp="^$sp"               \
+                        -v stdout_sp="^$stdout_sp" \
+                        -v stderr_sp="^$stderr_sp" \
+                   '{
+                      sub(sp       ,       "")
+                      sub(stdout_sp,"STDOUT=")
+                      sub(stderr_sp,"STDERR=")
+                      print
+                    }' $EM_msgtxt &gt; $EM_mailmsg
+
+                   echo "`date '+%Y-%m-%d %T'`" \
+                             "$MAIL -s'$EM_subject' $EM_to_whom &lt; $EM_mailmsg" | $teelog
+                   EM_stderr=`$MAIL -s"$EM_subject" $EM_to_whom &lt; $EM_mailmsg 1&gt;&2`
+                   EM_status=$?
+                   teelog="$EM_saved_teelog"      # Restore teelog to original
+                   if [ $EM_status -ne 0 ]; then
+                      /bin/echo "`date '+%Y-%m-%d %T'`"            \
+                        "ERROR: $EM_ID"                            \
+                        "\n${sp}$MAIL failure.  Status=$EM_status" \
+                        "\n${sp}Error follows:"                    \
+                        "\n${sp}ERROR=$EM_stderr"                  \
+                        "\n${sp}$dashes"                           \
+                        "\n${sp}Mail (message text) follows:" | $teelog 1&gt;&2
+                      #----------------------------------------#
+                      # Put $EM_msgtxt out to stderr and hope  #
+                      # it's not redirected to /dev/null.      #
+                      echo "$EM_subject" 1&gt;&2 # These have already been tee'd
+                      cat   $EM_msgtxt   1&gt;&2 # to $log (above)
+                      #----------------------------------------#
+                   fi
+                else # Running interactively, use echo instead of mail.
+                   for EM_arg
+                   do
+                      if [ "$EM_arg" = "NO_LOG" ]; then
+                         teelog=cat # We'll restore this before returning/exiting.
+                         continue   # Iterate the loop (get the next string).
+                      fi
+                      EM_ECHO_MSG "$EM_arg" 2&gt;&1 | $teelog
+                   done
+                   #-------------------------------------------------------------#
+                   # If $teelog was changed, then restore it to original setting.#
+                   #-------------------------------------------------------------#
+                   [ ."${teelog}" = ."cat" -o ."${teelog}" = ."sed" ] \
+                     &amp;&amp; teelog="$EM_saved_teelog"
+                fi
+
+                [ ."${EM_mailmsg_root}" != . ] &amp;&amp; \rm -f $EM_mailmsg_root* &gt;/dev/null 2&gt;&1
+                [ ."${EM_msgtxt_root}"  != . ] &amp;&amp; \rm -f $EM_msgtxt_root*  &gt;/dev/null 2&gt;&1
+
+                [ $EM_status   -ne  0 ] &amp;&amp; EXIT 1 || return 0
+              }  # "EM_" prefix identifies this function's variables.
+
+
+              #======================================================================#
+              EEM_name="<b>EM_ECHO_MSG</b>"                                                 #
+              #----------------------------------------------------------------------#
+              <b>EM_ECHO_MSG</b>() # $* = quoted strings for echoing.                       #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                [ $# -eq 0 ] &amp;&amp; return 1 # Back to you if you forget the argstring.
+                : ${host:=`hostname`}
+
+                EEM_ID="$host:$script_name($EEM_name)"
+                #----------------------------------------------------------#
+                # If 1st five chars of $arg is not "FILE=" then process it #
+                # normally.  Else, the user is telling us that we're to    #
+                # process the file whose name immediately follows "FILE="  #
+                # (we do the same thing below in interactive processing).  #
+                #----------------------------------------------------------#
+                EEM_char1_5=`echo "$*"|$AWK '{print substr($1,1,5); exit}'`
+                if [ ."${EEM_char1_5}" != ."FILE=" ]; then # No file here.
+                   #-----------------------------------------------#
+                   # /bin/echo is used because argstring may have  #
+                   # control characters (e.g. \c) imbedded within. #
+                   #-----------------------------------------------#
+                   /bin/echo "$*"
+                else  # It's supposed to be a file, get the fileid.
+                   EEM_text_file=`echo "$*" \
+                    | $AWK '{gsub(/^[\t\n\r ]*FILE=/,"");print;exit}'`
+                   #-----------------------------------------------------------#
+                   # If "FILE=" is specified, but the user forgets to pass us  #
+                   # the fileid, then fuss at em, but continue.  If the fileid #
+                   # turns out to be an empty file, then make note it and      #
+                   # continue.  Otherwise, all's well, so print the dog.       #
+                   #-----------------------------------------------------------#
+                   if [ ."${EEM_text_file}" = . ]; then
+                      echo "`date '+%Y-%m-%d %T'` ERROR: $EEM_ID\n"       1&gt;&2
+                      echo "${sp}'FILE=' specified, but no fileid given!" 1&gt;&2
+                   elif [ ! -s $EEM_text_file ]; then
+                      echo "${sp}FILE=$EEM_text_file (zero length)."
+                   else
+                      cat $EEM_text_file
+                   fi
+                fi
+              }  # "EEM_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996 (Bob@OrlandoKuntao.com)               #
+              #                                                                      #
+              #  Program ID: email_msg.sh                                            #
+              #                                                                      #
+              #       Usage: EMAIL_MSG [-m] "subject" "text line" ...                #
+              #                         -m   Always notify by mail.                  #
+              #                                                                      #
+              #     Purpose: Email subject and message text supplied as arguments    #
+              #              to recipients previously assigned to $notify.           #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #             "EM_" prefix identifies local function variables.        #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) for fatal error (e.g. user       #
+              #              supplies an invalid argument, or mailx fails).          #
+              #              Otherwise returns success (0).                          #
+              #                                                                      #
+              #       Calls: EXIT library functions and EM_ECHO_MSG local/sub-       #
+              #              function (See Notes: below).                            #
+              #                                                                      #
+              #       Files: Temporary work files, $EM_mailmsg and $EM_msgtxt        #
+              #              are removed prior to exiting.                           #
+              #                                                                      #
+              #       Notes: Text line (each line within quotes) may optionally be   #
+              #              the keywords "NO_LOG" or "FILE=".  NO_LOG means that    #
+              #              the text that follows is not to be placed in $log.      #
+              #              FILE= means we take the fileid that follows as our      #
+              #              text input.                                             #
+              #                                                                      #
+              #              Included with this function, is a second function:      #
+              #              EM_ECHO_MSG.  Using this function prevents duplicating  #
+              #              code (since it is called in four places).               #
+              #                                                                      #
+              #              If this function is run interactively, no mail notice   #
+              #              is sent to $notify.  This is because, the letter        #
+              #              is being displayed at the terminal.  Only in batch      #
+              #              mode (e.g. cron) is mail used.                          #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.14 * Expand $AWK testing and assignment.          #
+              #                       * Change $USER to $LOGNAME.                    #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

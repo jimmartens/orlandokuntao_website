@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"OR Kilap 2 (right)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Sombrada Hand",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Shearing palms (vs pad)",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"GR Ragdoll Right",
+          "starttime":"7:10" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"SCJJ grip training",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Ne Ling front-kicks",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"BL Kilap 6 (right)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"BR Rear shoulder grab (Al Dacascos)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"Slow flow",
+          "starttime":"6:45" 
+        },        
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Sombrada Baton",
+          "starttime":"10:00"
+        },
+        {
+          "name":"OR Kilap 2 (right)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"SCJJ grip training",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"Shearing palms",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"Ne Ling front-kicks",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"GR Ragdoll right",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Slow Flow",
+          "starttime":"11:15" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

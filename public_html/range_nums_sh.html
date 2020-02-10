@@ -1,0 +1,179 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, range_nums.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="range_nums.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, range_nums.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_range_nums_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              RNM_name="<b>RANGE_NUMS</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$RNM_name\(\)\{$'`" != . ] &amp;&amp; RNM_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$RNM_name'[=\(]?/'`" != . ] &amp;&amp; RNM_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$RNM_name'[=\(]?/'`" != . ] &amp;&amp; RNM_loaded=1
+                 fi
+              fi
+              if [ 0${RNM_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>RANGE_NUMS</b>() # Function documentation located at bottom.               #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -gt 0 ]; then
+                   #-------------------------------------------------------------#
+                   # Awk's  BEGIN {FS = "-"; RS = " "}  changes the input field  #
+                   # field separator to a dash and the input record separator to #
+                   # a space (unfortunately, changing output record separator to #
+                   # a space has problems).                                      #
+                   #-------------------------------------------------------------#
+                   echo "$@"|$AWK \
+                     'BEGIN { FS = "-"; RS = " "}
+                      { # Iterates for each range passed as arguments.
+                        # Print numbers with trailing blank but no newlines.
+                        if (($1 ~ /^[0-9]+$/) &amp;&amp; ($1 ~ /^[0-9]+$/))
+                          if ($1 &lt;= $2)            #-------------------#
+                            for (i=$1; i&lt;=$2; i++) # Ascending order   #
+                              printf("%d ", i)     #-------------------#
+                          else                     #-------------------#
+                            for (i=$1; i&gt;=$2; i--) # Descending order  #
+                              printf("%d ", i)     #-------------------#
+                        else
+                          exit 1 # Non-numeric values!
+                      } # E.O.Action section
+                      END {exit 0}' 2&gt;&1
+                   [ $? -eq 0 ] &amp;&amp; return 0
+                fi
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                RNM_ID="$script_name($RNM_name)"
+
+                RNM_usage=`$AWK -v sp="$sp"                   \
+                                -v RNM_name="$RNM_name"       \
+                                -v script_name="$script_name" \
+                  'BEGIN                                      \
+                   { print sp"Usage:   "RNM_name" range [ranges...]\n"                     ,
+                       "\n"sp"Purpose: Convert one or more numeric ranges, like 12-15,"     ,
+                       "\n"sp"         into expanded strings of numbers (e.g. 12 13 14 15).",
+                       "\n"sp"         (Ranges may be ascending or descending.)\n"
+                   }'`
+
+                if [ $# -eq 0 ]; then
+                   EMAIL_MSG "ERROR (Function): $RNM_ID" \
+                     "$RNM_usage"
+                else
+                   EMAIL_MSG "ERROR: $RNM_ID" \
+                     "${sp}Non-numeric range value!\n$RNM_usage"
+                fi
+
+                return 1
+              } # "RNM_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Unknown (taken from "UNIX POWER TOOLS," O'Reilly &      #
+              #              Associates/Random House Book, 1994, ISBN 0-679-79073-X. #
+              #                                                                      #
+              # Implementor: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: January 24, 1997                                        #
+              #                                                                      #
+              #  Program ID: range_nums.sh  (formerly derange.num)                   #
+              #                                                                      #
+              #       Usage: RANGE_NUMS p-q [...]                                    #
+              #                                                                      #
+              #     Purpose: Convert numeric ranges, like 1-5, into individual       #
+              #              numbers.                                                #
+              #                                                                      #
+              # Description: Function takes one or more ranges of numbers as         #
+              #              command-line arguments and splits them into the single  #
+              #              numbers that make up the full range range (it's much    #
+              #              faster than a while-loop doing the same thing), and is  #
+              #              most useful when used like this:                        #
+              #                                                                      #
+              #                 for num in `RANGE_NUMS 1-100`                        #
+              #                 do                                                   #
+              #                    do-something-with $num                            #
+              #                 done                                                 #
+              #                                                                      #
+              #     Example: RANGE_NUMS 1-5 5-1                                      #
+              #              returns 1 2 3 4 5 5 4 3 2 1                             #
+              #                                                                      #
+              # Exit_status: On error, failure (1) for function error (e.g. user     #
+              #              supplies invalid arguments).  Otherwise returns         #
+              #              success (0) echoing the de-ranged numbers to stdout.    #
+              #                                                                      #
+              #       Calls: NOYIFY_ANALYSTS library function and nawk.              #
+              #                                                                      #
+              #       Notes: If you want some other separator than a blank,          #
+              #              use the translate (tr) command to get it.               #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.9  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.8  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

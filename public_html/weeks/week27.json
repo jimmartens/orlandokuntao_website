@@ -1,0 +1,126 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Shearing palms (pad)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"KTS 5-cnt",
+          "starttime":"6:05"          
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"6:15"          
+        },
+        {
+          "name":"PU Kilap 3 (SHBWC)",
+          "starttime":"6:35"          
+        },
+        {
+          "name":"GR Sombrada Knife",
+          "starttime":"6:55"          
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Shell drill (palm)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"GR Kilap",
+          "starttime":"6:15"          
+        },
+        {
+          "name":"KTS 3-cnt(slap-to-elbow)",
+          "starttime":"6:35"          
+        },
+        {
+          "name":"PU Putar Kepala",
+          "starttime":"6:40"          
+        },
+        {
+          "name":"Reverse front-kick groin (Kickee in L/lead)",
+          "starttime":"7:00"          
+        },  
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"BL Kilap 8a",
+          "starttime":"10:00"          
+        },
+        {
+          "name":"Shearing palms (pad)",
+          "starttime":"10:30"          
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"10:35"          
+        },
+        {
+          "name":"Kilap 3",
+          "starttime":"10:50"          
+        },
+        {
+          "name":"GR Kilap 9",
+          "starttime":"11:05"          
+        },
+        {
+          "name":"KTS 3-cnt",
+          "starttime":"11:15"          
+        },
+        {
+          "name":"PU Putar Kepala",
+          "starttime":"11:20"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

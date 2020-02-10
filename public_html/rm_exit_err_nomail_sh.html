@@ -1,0 +1,302 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, rm_exit_err_nomail.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="rm_exit_err_nomail.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, rm_exit_err_nomail.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1999-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_rm_exit_err_nomail_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              RMN_name="<b>RM_EXIT_ERR_NOMAIL</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$RMN_name\(\)\{$'`" != . ] &amp;&amp; RMN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$RMN_name'[=\(]?/'`" != . ] &amp;&amp; RMN_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$RMN_name'[=\(]?/'`" != . ] &amp;&amp; RMN_loaded=1
+                 fi
+              fi
+              if [ 0${RMN_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>RM_EXIT_ERR_NOMAIL</b>() # Function documentation located at bottom.       #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${dashes:="------------------------------------------------------"}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                RMN_ID="$script_name($RMN_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                RMN_options="lptvfR"
+                RMN_opt_l=0
+                RMN_opt_p=0
+                RMN_opt_t=0
+                RMN_opt_v=0
+                RMN_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                RMN_tag="$logger_t" # within library defaults.sh.
+                RMN_opts="-f"
+                RMN_args=""
+
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   RMN_n=`expr "$1". : '-.*'`
+                   if [ $RMN_n -gt 0 ]; then
+                      if [ $RMN_n -eq 2 ]; then
+                         RMN_optargs="$1"
+                      else
+                         RMN_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for RMN_optarg in $RMN_optargs
+                      do
+                         case $RMN_optarg in
+                           -l ) RMN_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $RMN_opt_l -eq 1 -a $RMN_opt_p -eq 0 ]; then
+                                   RMN_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$RMN_options']'` != "--" ]; then
+                                      RMN_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   RMN_opts="$RMN_opts $RMN_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $RMN_opt_l -eq 1 -a $RMN_opt_t -eq 0 ]; then
+                                   RMN_opt_t=1
+                                   RMN_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$RMN_options']'` != "--" ]; then
+                                      RMN_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   RMN_opts="$RMN_opts $RMN_optarg"
+                                fi
+                                ;;
+                           -v ) RMN_opt_v=1
+                                ;;
+                           -f ) # This is an 'rm' option we already use--skip this one.
+                                ;;
+                           -R ) # This is an 'rm' option--just pass it along.
+                                RMN_opts="$RMN_opts $RMN_optarg"
+                                ;;
+                         esac
+                      done # for RMN_optarg in $RMN_optargs
+                   else
+                      [ ."$RMN_args" != . ]        \
+                        &amp;&amp; RMN_args="$RMN_args|$1" \
+                        || RMN_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                RMN_opts=`expr "$RMN_opts" : ' *\(.*\)'` # Strip leading blanks
+                RMN_args=`expr "$RMN_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #--------------------------------------------------------------#
+                # If we have sufficient args, then attempt our remove command. #
+                #--------------------------------------------------------------#
+                RMN_status=0
+                RMN_cmd="rm $RMN_opts"
+
+                if [ ."$RMN_args" != . ]; then
+                   echo "$RMN_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read RMN_file
+                      do
+                         [ $verbose -eq 1 -o $RMN_opt_v -eq 1 ] \
+                           &amp;&amp; echo "`date '+%Y-%m-%d %T'` $RMN_cmd \"$RMN_file\"" \
+                             | $teelog
+                         RMN_stderr=`$RMN_cmd "$RMN_file" 2&gt;&1`
+                         RMN_status=$?
+                         [ $RMN_status -eq 0 ] &amp;&amp; continue
+
+                         #-----------------------------------------#
+                         # Reaching here means something is amiss. #
+                         #-----------------------------------------#
+                         RMN_m1="'$RMN_cmd \"$RMN_file\"'"
+                         RMN_m2="ERROR=$RMN_stderr"
+                         RMN_m3="$script_name terminated."
+                         RMN_m4=`ls -al "$RMN_file"|sed "s/^/$sp/"`
+                         echo "`date '+%Y-%m-%d %T'` FATAL ERROR: $RMN_ID" 1&gt;&2
+                         echo "${sp}$RMN_m1"                               1&gt;&2
+                         echo "${sp}$RMN_m2"                               1&gt;&2
+                         echo "${sp}$RMN_m3  File list (in any) follows:"  1&gt;&2
+                         echo "${sp}$dashes"                               1&gt;&2
+                         echo "$RMN_m4"                                    1&gt;&2
+
+                         if [ $RMN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                            WRITE_ERR_TO_SYSLOGS -p "$RMN_pri" -t "$RMN_tag" \
+                              "ABORT: $RMN_ID $RMN_m1 $RMN_m2 $RMN_m3"
+                         fi
+                         EXIT 1
+                      done # while read RMN_file
+                   return 0
+                fi # if [ ."$RMN_args" != . ]; then
+
+                #--------------------------------------------------------------------#
+                # Reaching this point means we have an insufficient arguments error. #
+                #--------------------------------------------------------------------#
+                RMN_m1="Insufficient args."
+                RMN_m2="$script_name terminated."
+                echo "`date '+%Y-%m-%d %T'` FATAL ERROR (Function): $RMN_ID"  1&gt;&2
+                echo "${sp}$RMN_m1\n"                                         1&gt;&2
+                echo "${sp}Usage: $RMN_name -l -p priority -t tag -v"         1&gt;&2
+                echo "${sp}                      [rm-options] file ...\n"     1&gt;&2
+                echo "${sp}                 -l = Notify via logger command"   1&gt;&2
+                echo "${sp}                      (default is false)"          1&gt;&2
+                echo "${sp}                 -p = Logger priority string"      1&gt;&2
+                echo "${sp}                      (default is 'user.err')"     1&gt;&2
+                echo "${sp}                 -t = Logger tag string"           1&gt;&2
+                echo "${sp}                      (default is '$LOGNAME[$$]')" 1&gt;&2
+                echo "${sp}                 -v = Verbose\n"                   1&gt;&2
+                echo "${sp}Option notes: Option (-l) MUST precede -p and -t." 1&gt;&2
+                echo "${sp}              'RM-options' MUST follow function"   1&gt;&2
+                echo "${sp}               options."                           1&gt;&2
+                echo "${sp}$RMN_m2"                                           1&gt;&2
+                if [ $RMN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$RMN_pri" -t "$RMN_tag" \
+                     "ABORT: $RMN_ID $RMN_m1 $RMN_m2"
+                fi
+
+                EXIT 1
+              } # "RMN_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: October 19, 1999                                        #
+              #                                                                      #
+              #  Program ID: rm_exit_err_nomail.sh                                   #
+              #                                                                      #
+              #       Usage: RM_EXIT_ERR_NOMAIL -l -p priority -t tag -v \           #
+              #                                      [rm-options] file ...           #
+              #                                                                      #
+              #                                 -l = Notify via logger command       #
+              #                                      (default is false)              #
+              #                                 -p = Logger priority string          #
+              #                                      (default is "user.err")         #
+              #                                 -t = Logger tag string               #
+              #                                      (default is "$LOGNAME[$$]")     #
+              #                                 -v = Verbose                         #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede other options.   #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Remove files with error checking and reporting          #
+              #              via stderr and logger, and exiting on error.            #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              rm command beyond automatic notification/logging        #
+              #              before exiting on error.  Notification is provided      #
+              #              via echoes thru stderr.  Optionally (-l), the user may  #
+              #              have the error logged in syslogs (/var/adm/messages)    #
+              #              via logger command.  Logger -p and -t options and       #
+              #              option arguments also may be passed (both have defaults #
+              #              if omitted).                                            #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "RMN_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EXIT library function and, optionally,                  #
+              #              WRITE_ERR_TO_SYSLOGS as directed.                       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while removing a file is potentially a        #
+              #              show stopper.  Else returns 0.                          #
+              #                                                                      #
+              #     Notes:   If the user wishes NOT to exit on error, then he        #
+              #              should use rm's force (-f) flag.  For example,          #
+              #              RM_EXIT_ERR_NOMAIL -f anyfile. Regardless of existence  #
+              #              or file permissions, the rm returns a status of 0       #
+              #              (success).                                              #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.15 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.14 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1999-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

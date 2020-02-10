@@ -1,0 +1,130 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Principle: Gyrotation",
+          "starttime":"" 
+        },
+        {
+          "name":"B/R, L/Gyrotates",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Alien Facehanger Recall Forearm Dance",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"B/R, R/Gyrotates",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"BB Pinned to wall KTS",
+          "starttime":"6:55" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Reverse front-kick knee",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Back-hand/rev.punch",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"R/eye-flick & L/horiz-punch to Opp's groin",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"OR Two-hand grab C (Kenpo pin to wall)",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"Bag uppercuts",
+          "starttime":"6:50" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"GR Kilap 8A",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Principle: Gyrotation",
+          "starttime":"" 
+        },
+        {
+          "name":"B/R, L/Gyrotates",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Alien Facehanger",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"B/R, R/Gyrotates",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"BB Pin to wall KTS",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Back-hand/rev.punch",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"Bag uppercuts",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

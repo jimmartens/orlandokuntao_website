@@ -1,0 +1,106 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"PU Kick Combo #1",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Defensive back-kick",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"GR Headlock (Ingram)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"Sinawali (Std-6 HLH)",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Reverse front-kick groin (Kickee in L/lead)",
+          "starttime":"6:00"
+        },
+        {
+          "name":"PU Lock Set Right",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"BR 2-Hand Putar Kepala (was KLP-Right)",
+          "starttime":"6:50" 
+        },  
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"GR Sombrada Knife (R)",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Reverse front-kick groin (Kickee in L/lead)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"BR 2-Hand Putar Kepala",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"GR Headlock (Ingram)",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"PU Lock Set Right",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

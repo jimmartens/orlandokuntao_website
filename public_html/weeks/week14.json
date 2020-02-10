@@ -1,0 +1,114 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"L/Round-kick groin",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Tres estrellas",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"GR Kilap 8B (Switch)",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"BR Handshake sqz A,B,C",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Sinawali (Low-6)",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Sombrada Hand",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"BB Forearm dance",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"PU Kilap 3+ (SHBWC)",
+          "starttime":"10:00"
+        },
+        {
+          "name":"L/Round-kick groin",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Tres estrellas",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"GR Kilap 8B (Switch)",
+          "starttime":"10:45" 
+        },
+        {
+          "name":"BR Handshake sqz A,B,C",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"Sinawali (Low-6)",
+          "starttime":"11:05" 
+        },
+        {
+          "name":"Sombrada Hand",
+          "starttime":"11:15" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

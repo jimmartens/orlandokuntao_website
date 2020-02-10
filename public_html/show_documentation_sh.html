@@ -1,0 +1,157 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, show_documentation.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="show_documentation.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, show_documentation.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_show_documentation_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              SD_name="<b>SHOW_DOCUMENTATION</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$SD_name\(\)\{$'`" != . ] &amp;&amp; SD_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$SD_name'[=\(]?/'`" != . ] &amp;&amp; SD_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$SD_name'[=\(]?/'`" != . ] &amp;&amp; SD_loaded=1
+                 fi
+              fi
+              if [ 0${SD_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>SHOW_DOCUMENTATION</b>() # Function documentation located at bottom.       #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                #----------------------------------------------------------------#
+                # If the following variables are not set, use these as defaults. #
+                #----------------------------------------------------------------#
+                : ${sp:="                    "} # 20 spaces
+                : ${script_name:=`basename $0`}
+                : ${script_home:=`dirname  $0`}
+                SD_script_home=`echo $script_home|sed 's/\/*$/\//'`
+
+                #----------------------------------------------#
+                # User wants help, so find the documentation   #
+                # section and print everything from there down.#
+                #----------------------------------------------#
+                $AWK -v script_name=$script_name -v sp="$sp" \
+                  'BEGIN { n=0 }
+                   { # Examine each line until we find the documentation section.
+                     if (n == 0)
+                     {
+                       if ($0 ~ /^# +D O C U M E N T A T I O N/)
+                       {
+                         n = NR
+                         print line
+                         print $0
+                       }
+                       else
+                         line = $0
+
+                       next
+                     }
+                     else # Once we find it, print until EOF.
+                       print
+                   }
+                   END \
+                   {
+                     if (n == 0) # Means we found no documentation section.
+                     {
+                       print sp"NO DOCUMENTATION",
+                         "section found for "script_name"." | "cat 1&gt;&2"
+                       exit 1 # Exit failure
+                     }
+                     exit 0 # Else exit success
+                   }' ${SD_script_home}$script_name
+
+                [ ."$1" = ."-x" ] &amp;&amp; exit $? || return $?
+              } # "SD_" prefix identifies this function's variables
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: January 14, 1997                                        #
+              #                                                                      #
+              #  Program ID: show_documentation.sh                                   #
+              #                                                                      #
+              #       Usage: SHOW_DOCUMENTATION -x                                   #
+              #                           Where -x says we're to exit after          #
+              #                                    displaying documentation.         #
+              #                                                                      #
+              #     Purpose: Display formal documentation section of the calling     #
+              #              script.                                                 #
+              #                                                                      #
+              # Description: This function looks for a "D O C U M E N T A T I O N"   #
+              #              line in the calling script (like the one above).  If    #
+              #              one is found, everything from that line (minus one--    #
+              #              the line above it) is displayed to stdout.  It is       #
+              #              up to the user to pipe it through "more" as needed.     #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "SD_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Success or failure (0 or 1).  If failure, an error      #
+              #              indicating that the script has no documentation         #
+              #              is displayed.                                           #
+              #                                                                      #
+              #       Calls: None.                                                   #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.8  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

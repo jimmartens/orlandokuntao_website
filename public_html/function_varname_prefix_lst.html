@@ -1,0 +1,497 @@
+<html>
+  <head>
+    <title>Unix Shell Library: Function Variable Name Prefix List</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library: Function Variable Name Prefix List">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1995-2011, Bob Orlando">
+    <script language="JavaScript">var statusLine='Artificial intelligence is no match for natural stupidity.';var msg='      ' + statusLine + '     .  .  .  .';window.defaultStatus=statusLine;</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_function_varname_prefix.html';">
+    <table border="0" width="550" align="center" cellspacing="1" cellpadding="1">
+      <tr>
+        <td>
+          <br>
+          <center>
+            <font face="Arial,Verdana" size="+1"><b>Function Variable Name Prefix List</b></font>
+          </center>
+          <code>
+            <pre>
+      # @(#)function_varname_prefix.lst (Bourne shell library prefix list)
+
+                    +----------------------------------------+
+                    | The following list is in prefix order. |
+                    +----------------------------------------+
+
+           69 functions (including internal functions) as of 08-11-2004
+
+      Prefix  = Function Name                  Script Name
+      -------   -----------------------------  -------------------------------
+      CBD_    = COMPRESS_BY_DATE               compress_by_date.sh
+      CD_     = CHDIR_EXIT_ERR                 chdir_exit_err.sh
+      CDN_    = CHDIR_EXIT_ERR_NOMAIL          chdir_exit_err_nomail.sh
+      CG_     = CHGRP_EXIT_ERR                 chgrp_exit_err.sh
+      CGN_    = CHGRP_EXIT_ERR_NOMAIL          chgrp_exit_err_nomail.sh
+      CM_     = CHMOD_EXIT_ERR                 chmod_exit_err.sh
+      CMN_    = CHMOD_EXIT_ERR_NOMAIL          chmod_exit_err_nomail.sh
+      CO_     = CHOWN_EXIT_ERR                 chown_exit_err.sh
+      CON_    = CHOWN_EXIT_ERR_NOMAIL          chown_exit_err_nomail.sh
+      CP_     = CP_EXIT_ERR                    cp_exit_err.sh
+      CPN_    = CP_EXIT_ERR_NOMAIL             cp_exit_err_nomail.sh
+      CPD_    = CP_DEV_NULL_EXIT_ERR           cp_dev_null_exit_err.sh
+      CPDN_   = CP_DEV_NULL_EXIT_ERR_NOMAIL    cp_dev_null_exit_err_nomail.sh
+      CTS_    = CHECK_TAPE_STATUS              check_tape_status.sh
+      CWF_    = CLEANUP_WORK_FILES             cleanup_work_files.sh
+      DFS_    = DISPLAY_FS_SPACE               display_fs_space.sh
+      DFZ_    = DISPLAY_FS_SIZE                display_fs_size.sh
+      DPL_    = DEBUG_PAUSE_LOOP               debug_pause_loop.sh
+      EAR_    = EXIT_IF_ALREADY_RUNNING        exit_if_already_running.sh
+      E_      = EXIT                           exit.sh
+      EE_     = ECHO_EXEC                      echo_exec.sh
+      EM_     = EMAIL_MSG                      email_msg.sh
+      EEM_    = EM_ECHO_MSG                    (INTERNAL to email_msg.sh)
+      EPC_    = EXIT_ON_PROCESS_CONFLICTS      exit_on_process_conflicts.sh
+      ET_     = ELAPSED_TIME                   elapsed_time.sh
+      FNC_    = FORMAT_NUM_WITH_COMMAS         format_num_with_commas.sh
+      FT_     = FRAME_TEXT                     frame_text.sh
+      FTPH_   = FTP_HOST                       ftp_host.sh
+      GFP_    = GET_FILE_PERMS                 get_file_perms.sh
+      GFY_    = GET_FILE_YYMMDDHHMI            get_file_yymmddhhmi.sh
+      GNY_    = GET_NEXT_YYYYMMDDHH            get_next_yyyymmddhh.sh
+      GO_     = GET_OPTIONS                    get_options.sh
+      GPY_    = GET_PREV_YYYYMMDDHH            get_prev_yyyymmddhh.sh
+      II_     = ISINT                          isint.sh
+      IN_     = ISNUM                          isnum.sh
+      KPI_    = KILL_PID                       kill_pid.sh
+      LY_     = LEAP_YEAR                      leap_year.sh
+      M2N_    = MONTH_MMM_TO_NN                month_mmm_to_nn.sh
+      ME_     = MKDIR_EXIT_ERR                 mkdir_exit_err.sh
+      MEN_    = MKDIR_EXIT_ERR_NOMAIL          mkdir_exit_err_nomail.sh
+      MN2M_   = MONTH_NN_TO_MMM                month_nn_to_mmm.sh
+      MV_     = MV_EXIT_ERR                    mv_exit_err.sh
+      MVN_    = MV_EXIT_ERR_NOMAIL             mv_exit_err_nomail.sh
+      PF_     = PRUNE_FILES                    prune_files.sh
+      PH_     = PING_HOST                      ping_host.sh
+      PP_     = PARSE_PARAMETERS               parse_parameters.sh
+      PSW_    = PS_AUXWW                       ps_auxww.sh
+      PV_     = PRINT_VARS                     print_vars.sh
+      PYN_    = PAUSE_Y_OR_N                   pause_y_or_n.sh
+      RBD_    = REMOVE_BY_DATE                 remove_by_date.sh
+      RDN_    = READ_NOECHO                    read_noecho.sh
+      RK_     = READKEY                        readkey.sh
+      RKN_    = READKEY_NOECHO                 readkey_noecho.sh
+      RM_     = RM_EXIT_ERR                    rm_exit_err.sh
+      RMN_    = RM_EXIT_ERR_NOMAIL             rm_exit_err_nomail.sh
+      RNM_    = RANGE_NUMS                     range_nums.sh
+      RV_     = RANGE_VALUES                   range_values.sh
+      SD_     = SHOW_DOCUMENTATION             show_documentation.sh
+      TE_     = TOUCH_EXIT_ERR                 touch_exit_err.sh
+      TEN_    = TOUCH_EXIT_ERR_NOMAIL          touch_exit_err_nomail.sh
+      TRM_    = TERMINATE                      terminate.sh
+      TRS_    = TERMINATE_SUBPROCESSES         terminate_subprocesses.sh
+      TRX_    = TRAP_EXIT                      trap_exit.sh
+      VD_     = VALIDATE_DATE                  validate_date.sh
+      VNV_    = VERIFY_NUM_VARS                verify_num_vars.sh
+      VT_     = VALIDATE_TIME                  validate_time.sh
+      VV_     = VERIFY_VARS                    verify_vars.sh
+      WES_    = WRITE_ERR_TO_SYSLOGS           write_err_to_syslogs.sh
+      WP_     = WAIT_ON_PROCESS                wait_on_process.sh
+
+      ------------------------------------------------------------------------
+      &nbsp;<a name="usage_briefs">
+                    <font face="Arial,Verdana" size="+1"><b>Function Names and Usage Briefs</b></font>
+
+        1. <font face="Arial,Verdana"><b>chdir_exit_err.sh</b></font>
+
+               Changes working directory to the specified directory,
+               reporting errors via email and logger, and exiting
+               on error.
+
+        2. <font face="Arial,Verdana"><b>chdir_exit_err_nomail.sh</b></font>
+
+               Changes working directory to specified directory,
+               reporting errors via stderr and exiting on error.
+
+        3. <font face="Arial,Verdana"><b>check_tape_status.sh</b></font>
+
+               Checks tape device status with error checking.
+
+        4. <font face="Arial,Verdana"><b>chgrp_exit_err.sh</b></font>
+
+               Changes group ownership of one or more files, reporting
+               errors via email and logger, and exiting on error.
+
+        5. <font face="Arial,Verdana"><b>chgrp_exit_err_nomail.sh</b></font>
+
+               Changes group ownership of one or more files, reporting
+               errors via stderr and logger, and exiting on error.
+
+        6. <font face="Arial,Verdana"><b>chmod_exit_err.sh</b></font>
+
+               Changes (mode) permissions on one or more files,
+               reporting errors via email and logger, and exiting
+               on error.
+
+        7. <font face="Arial,Verdana"><b>chmod_exit_err_nomail.sh</b></font>
+
+               Changes (mode) permissions on one or more files,
+               reporting errors via stderr and logger, and exiting
+               on error.
+
+        8. <font face="Arial,Verdana"><b>chown_exit_err.sh</b></font>
+
+               Change ownership on one or more files, reporting
+               errors via email and logger, and exiting on error.
+
+        9. <font face="Arial,Verdana"><b>chown_exit_err_nomail.sh</b></font>
+
+               Change ownership on one or more files, reporting
+               errors via stderr and logger, and exiting on error.
+
+       10. <font face="Arial,Verdana"><b>cleanup_work_files.sh</b></font>
+
+               Clean up process work files with error checking,
+               reporting any problems via email.
+
+       11. <font face="Arial,Verdana"><b>compress_by_date.sh</b></font>
+
+               Very helpful for log maintenance, this script
+               compresses files having yymmdd or yyyymmdd date
+               strings in their fileids that are older than a date
+               nn days old.  (See also prune_files.sh.)
+
+       12. <font face="Arial,Verdana"><b>cp_dev_null_exit_err.sh</b></font>
+
+               Copies /dev/null to one or more files with error
+               checking and reporting via email and logger, and
+               exiting on error.
+
+       13. <font face="Arial,Verdana"><b>cp_dev_null_exit_err_nomail.sh</b></font>
+
+               Copies /dev/null to one or more files with error
+               checking and reporting via stderr and logger, and
+               exiting on error.
+
+       14. <font face="Arial,Verdana"><b>cp_exit_err.sh</b></font>
+
+               Copies files/directories with error checking and
+               reporting and errors via email and logger, and
+               exiting on error.
+
+       15. <font face="Arial,Verdana"><b>cp_exit_err_nomail.sh</b></font>
+
+               Copies files/directories with error checking and
+               reporting and errors via stderr and logger, and
+               exiting on error.
+
+       16. <font face="Arial,Verdana"><b>debug_pause_loop.sh</b></font>
+
+               Provides a loop for debugging that executes commands
+               passed to it.
+
+       17. <font face="Arial,Verdana"><b>defaults.sh</b></font>
+
+               Provides default assignments to critical shell library
+               variables that are unassigned by the user.
+
+       18. <font face="Arial,Verdana"><b>display_fs_size.sh</b></font>
+
+               Displays filesystem sizes (total, used, and available)
+               in kbytes.
+
+       19. <font face="Arial,Verdana"><b>display_fs_space.sh</b></font>
+
+               Displays filesystem capacity returning percentage free
+               in return status ($?).
+
+       20. <font face="Arial,Verdana"><b>echo_exec.sh</b></font>
+
+               Echos and executes a command (script, executable,
+               whatever), sending any output to $stdout and $stderr
+               files.
+
+       21. <font face="Arial,Verdana"><b>elapsed_time.sh</b></font>
+
+               Calculates process elapsed times.
+
+       22. <font face="Arial,Verdana"><b>email_msg.sh</b></font>
+
+               Emails subject and message text supplied as arguments
+               to recipients previously assigned to $notify.
+
+       23. <font face="Arial,Verdana"><b>exit.sh</b></font>
+
+               Exits with an (optional) exit status (validating it)
+               and with some basic housekeeping.
+
+       24. <font face="Arial,Verdana"><b>exit_if_already_running.sh</b></font>
+
+               Exits if the current process is already running.
+
+       25. <font face="Arial,Verdana"><b>exit_on_process_conflicts.sh</b></font>
+
+               Queries current processes (ps -eaf) reporting any
+               contentious processes that are currently running and
+               exiting if any are found.
+
+       26. <font face="Arial,Verdana"><b>format_num_with_commas.sh</b></font>
+
+               Formats a given (unsigned) number with commas.
+
+       27. <font face="Arial,Verdana"><b>frame_text.sh</b></font>
+
+               Frames a text string using using either default or
+               user-specified posts and lintel.
+
+       28. <font face="Arial,Verdana"><b>ftp_host.sh</b></font>
+
+               Issues FTP commands on specified "host", checking for
+               common FTP errors, returning success status only when
+               no errors are found.
+
+       29. <font face="Arial,Verdana"><b>get_file_perms.sh</b></font>
+
+               Returns a given file's octal (nnnn) permissions.
+
+       30. <font face="Arial,Verdana"><b>get_file_yymmddhhmi.sh</b></font>
+
+               Returns a fileid's time stamp in yymmddhhmi format.
+
+       31. <font face="Arial,Verdana"><b>get_next_yyyymmddhh.sh</b></font>
+
+               Gets the date and hour that follows the date and hour
+               (yyyymmddhh) passed to us.
+
+       32. <font face="Arial,Verdana"><b>get_options.sh</b></font>
+
+               Processes basic command line options of -H and -h.
+
+       33. <font face="Arial,Verdana"><b>get_prev_yyyymmddhh.sh</b></font>
+
+               Gets the date and hour preceding the date and hour
+               (yyyymmddhh) passed to us.
+
+       34. <font face="Arial,Verdana"><b>isint.sh</b></font>
+
+               Determines if the value passed is an integer or no.
+
+       35. <font face="Arial,Verdana"><b>isnum.sh</b></font>
+
+               Determinesif the value passed is numeric or no.
+
+       36. <font face="Arial,Verdana"><b>kill_pid.sh</b></font>
+
+               Kills process ID with error checking and reporting.
+
+       37. <font face="Arial,Verdana"><b>leap_year.sh</b></font>
+
+               Determine if the given year is leap year or no.
+
+       38. <font face="Arial,Verdana"><b>mkdir_exit_err.sh</b></font>
+
+               Makes directories with error checking and reporting
+               via email and logger, and exiting on error.
+
+       39. <font face="Arial,Verdana"><b>mkdir_exit_err_nomail.sh</b></font>
+
+               Makes directories with error checking and reporting
+               via stderr and logger, and exiting on error.
+
+       40. <font face="Arial,Verdana"><b>month_mmm_to_nn.sh</b></font>
+
+               Converts abbreviated month name to a two-digit month
+               number.
+
+       41. <font face="Arial,Verdana"><b>month_nn_to_mmm.sh</b></font>
+
+               Converts nn month number to three-character month
+               abbreviation.
+
+       42. <font face="Arial,Verdana"><b>mv_exit_err.sh</b></font>
+
+               Moves files/directories with error checking and
+               reporting via email and logger, and exiting on error.
+
+       43. <font face="Arial,Verdana"><b>mv_exit_err_nomail.sh</b></font>
+
+               Moves files/directories with error checking and
+               reporting via stderr and logger, and exiting on error.
+
+       44. <font face="Arial,Verdana"><b>parse_parameters.sh</b></font>
+
+               Extracts tunable/variable program parameters from
+               a parameter file.
+
+       45. <font face="Arial,Verdana"><b>pause_y_or_n.sh</b></font>
+
+               Prompts the user with "text string" and pause until he
+               answers yes or no.
+
+       46. <font face="Arial,Verdana"><b>ping_host.sh</b></font>
+
+               Pings host up to 10 times using specified "seconds"
+               between ping.
+
+       47. <font face="Arial,Verdana"><b>print_vars.sh</b></font>
+
+               Prints variables (both variable name and value) in a
+               neat tabular form.
+
+       48. <font face="Arial,Verdana"><b>prune_files.sh</b></font>
+
+               Very helpful for log maintenance, this script prunes
+               files with [yy]yymmdd in the fileid to the given number.
+               Moreover, all files, except for the latest file, are
+               also compressed.  (See also compress_by_date.sh.)
+
+       49. <font face="Arial,Verdana"><b>ps_auxww.sh</b></font>
+
+               Uses UCB 'ps -auxww' to list processes in the process
+               queue, displaying those lines matching our ps target.
+
+       50. <font face="Arial,Verdana"><b>range_nums.sh</b></font>
+
+               Converts numeric ranges, like 1-5, into individual
+               numbers.
+
+       51. <font face="Arial,Verdana"><b>range_values.sh</b></font>
+
+               Converts alphanumeric ranges, like 1-5, s-x,, or I-A
+               into individual characters or numerals.
+
+       52. <font face="Arial,Verdana"><b>read_noecho.sh</b></font>
+
+               Reads an unechoed string from the keyboard.
+
+       53. <font face="Arial,Verdana"><b>readkey.sh</b></font>
+
+               Reads a single key from the keyboard without having to
+               press carriage return.
+
+       54. <font face="Arial,Verdana"><b>readkey_noecho.sh</b></font>
+
+               Reads an unechoed single key from the keyboard without
+               having to press carriage return.
+
+       55. <font face="Arial,Verdana"><b>remove_by_date.sh</b></font>
+
+               Removes files having yymmdd or yyyymmdd date strings
+               in their fileids that are older than a date nn days
+               old.
+
+       56. <font face="Arial,Verdana"><b>rm_exit_err.sh</b></font>
+
+               Removes files with error checking and reporting via
+               email and logger, and exiting on error.
+
+       57. <font face="Arial,Verdana"><b>rm_exit_err_nomail.sh</b></font>
+
+               Removes files with error checking and reporting via
+               stderr and logger, and exiting on error.
+
+       58. <font face="Arial,Verdana"><b>show_documentation.sh</b></font>
+
+               Displays formal documentation section of the calling
+               script.
+
+       59. <font face="Arial,Verdana"><b>terminate.sh</b></font>
+
+               Terminates any process (by PID) that runs longer than
+               the given time limit.
+
+       60. <font face="Arial,Verdana"><b>terminate_subprocesses.sh</b></font>
+
+               Terminate all the current process' subprocesses.
+
+       61. <font face="Arial,Verdana"><b>touch_exit_err.sh</b></font>
+
+               Touches one or more files, reporting any errors via
+               email and logger, and exiting on error.
+
+       62. <font face="Arial,Verdana"><b>touch_exit_err_nomail.sh</b></font>
+
+               Touches one or more files, reporting any errors via
+               stderr and logger, and exiting on error.
+
+       63. <font face="Arial,Verdana"><b>trap_exit.sh</b></font>
+
+               Gracefully exits on trapped signal.
+
+       64. <font face="Arial,Verdana"><b>validate_date.sh</b></font>
+
+               Validates the given date given according to the
+               template provided along with it.
+
+       65. <font face="Arial,Verdana"><b>validate_time.sh</b></font>
+
+               Validates the given time given according to the
+               template provided along with it.
+
+       66. <font face="Arial,Verdana"><b>verify_num_vars.sh</b></font>
+
+               Verifies the assignment of critical numeric process
+               variables.
+
+       67. <font face="Arial,Verdana"><b>verify_vars.sh</b></font>
+
+               Verifies the assignment of critical process variables.
+
+       68. <font face="Arial,Verdana"><b>wait_on_process.sh</b></font>
+
+               Queries current processes, reporting and waiting on
+               those processes in our process list that are currently
+               running.
+
+       69. <font face="Arial,Verdana"><b>write_err_to_syslogs.sh</b></font>
+
+               Writes error message to system log (var/adm/messages)
+               returning logger's exit status.
+
+
+      One other shell script is provided as part of this Unix Shell Library
+      suite:
+           <a href="example_sh.html"><font face="Arial,Verdana"><b>example.sh</b></font></a>
+
+               Said script provides working example showing declaration and
+               use of all library functions, local user functions, et al.
+               Example.sh also calls the following:
+
+                  /usr/local/bin/<a href="holidays_awk.html">holidays.awk</a>
+                  /usr/local/bin/<a href="holidays_file.html">holidays</a>
+                  /usr/local/bin/<a href="dateplus_c.html">dateplus</a>
+                  /usr/local/scripts/<a href="dateplus_awk.html">dateplus.awk</a>
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table>
+    <p>
+
+    <p><center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1995-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Dec. 19, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 2 -->
+  </body>
+</html>

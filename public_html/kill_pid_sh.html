@@ -1,0 +1,363 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, kill_pid.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="kill_pid.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, kill_pid.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2000-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_kill_pid_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              KPI_name="<b>KILL_PID</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$KPI_name\(\)\{$'`" != . ] &amp;&amp; KPI_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$KPI_name'[=\(]?/'`" != . ] &amp;&amp; KPI_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$KPI_name'[=\(]?/'`" != . ] &amp;&amp; KPI_loaded=1
+                 fi
+              fi
+              if [ 0${KPI_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>KILL_PID</b>() # Function documentation located at bottom.                 #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then
+                   SHLIB=/usr/local/scripts; export SHLIB
+                fi
+
+                . $SHLIB/exit.sh      # Function dependencies
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${OZ:=`uname -s`}
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${yymmddhhmiss:=`date '+%y''%m%d%H''%M''%S'`}
+                : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+                : ${success:=0}
+                : ${failure:=1}
+                : ${true:=1}
+                : ${false:=0}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                KPI_ID="$script_name($KPI_name)"
+                KPI_kill="kill"
+
+                #----------------------------#
+                # Parse any function options.#
+                #----------------------------#
+                KPI_optn=$false
+                KPI_invalid_opt=$false
+                KPI_exit="return"
+
+                KPI_exit_msg="Processing continues."
+                KPI_sss=5   # Default sleep seconds
+                KPI_sudo=0
+                KPI_test=0
+                KPI_opt_l=0 # Logger
+                KPI_opt_p=0 # Logger priority
+                KPI_opt_t=0 # Logger tag
+                KPI_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                KPI_tag="$logger_t" # within library defaults.sh.
+
+                KPI_root=$tmp/$name_root"_KPI_go_"$id_hex
+                KPI_err=$KPI_root"."$Xtimestamp
+                while getopts Ss:Txlp:t: KPI_opt 2&gt;&gt; $KPI_err
+                do
+                   case $KPI_opt in
+                      S ) KPI_sudo=1
+                          KPI_optn=1
+                          KPI_kill="sudo kill"
+                          ;;
+                      s ) KPI_ddd=`printf "%d" $OPTARG`
+                          if [ $OPTARG = $KPI_ddd ]; then
+                             KPI_sss=$OPTARG
+                             KPI_optn=1
+                          else
+                             echo "`date '+%Y-%m-%d %T'`"                   \
+                               "$KPI_ID Invalid option arg [sss], $OPTARG." \
+                               "Using '$KPI_sss'." | $teelog
+                          fi
+                          ;;
+                      T ) KPI_test=1
+                          KPI_optn=1
+                          KPI_kill="echo kill"
+                          ;;
+                      x ) KPI_exit="EXIT"
+                          KPI_optn=1
+                          KPI_exit_msg="$script_name terminated."
+                          ;;
+                      l ) KPI_opt_l=1
+                          . $SHLIB/write_err_to_syslogs.sh
+                          KPI_optn=1
+                          ;;
+                      p ) if [ $KPI_opt_l -eq $true -a $KPI_opt_p -eq $false ]; then
+                             KPI_opt_p=1
+                             KPI_pri="$OPTARG"
+                             KPI_optn=1
+                          fi
+                          ;;
+                      t ) if [ $KPI_opt_l -eq $true -a $KPI_opt_t -eq $false ]; then
+                             KPI_opt_t=1
+                             KPI_tag="$OPTARG"
+                             KPI_optn=1
+                          fi
+                          ;;
+                     \? ) KPI_m1="Invalid Option: -`sed 's/^.*-- //' $KPI_err`"
+                          KPI_invalid_opt=1
+                          ;;
+                      * ) ;;
+                   esac
+                done
+                #----------------------------------------------------------#
+                # Shift to remaining arguments (arguments solve nothing :) #
+                #----------------------------------------------------------#
+                [ $KPI_optn -eq $true ] &amp;&amp; shift `expr $OPTIND - 1`
+                [ ."$KPI_root" != . ] &amp;&amp; \rm -f $KPI_root* &gt; /dev/null 2&gt;&1
+
+                #----------------------------------------------------------------#
+                # Must reset this dog if this function is apt to be called again #
+                OPTIND=1    # (try and find this fact documented anywhere else). #
+                #----------------------------------------------------------------#
+
+                if [ $# -lt 1 -o $KPI_invalid_opt -eq $true ]; then
+                   : ${KPI_m1:="Insufficient args."}
+                   [ $KPI_opt_x -eq 1 ]                   \
+                     &amp;&amp; KPI_m2="$script_name terminated." \
+                     || KPI_m2="$TRM_name terminated."
+                   EMAIL_MSG "ERROR: (Function) $KPI_ID"                           \
+                     "${sp}$KPI_m1\n"                                              \
+                     "${sp}Usage: $KPI_name -S [-s sss] -T -x\n"                   \
+                     "${sp}                 [-l [-p prty] [-t tag]] pid\n\n"       \
+                     "${sp}                  -S  = Use sudo.\n"                    \
+                     "${sp}                  -s  = Time to sleep between attempts" \
+                     "${sp}                        (default is 2 secs)."           \
+                     "${sp}                  -T  = Test--echo kill commands.\n"    \
+                     "${sp}                  -x  = Exit if kill fails.\n"          \
+                     "${sp}                  -l  = Notify via logger command"      \
+                     "${sp}                        (default is false)"             \
+                     "${sp}                  -p  = logger priority string"         \
+                     "${sp}                        (default is 'user.err')"        \
+                     "${sp}                  -t  = logger tag string"              \
+                     "${sp}                        (default is '$LOGNAME[$$]')"    \
+                     "${sp}                  pid = Process ID we are to kill.\n"   \
+                     "${sp}Option notes: Option (-l) MUST precede -p and -t."      \
+                     "${sp}$KPI_m2"
+                   if [ $KPI_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$KPI_pri" -t "$KPI_tag" \
+                        "ABORT: $KPI_ID $KPI_m1 $KPI_m2"
+                   fi
+                   $KPI_exit $failure
+                fi
+
+                KPI_trys="1 2 3" # Can be no less than three.
+                KPI_last=`expr "$KPI_trys" : '.* \(.*\)'` # Last value.
+                KPI_int=` expr "$KPI_last" - 1`           # Next to last.
+
+                if [ $OZ = "Linux" ]; then # Linux uses ucb 'ps'
+                   KPI_ps="ps -aux"
+                else # Default is SunOS
+                   KPI_ps="ps -eaf -o pid,args"
+                fi
+
+                #------------------------------------------------------------------#
+                # `expr $KPI_last + 1` is for the final iteration for 'else' below.#
+                #------------------------------------------------------------------#
+                for KPI_n in $KPI_trys `expr $KPI_last + 1`
+                do
+                   KPI_proc=`$KPI_ps|$AWK -v pid=$1 \
+                     '$1 == pid {sub(/^[\t ]*/,"");gsub(/[\t ]+/," ");print}'`
+
+                   if [ ."$KPI_proc" = . ]; then
+                      return $success # Hoorah! Nothing to kill.
+                   else
+                      if   [ $KPI_n -eq 1 ]; then         # Kill (hang'em low)
+                         echo "`date '+%Y-%m-%d %T'`" \
+                                         "$KPI_kill -1 $1 [$KPI_proc]" | $teelog
+                         KPI_kill_result=`$KPI_kill -1 $1 2&gt;&1|$AWK '!/stty:/{print $0}'`
+                      elif [ $KPI_n -lt $KPI_last ]; then # Kill (lethal injection)
+                         echo "\n`date '+%Y-%m-%d %T'`" \
+                                         "$KPI_kill -15 $1 [$KPI_proc]" | $teelog
+                         KPI_kill_result=`$KPI_kill -15 $1 2&gt;&1|$AWK '!/stty:/{print $0}'`
+                      elif [ $KPI_n -eq $KPI_last ]; then # Kill (extreme prejudice)
+                         #---------------------------------------------#
+                         # Can't seem to capture the "Killed" response.#
+                         #---------------------------------------------#
+                         echo "`date '+%Y-%m-%d %T'`" \
+                                         "$KPI_kill -9 $1 [$KPI_proc]" | $teelog
+                         KPI_kill_result=`$KPI_kill -9 $1 2&gt;&1|$AWK '!/stty:/{print $0}'`
+                      else # Arrives here on last iteration only
+                         KPI_m1="Pumped $KPI_last slugs into '$*',"
+                         KPI_m1="${KPI_m1} but the dog just won't go down!"
+                         KPI_m1="${KPI_m1}\n${sp}$KPI_proc"
+                         KPI_m1="${KPI_m1}\n${sp}$KPI_exit_msg"
+
+                         EMAIL_MSG "KILL FAILURE $KPI_ID" \
+                           "${sp}$KPI_m1\n"
+
+                         if [ $KPI_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                            WRITE_ERR_TO_SYSLOGS -p "$KPI_pri" -t "$KPI_tag" \
+                              "KILL FAILURE: $KPI_ID $KPI_m1"
+                         fi
+                         #---------------------------------------#
+                         # The following $KPI_exit will either   #
+                         # 'EXIT' with a 1 or 'return' with a 0. #
+                         #---------------------------------------#
+                         $KPI_exit $failure
+                      fi
+
+                      #------------------------------------------------------------#
+                      # If kill returns "permission denied" then fuss at the user  #
+                      # ($KPI_exit exits or returns as requested by -e option).    #
+                      #------------------------------------------------------------#
+                      $AWK -v str="$KPI_kill_result" \
+                        'BEGIN {
+                                 if (tolower(str) ~ /permission denied/)
+                                   exit 1
+                                 else
+                                   exit 0
+                               }' # This is faster than "echo|grep -i|wc -l"
+                      if [ $? -eq $true ]; then
+                         KPI_msg="$KPI_kill_result\n${sp}$KPI_exit_msg"
+                         echo "`date '+%Y-%m-%d %T'` $KPI_msg" | $teelog
+                         $KPI_exit $failure
+                      fi
+                      sleep $KPI_sss # Give it time to die
+
+                      #----------------------------------------------#
+                      # Report (success or failure -- killed or no). #
+                      #----------------------------------------------#
+                      KPI_proc=`$KPI_ps|$AWK -v pid=$1 \
+                        '$1 == pid {sub(/^[\t ]*/,"");gsub(/[\t ]+/," ");print}'`
+                      if [ ."$KPI_proc" != . ]; then
+                         echo "${sp}$1 still alive ($KPI_proc)" | $teelog
+                      fi
+                   fi
+                done # for KPI_n in $KPI_trys
+              } # "KPI_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: March 14, 2000                                          #
+              #                                                                      #
+              #  Program ID: kill_pid.sh                                             #
+              #                                                                      #
+              #       Usage: KILL_PID -S [-s sss] -T -x \                            #
+              #                          [-l [-p priority] [-t tag]] pid             #
+              #                                                                      #
+              #                       -S  = Use sudo.                                #
+              #                                                                      #
+              #                       -s  = Time to sleep between attempts           #
+              #                             (default is 5 secs).                     #
+              #                       -T  = Test--echo kill commands.                #
+              #                                                                      #
+              #                       -x  = Exit if kill fails.                      #
+              #                                                                      #
+              #                       -l  = Notify via logger command                #
+              #                             (default is false)                       #
+              #                       -p  = logger priority string                   #
+              #                             (default is "user.err")                  #
+              #                       -t  = logger tag string                        #
+              #                             (default is "$LOGNAME[$$]")              #
+              #                                                                      #
+              #                       pid = Process ID to kill.                      #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede -p and -t.       #
+              #                                                                      #
+              #     Purpose: Kill process ID with error checking and reporting.      #
+              #                                                                      #
+              # Description: This function attempts to kill the process ID (PID)     #
+              #              with up to three kills (each progressively more brutal  #
+              #              than the preceding).  They are as follows:              #
+              #                                                                      #
+              #                 1. Kill -1  (hangup)                                 #
+              #                 2. Kill -15 (using the default TERM signal).         #
+              #                 3. Kill -9  (kill with extreme prejudice).           #
+              #                                                                      #
+              #              Depending on whether or not the user calls us with      #
+              #              the exit (-e) option, we either EXIT or return --       #
+              #              both with a status of success or failure (indicating    #
+              #              that the dog is dead or still alive).                   #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "KPI_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              # Exit_status: If exit on failure option (-e) is not provided,         #
+              #              then on completion                                      #
+              #                 return success (0=PID killed) or failure (1),        #
+              #              else                                                    #
+              #                 return success (0=PID killed) or exit failure (1).   #
+              #                                                                      #
+              #     Notes:   Call me stoooopid if you like, but despite all my       #
+              #              years working in Unix I have not yet figured out how to #
+              #              capture the kill command's "Killed" response -- even    #
+              #              with 2&gt;&1 3&gt;&1 4&gt;&1 ... 9&gt;&1.                           #
+              #                                                                      #
+              #    Modified: 2004-09-17 Bob Orlando                                  #
+              #                 v1.23 * Add -T (test) option (does not kill).        #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 2000-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

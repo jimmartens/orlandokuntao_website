@@ -1,0 +1,134 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Rocky",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Jab front-kick right",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"(5 mins kickng bag|pipe)",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"Sinawali (Hi-6)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"BL Wrist grab B(kenpo)",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"BL Wrist grab B(kuntao)",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Jab front-kick left",
+          "starttime":"6:00"
+        },
+        {
+          "name":"(10 mins kicking post)",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"Langka 4A (Grnd-n'step)",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"PU Kilap 4 (block-up)",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"GR Ragdoll Left",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"7:05" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Langka 3B",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Rocky",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Jab front-kick right",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"PU Kilap 4 (drill only)",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"BL Wrist grab B (kuntao)",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"Langka 4A (Grnd-n'step)",
+          "starttime":"11:05" 
+        },
+        {
+          "name":"GR Ragdoll Left",
+          "starttime":"11:15" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

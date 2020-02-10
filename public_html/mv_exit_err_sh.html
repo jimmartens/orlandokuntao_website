@@ -1,0 +1,280 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, mv_exit_err.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="mv_exit_err.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, mv_exit_err.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_mv_exit_err_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              MV_name="<b>MV_EXIT_ERR</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$MV_name\(\)\{$'`" != . ] &amp;&amp; MV_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$MV_name'[=\(]?/'`" != . ] &amp;&amp; MV_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$MV_name'[=\(]?/'`" != . ] &amp;&amp; MV_loaded=1
+                 fi
+              fi
+              if [ 0${MV_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>MV_EXIT_ERR</b>() # Function documentation located at bottom.              #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #--------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.  #
+                #--------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                MV_ID="$script_name($MV_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                MV_options="Slpt"
+                MV_opt_S=0 # Use sudo for mv
+                MV_opt_l=0
+                MV_opt_p=0
+                MV_opt_t=0
+                MV_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                MV_tag="$logger_t" # within library defaults.sh.
+                MV_opts="-f"
+                MV_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   MV_n=`expr "$1". : '-.*'`
+                   if [ $MV_n -gt 0 ]; then
+                      if [ $MV_n -eq 2 ]; then
+                         MV_optargs="$1"
+                      else
+                         MV_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for MV_optarg in $MV_optargs
+                      do
+                         case $MV_optarg in
+                           -S ) MV_opt_S=1
+                                ;;
+                           -l ) MV_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $MV_opt_l -eq 1 -a $MV_opt_p -eq 0 ]; then
+                                   MV_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$MV_options']'` != "--" ]; then
+                                      MV_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   MV_opts="$MV_opts $MV_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $MV_opt_l -eq 1 -a $MV_opt_t -eq 0 ]; then
+                                   MV_opt_t=1
+                                   MV_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$MV_options']'` != "--" ]; then
+                                      MV_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   MV_opts="$MV_opts $MV_optarg"
+                                fi
+                                ;;
+                           -f ) # Do nothing, we already use this "force" option.
+                                ;;
+                         esac
+                      done # MV_optarg in $MV_optargs
+                   else
+                      [ ."$MV_args" != . ]       \
+                        &amp;&amp; MV_args="$MV_args|$1" \
+                        || MV_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                MV_opts=`expr "$MV_opts" : ' *\(.*\)'` # Strip leading blanks
+                MV_args=`expr "$MV_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #----------------------------------------------------------------#
+                # If we have sufficient args, then attempt our mv command.       #
+                #----------------------------------------------------------------#
+                MV_status=0
+                [ $MV_opt_S -eq 0 ] &amp;&amp; MV_cmd="mv $MV_opts" || MV_cmd="sudo mv $MV_opts"
+
+                if [ ."$MV_args" != . ]; then
+                   MV_fr=`expr "$MV_args" : '\(.*\)\|.*`
+                   MV_to=`expr "$MV_args" : '.*\|\(.*\)`
+                   echo "`date '+%Y-%m-%d %T'`" \
+                             "$MV_cmd \"$MV_fr\" \"$MV_to\"" | $teelog
+                   MV_stderr=`$MV_cmd  "$MV_fr"   "$MV_to" 2&gt;&1`
+                   MV_status=$?
+                   [ $MV_status -eq 0 ] &amp;&amp; return 0
+
+                   MV_m1="'$MV_cmd \"$MV_fr\" \"$MV_to\"'"
+                   MV_m2="ERROR=$MV_stderr"
+                   MV_m3="$script_name terminated."
+                   EMAIL_MSG "FATAL ERROR: $MV_ID" \
+                     "${sp}$MV_m1"                 \
+                     "${sp}$MV_m2"                 \
+                     "${sp}$MV_m3"
+                   if [ $MV_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$MV_pri" -t "$MV_tag" \
+                        "ABORT: $MV_ID $MV_m1 $MV_m2 $MV_m3"
+                   fi
+                   EXIT 1
+                fi
+
+                #----------------------------------------------------------------#
+                # Reaching this point means we have an insufficient args error.  #
+                #----------------------------------------------------------------#
+                MV_m1="Insufficient args."
+                MV_m2="$script_name terminated."
+                EMAIL_MSG "FATAL ERROR (Function): $MV_ID"                        \
+                  "${sp}$MV_m1\n"                                                 \
+                  "${sp}Usage: $MV_name -S -l -p priority -t tag"                 \
+                  "${sp}                     [mv-options] source destination\n"   \
+                  "${sp}                -S = Use sudo to perform mv operation.\n" \
+                  "${sp}                -l = Notify via logger command"           \
+                  "${sp}                     (default is false)"                  \
+                  "${sp}                -p = Logger priority string"              \
+                  "${sp}                     (default is 'user.err')"             \
+                  "${sp}                -t = Logger tag string"                   \
+                  "${sp}                     (default is '$LOGNAME[$$]')\n"       \
+                  "${sp}Option notes: Option (-l) MUST precede -p and -t."        \
+                  "${sp}              'mv-options' MUST follow function"          \
+                  "${sp}               options."                                  \
+                  "${sp}$MV_m2"
+                if [ $MV_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$MV_pri" -t "$MV_tag" \
+                     "ABORT: $MV_ID $MV_m1 $MV_m2"
+                fi
+
+                EXIT 1
+              } # "MV_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: April 24, 1997                                          #
+              #                                                                      #
+              #  Program ID: mv_exit_err.sh                                          #
+              #                                                                      #
+              #       Usage: MV_EXIT_ERR -S [-l [-p priority] [-t tag]]  \           #
+              #                              [mv-options] source destination         #
+              #                                                                      #
+              #                          -S = Use sudo to perform mv.                #
+              #                                                                      #
+              #                          -l = Notify via logger command              #
+              #                               (default is false)                     #
+              #                          -p = Logger priority string                 #
+              #                               (default is "user.err")                #
+              #                          -t = Logger tag string                      #
+              #                               (default is "$LOGNAME[$$]")            #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede -p and -t.       #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Move files/directories with error checking and          #
+              #              reporting via email and logger, and exiting on error.   #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              mv command beyond automatic notification/logging        #
+              #              before exiting on error.  Notification is provided      #
+              #              via the EMAIL_MSG library function.  Optionally         #
+              #              (-l), the user may have the error logged in syslogs     #
+              #              (/var/adm/messages) via logger command.  Logger -p      #
+              #              and -t options and option arguments also may be         #
+              #              passed (both have defaults if omitted).                 #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "MV_" prefix identifies local function variables.       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while moving a file is potentially a          #
+              #              show stopper.  Else returns 0.                          #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-07-28 Bob Orlando                                  #
+              #                 v1.16 * Add sudo (-S) option.                        #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

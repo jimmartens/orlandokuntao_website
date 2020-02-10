@@ -1,0 +1,458 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, terminate.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="terminate.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, terminate.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2002-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_terminate_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              TRM_name="<b>TERMINATE</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$TRM_name\(\)\{$'`" != . ] &amp;&amp; TRM_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$TRM_name'[=\(]?/'`" != . ] &amp;&amp; TRM_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$TRM_name'[=\(]?/'`" != . ] &amp;&amp; TRM_loaded=1
+                 fi
+              fi
+              if [ 0${TRM_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>TERMINATE</b>() # Function documentation located at bottom, but briefly,   #
+              #           # $1=PID, $2=PIDfile, $3=MaxProcessSeconds, and $4=PSopts  #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/kill_pid.sh       # Function dependencies
+                . $SHLIB/isint.sh
+                . $SHLIB/email_msg.sh      # Calls $SHLIB/exit.sh
+                . $SHLIB/touch_exit_err.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "} # 20 spaces
+                : ${stderr_sp:="             STDERR="}
+                : ${verbose:=0}
+                : ${TRM_max_time:=600}
+                : ${bin_dir:=/bin}  # Ensure we get the commands we want
+                : ${ECHO:="$bin_dir/echo"}
+                : ${tmp:=/var/tmp}
+
+                : ${OZ:=`uname -s 2&gt; /dev/null|tr '[A-Z]' '[a-z]' 2&gt; /dev/null`}
+                if [ ."$OZ" != ."linux" ]; then
+                   : ${AWK:=nawk}
+                   TRM_ps_opts='-eaf -o pid,time,args'
+                else # Linux
+                   : ${AWK:=gawk}
+                   TRM_ps_opts='-aux'
+                fi
+                TRM_KILLPID_opts="-x"
+
+                : ${log:="$name_root.log"}
+                [ ."${teelog}" = . ] &amp;&amp; teelog="cat"
+
+                TRM_ID="$script_name($TRM_name)"
+
+                #------------------------------#
+                # Parse any function options.  #
+                #------------------------------#
+                TRM_optn=0        # Initialize as false (0)
+                TRM_invalid_opt=0
+                TRM_opt_M=0
+                TRM_opt_S=0
+                TRM_opt_T=0
+                TRM_opt_x=""
+
+                TRM_root=$tmp/$name_root"_TRM_go_"$id_hex
+                TRM_err=$TRM_root"."$Xtimestamp
+                while getopts MSTx TRM_opt 2&gt;&gt; $TRM_err
+                do
+                   case $TRM_opt in
+                      M ) TRM_opt_M=1  # Mail (-M) option
+                          TRM_optn=1
+                          ;;
+                      S ) TRM_KILLPID_opts="${TRM_KILLPID_opts}S"
+                          TRM_optn=1
+                          ;;
+                      T ) TRM_KILLPID_opts="${TRM_KILLPID_opts}T"
+                          TRM_optn=1
+                          ;;
+                      x ) TRM_KILLPID_opts="${TRM_KILLPID_opts}x"
+                          TRM_optn=1
+                          ;;
+                     \? ) TRM_m1="Invalid Option: -`sed 's/^.*-- //' $TRM_err`"
+                          TRM_invalid_opt=1
+                          ;;
+                      * ) ;;
+                   esac
+                done
+                #----------------------------------------------------------#
+                # Shift to remaining arguments (arguments solve nothing :) #
+                #----------------------------------------------------------#
+                [ $TRM_optn -eq 1 ] &amp;&amp; shift `expr $OPTIND - 1`
+                [ ."$TRM_root" != . ] &amp;&amp; \rm -f $TRM_root* &gt; /dev/null 2&gt;&1
+
+                #----------------------------------------------------------------#
+                # Must reset this dog if this function is apt to be called again #
+                OPTIND=1  # (try and find this fact documented anywhere else).   #
+                #----------------------------------------------------------------#
+
+                TRM_usage="Usage: $TRM_name -MS PID PIDfile MaxTime [PSopts]"
+                if [ $# -lt 1 -o $TRM_invalid_opt -eq 1 ]; then
+                   : ${TRM_m1:="Insufficient args."}
+                   [ $TRM_opt_x -eq 1 ]                   \
+                     &amp;&amp; TRM_m2="$script_name terminated." \
+                     || TRM_m2="$TRM_name terminated."
+                   EMAIL_MSG "ERROR: (Function) $TRM_ID"                           \
+                     "${sp}$TRM_m1\n"                                              \
+                     "${sp}$TRM_usage\n"                                           \
+                     "${sp}         -M      = Notify of process termination"       \
+                     "${sp}                   (assassination) via e-mail."         \
+                     "${sp}         -S      = Use sudo.\n"                         \
+                     "${sp}         -T      = Test only--terminate nothing."       \
+                     "${sp}                   Passes -T option to KILL_PID."       \
+                     "${sp}         -x      = Exit if kill fails.\n"               \
+                     "${sp}         PID     = Required: Process ID of the process" \
+                     "${sp}                   we are to monitor and terminate if"  \
+                     "${sp}                   it exceeds our time limit."          \
+                     "${sp}         PIDfile = Used to communicate back to the"     \
+                     "${sp}                   caller regarding process completion" \
+                     "${sp}                   (normal completion or killed)."      \
+                     "${sp}         MaxTime = Maximum time process allowed (if a"  \
+                     "${sp}                   $max_proc_time is assigned AND if"   \
+                     "${sp}                   MaxTime argument is not supplied,"   \
+                     "${sp}                   we will use $max_proc_time, else we" \
+                     "${sp}                   warn the user and use $TRM_max_time" \
+                     "${sp}                   seconds as a failsafe default)."     \
+                     "${sp}         PSopts  = Specific 'ps' options.  We use"      \
+                     "${sp}                   These to see if the process is"      \
+                     "${sp}                   still running. If not supplied"      \
+                     "${sp}                   we use defaults based on OS."        \
+                     "${sp}$TRM_m2"
+                   if [ $TRM_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$TRM_pri" -t "$TRM_tag" \
+                        "ABORT: $TRM_ID $TRM_m1 $TRM_m2"
+                   fi
+                   $TRM_exit $failure
+                fi
+
+                #----------------------------------------------------#
+                # Validate PID (make sure it is an integer).         #
+                #----------------------------------------------------#
+                ISINT "$1"
+                if [ $? -ne 1 ]; then
+                   EMAIL_MSG "ERROR: $TRM_ID"                       \
+                     "${sp}$TRM_ID PID (\$1) argument not numeric!" \
+                     "${sp}$TRM_usage"                              \
+                     "${sp}$script_name terminated."
+                   EXIT 1
+                else
+                   TRM_target_pid=$1
+                   shift
+                fi
+
+                #----------------------------------------------------#
+                # We absolutely must have a file to hold our PID.    #
+                # We use it to pass whether or not the process       #
+                # completed normally or had to be killed.            #
+                #----------------------------------------------------#
+                TOUCH_EXIT_ERR $1 # Touch confirms we can access file.
+                TRM_pidfil="$1"
+                shift
+
+                #----------------------------------------------------#
+                # If the user doesn't supply this one, use default,  #
+                # and fuss at the user for not supplying it.         #
+                #----------------------------------------------------#
+                if [ ."$1" = . ]; then
+                   EMAIL_MSG "ERROR: $TRM_ID"                                     \
+                     "${sp}$TRM_ID Max Process time (seconds) argument missing!"  \
+                     "${sp}Using $TRM_max_time as a default, but fix it will'ya." \
+                     "${sp}$script_name continues."
+                   TRM_max_sss=$TRM_max_time
+                else
+                   ISINT $1
+                   if [ $? -ne 1 ]; then
+                      EMAIL_MSG "ERROR: $TRM_ID"                                \
+                        "${sp}$TRM_ID Max Process time argument non-numeric!"   \
+                        "${sp}Using $TRM_max_time instead, but fix it will'ya." \
+                        "${sp}$script_name continues."
+                      TRM_max_sss=$TRM_max_time
+                   else
+                      TRM_max_sss=$1
+                   fi
+                   shift
+                fi
+
+                [ ."$1" != . ] &amp;&amp; TRM_ps_opts="$1"
+
+              #--------------------------------------------------------------------#
+              TRM_PSA() # Nested/internal PS|Awk function.                         #
+              #--------------------------------------------------------------------#
+              { ps $TRM_ps_opts | $AWK -v pid=$1 -v sp="$sp" \
+                  'BEGIN {n=0}
+                   $1 == pid {
+                               gsub(/[\t ]+/, " ", $0)
+                               sub(/^[\t ]*/, sp,  $0)
+                               if ($0 !~ /&lt;defunct&gt;/)
+                               {
+                                 print
+                                 n++
+                               }
+                             }
+                   END {exit n}'
+              } # TRM_PSA()
+
+                #----------------------------------------------------------------#
+                #     Now wait for the dog to complete (or be assassinated).     #
+                #                                                                #
+                if [ ."$verbose" = ."1" ]; then # If verbose, show the process
+                   echo "`date '+%Y-%m-%d %T'`"            \
+                     "Waiting up to $TRM_max_sss seconds"  \
+                     "for pid $TRM_target_pid to complete." | $teelog
+
+                   TRM_PSA $TRM_target_pid | $teelog
+                fi
+
+                #------------------------------------------------------------#
+                # The following background task will terminate with extreme  #
+                # prejudice (-9) the process if, after sleeping, we see      #
+                # that the dog is still running.  We do this by first        #
+                # removing the file, $TRM_pidfil, then killing the entire    #
+                # background process as well.                                #
+                #                                                            #
+                (
+                   [ ."$verbose" = ."1" ] \
+                     &amp;&amp; echo "${sp}echo $TRM_target_pid &gt; $TRM_pidfil" | $teelog
+                        echo            $TRM_target_pid &gt; $TRM_pidfil
+                   #-------------------------------------------------------#
+                   # While-loop uses multiple short sleep processes so it  #
+                   # won't hang around long after the assassin process     #
+                   # itself is terminated.                                 #
+                   #-------------------------------------------------------#
+                   TRM_secs=0
+                   TRM_sleep=15
+                   while [ $TRM_secs -lt $TRM_max_sss ]
+                   do
+                      sleep $TRM_sleep
+                      TRM_secs=`expr $TRM_secs + $TRM_sleep`
+                      [ ! -f $TRM_pidfil ] &amp;&amp; exit # If file's gone
+                   done
+
+                   if [ -f $TRM_pidfil ]; then
+                      #------------------------------------------------#
+                      # If the process is running, show it.            #
+                      #------------------------------------------------#
+                      if [ ."$verbose" = ."1" ]; then
+                         TRM_PSA $TRM_target_pid | $teelog
+                      fi
+
+                      echo "${sp}Terminating $TRM_target_pid" \
+                        "(failed to complete in $TRM_max_sss seconds)." | $teelog
+
+                      if [ ."$verbose" = ."1" ]; then
+                         if [ ."$stderr" != . ]; then
+                            echo  "`date '+%Y-%m-%d %T'`" \
+                              "KILL_PID $TRM_KILLPID_opts $TRM_target_pid" &gt;&gt; $stderr
+                         else
+                            $ECHO "`date '+%Y-%m-%d %T'`" \
+                              "KILL_PID $TRM_KILLPID_opts $TRM_target_pid" | $teelog
+                         fi
+                      fi
+
+                      KILL_PID $TRM_KILLPID_opts $TRM_target_pid 2&gt;&1
+                    # echo "KILLED $TRM_target_pid" &gt;&gt; $TRM_pidfil
+                      sleep 5             # Time to receive termination response.
+                      echo "" | $teelog
+                      echo "" $TRM_pidfil # Trying to ensure the file is rehashed.
+
+                      TRM_subj="NOTICE: $script_name"
+                      TRM_msg="Terminating (timed out) process (pid=$TRM_target_pid)."
+                      TRM_msg="$TRM_msg\n${sp}$script_name continues."
+
+                      if [ $TRM_opt_M -eq 1 ]; then
+                         EMAIL_MSG "$TRM_subject" \
+                                   "$TRM_msg"
+                      else
+                         if [ ."$stderr" != . ]; then
+                            $ECHO "`date '+%Y-%m-%d %T'` $TRM_msg" &gt;&gt; $stderr
+                         fi
+                         $ECHO "`date '+%Y-%m-%d %T'` $TRM_msg" | $teelog
+                      fi
+                   fi # if [ -f $TRM_pidfil ]; then
+                ) 2&gt;&1 &
+
+                TRM_assassin_pid=$!
+
+                [ ."$verbose" = ."1" ] \
+                  &amp;&amp; echo "${sp}Assassin pid=$TRM_assassin_pid" | $teelog
+                #                                                            #
+                #------------------------------------------------------------#
+
+                #--------------------------------------------------------------#
+                # Now wait for target process to complete (or be assassinated).#
+                # If it completes in time we'll terminate the assassin.        #
+                #--------------------------------------------------------------#
+                [ ."$verbose" = ."1" ] \
+                  &amp;&amp; echo "`date '+%Y-%m-%d %T'` wait $TRM_target_pid" | $teelog
+                wait $TRM_target_pid  # Add NO pipes|redirection with 'wait'
+                TRM_target_status=$?
+
+                #------------------------------------------------------------#
+                # Save and pass along completed target's exit status.        #
+                #------------------------------------------------------------#
+                if [ ."$stderr" != . -a $TRM_target_status -ne 0 ]; then
+                   $ECHO "`date '+%Y-%m-%d %T'`"                   \
+                     "Target process ($TRM_target_pid) completion" \
+                     "status=$TRM_target_status." &gt;&gt; $stderr
+                else
+                   $ECHO "`date '+%Y-%m-%d %T'`"                   \
+                     "Target process ($TRM_target_pid) completion" \
+                     "status=$TRM_target_status." | $teelog
+                fi
+
+                #------------------------------------------------------------#
+                # If our assassin is still out there, then terminate him.    #
+                #------------------------------------------------------------#
+                TRM_PSA $TRM_assassin_pid # No $teelog
+                if [ $? -gt 0 ]; then
+                   #---------------------------------------------------------#
+                   # The "\c" below ensures thet any "$assassin_pid Killed"  #
+                   # response from kill command is captured on the same      #
+                   # line (no "| $teelog" in the echo command).              #
+                   #---------------------------------------------------------#
+                   $ECHO "`date '+%Y-%m-%d %T'`" \
+                     "kill -9 $TRM_assassin_pid (BG assassin process) -- \c"
+                      kill -9 $TRM_assassin_pid 2&gt;&1
+                   sleep 5 # Time to receive "killed" message.
+                   echo "" # Because of the \c in kill echo (above).
+                fi
+
+                TRM_death_certificate=`sed -n '/KILLED/p' $TRM_pidfil`
+
+                #------------------------------------------------------------#
+                # When the command completes (either normally or otherwise,  #
+                # remove $TRM_pidfil before returning to caller.             #
+                #------------------------------------------------------------#
+                [ ."$verbose" = ."1" ] &amp;&amp; echo "`date '+%Y-%m-%d %T'`" \
+                  "rm -f $TRM_pidfil"                             | $teelog
+                  \rm -f $TRM_pidfil 2&gt;&1 | sed "s/^/$stderr_sp/" | $teelog
+
+                [ ."$TRM_death_certificate" = . -a TRM_target_status -eq 0 ] \
+                  &amp;&amp; return 0 || return 1
+              } # "TRM_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: February 8, 2002                                        #
+              #                                                                      #
+              #  Program ID: terminate.sh                                            #
+              #                                                                      #
+              #       Usage: TERMINATE -MSTx PID PIDfile MaxTime [PSopts]            #
+              #                                                                      #
+              #                 -M      = Notify of process termination              #
+              #                           (assassination) via e-mail.                #
+              #                 -S      = Use sudo.                                  #
+              #                                                                      #
+              #                 -T      = Test only--terminate nothing.              #
+              #                           Passes -T option to KILL_PID.              #
+              #                 -x      = Exit if kill fails.                        #
+              #                                                                      #
+              #                 PID     = Required: Process ID of the process        #
+              #                           we are to monitor and terminate if         #
+              #                           it exceeds our time limit.                 #
+              #                 PIDfile = Used to communicate back to the            #
+              #                           caller regarding process completion        #
+              #                           (normal completion or killed).             #
+              #                 MaxTime = Maximum time process allowed (if a         #
+              #                           $max_proc_time is assigned AND if          #
+              #                           MaxTime argument is not supplied,          #
+              #                           we will use $max_proc_time, else we        #
+              #                           warn the user and use $TRM_max_time        #
+              #                           seconds as a failsafe default).            #
+              #                 PSopts  = Specific 'ps' options.  We use             #
+              #                           These to see if the process is             #
+              #                           still running. If not supplied             #
+              #                           we use defaults based on OS.               #
+              #                                                                      #
+              #     Purpose: Terminate any process by PID that runs longer than      #
+              #              the given time limit.  (Actual termination executed     #
+              #              by shell library function, KILL_PID.)                   #
+              #                                                                      #
+              # Description: ......................................................  #
+              #              ......................................................  #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "TRM_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EXIT, ISINT, KILL_PID, EMAIL_MSG, and TOUCH_EXIT_ERR    #
+              #              shell library functions.                                #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on show-stopper error, else      #
+              #              returns 1 when the target process is terminated, or     #
+              #              zero when if the process completes normally.            #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-09-17 Bob Orlando                                  #
+              #                 v1.16 * Add -T (test) option (calls KILL_PID         #
+              #                         with -T option).                             #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 2002-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

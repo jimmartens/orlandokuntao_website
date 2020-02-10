@@ -1,0 +1,267 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, defaults.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="defaults, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, defaults.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_defaults_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+                                  # SccsId[] = "%W% (USL <b>defaults script</b>) %G%"
+                                    #--------------------------------------------------------#
+                                    # Make sure we can find all OS commands.                 #
+                                    #--------------------------------------------------------#
+                                    PATH=/usr/bin:/sbin:/bin:/usr/sbin:/usr/ucb:$PATH; export PATH
+
+                                    #--------------------------------------------------------#
+                                    # Based on the operating system, point to the correct    #
+                                    # kill and awk programs.                                 #
+                                    #--------------------------------------------------------#
+                                    OZ=`uname -s 2&gt; /dev/null|tr '[A-Z]' '[a-z]' 2&gt; /dev/null`
+                                    bin_dir=/usr/bin    # Defaults
+                                    MAIL=$bin_dir/mailx #    ''
+
+                                    if   [ ."$OZ" = ."hp-ux" ]; then
+                                       AWK=awk
+                                    elif [ ."$OZ" = ."linux" ]; then
+                                       bin_dir=/bin
+                                       AWK=gawk
+                                       MAIL=$bin_dir/mail
+                                    elif [ ."$OZ" = ."sunos" ]; then
+                                       AWK=nawk
+                                    else # Unknown OS, see if there's any kind'a Awk available.
+                                      if   [ -f $bin_dir/gawk ]; then AWK=gawk
+                                      elif [ -f $bin_dir/nawk ]; then AWK=nawk
+                                      elif [ -f $bin_dir/awk  ]; then AWK=awk
+                                      else
+                                         echo "Unable to locate [gn]awk program! $0 terminating." 1&gt;&2
+                                         EXIT 1
+                                      fi
+                                    fi
+
+                                    KILL=$bin_dir/kill
+
+                                    #--------------------------------------------#
+                                    # Assign $LOGNAME and $USER (if unassigned). #
+                                    #--------------------------------------------#
+                                    if [ .${USER} = . ]; then      # More likely.
+                                       if [ .${LOGNAME} != . ]; then
+                                          USER=$LOGNAME; export USER
+                                       fi
+                                    elif [ .${LOGNAME} = . ]; then # Less likely.
+                                       if [ .${USER} != . ]; then
+                                          LOGNAME=$USER; export LOGNAME
+                                       fi
+                                    else
+                                       : ${LOGNAME:=`id|sed 's/^.*uid=[0-9]*(\(.*\)) gid=.*/\1/'`}
+                                       : ${USER:=$LOGNAME} # Failsafe
+                                    fi
+
+
+                                    : ${id_num=`id|sed 's/^.*uid=\([0-9]*\)(.*/\1/'`}
+                                  # : ${id_hex=`echo "obase=16;$id_num" | /usr/bin/bc`}
+                                    : ${id_hex=`echo "obase=16;$id_num"|bc` || `$PERL -e 'BEGIN {printf("%X\n", $id_num;}'`}
+                                  # : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$" | /usr/bin/bc`} # Hex value
+                                  # : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc 2&gt; /dev/null || $PERL -e 'BEGIN { printf("%X\n", 061006125358+$$ }'`}
+                                  # : ${Xtimestamp:=`echo "obase=16;061006125358+$$"|bc 2&gt; /dev/null || $PERL -e 'BEGIN { printf("%X\n", 061006125358+$$ }'`}
+                                    : ${script_name:=`basename $0`}
+                                    : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                                    : ${true:=1}
+                                    : ${false:=0}
+                                    : ${success:=0}
+                                    : ${failure:=1}
+                                    : ${yes:=1}
+                                    : ${no:=0}
+
+                                    #--------------#
+                                    # Time stamps  #
+                                    #--------------#
+                                    : ${ccyymmddhhmiss_D_R_w:=`date '+%Y''%m%d%H''%M''%S %D %R %w %a'`}
+                                    : ${ccyymmddhhmiss:=`echo "$ccyymmddhhmiss_D_R_w" | cut -c1-14`}
+                                    : ${yyyymmddhhmiss:=$ccyymmddhhmiss}
+                                    : ${day_of_week=`    echo "$ccyymmddhhmiss_D_R_w" | cut -d' ' -f4`}
+                                    : ${www=`            echo "$ccyymmddhhmiss_D_R_w" | cut -d' ' -f5`}
+                                    : ${yymmddhhmiss:=`  echo  $ccyymmddhhmiss        | cut -c3-14`}
+                                    : ${ccyymmdd:=`      echo  $ccyymmddhhmiss        | cut -c1-8`}
+                                    : ${yyyymmdd:=$ccyymmdd}
+                                    : ${yyyy:=`          echo  $ccyymmddhhmiss        | cut -c1-4`}
+                                    : ${yymmdd:=`        echo  $ccyymmddhhmiss        | cut -c3-8`}
+                                    : ${hhmiss:=`        echo  $ccyymmddhhmiss        | cut -c9-14`}
+                                    : ${yyyymmddhhmiss_pid:=$yyyymmddhhmiss"_"$$} # For unique fileids
+                                    : ${yymmddhhmiss_pid:=$yymmddhhmiss"_"$$}     # For unique fileids
+                                    #------------------------------------------------------------------#
+                                    # Xtimestamp is a hex representation of the yymmddhhmiss+$$ (PID)  #
+                                    # that is used for unique fileid generation (it's only half as     #
+                                    # long as the typical $yymmddhhmiss_pid value).                    #
+                                    #------------------------------------------------------------------#
+                                    : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`} # Hex value
+                                    : ${uniqID:=$Xtimestamp"_"$id_hex}
+
+                                    : ${AZaz09:="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"}
+                                    #--------------#
+                                    # Directories  #
+                                    #--------------#
+                                    : ${working_dir:=`pwd`}
+                                    : ${tmp:=/var/tmp}
+
+                                    #------------------------------------------------------------------#
+                                    # Files/logs:  As these are defaults, we recommend the user        #
+                                    # reassign them in his program for proper cleanup. etc.            #
+                                    # ---------------------------------------------------------------- #
+                                    # If unique work file names belonging to simultaneous instances    #
+                                    # is critical, you can use the following commented out work file   #
+                                    # default variable assignment examples (stdout, stderr, tmpwrk,    #
+                                    # etc.) to place the unique timestamp/PID portion of the filename  #
+                                    # first.  This makes cleanup of these files more difficult because #
+                                    # the current process cannot cleanup files left behind from        #
+                                    # previous runs.                                                   #
+                                    #                                                                  #
+                                  # : ${stdout_root:=$tmp/$uniqID"_s1_"}
+                                  # : ${stdout:=${stdout_root}$name_root}
+                                  #
+                                  # : ${stderr_root:=$tmp/$uniqID"_s2_"}
+                                  # : ${stderr:=${stderr_root}$name_root}
+                                  #
+                                  # : ${tmpwrk_root:=$tmp/$uniqID"_tw_"}
+                                  # : ${tmpwrk:=${tmpwrk_root}$name_root}
+                                  #
+                                  # : ${tmplog_root:=$tmp/$uniqID"_tl_"}
+                                  # : ${tmplog:=${tmplog_root}$name_root}
+                                  # : ${teetmp:="tee -ai $tmplog"}
+                                  #
+                                  # : ${mailmsg_root:=$tmp/$uniqID"_m_"}    # EMAIL_MSG
+                                  # : ${mailmsg:=${mailmsg_root}$name_root} # uses this file.
+                                  # : ${teemail:="tee -ai $mailmsg"}
+                                    #------------------------------------------------------------------#
+
+                                    : ${stdout_root:=$tmp/$name_root"_s1_"$id_hex"."}
+                                    : ${stdout:=${stdout_root}$Xtimestamp}
+
+                                    : ${stderr_root:=$tmp/$name_root"_s2_"$id_hex"."}
+                                    : ${stderr:=${stderr_root}$Xtimestamp}
+
+                                    : ${tmpwrk_root:=$tmp/$name_root"_tw_"$id_hex"."}
+                                    : ${tmpwrk:=${tmpwrk_root}$Xtimestamp}
+
+                                    : ${tmplog_root:=$tmp/$name_root"_tl_"$id_hex"."}
+                                    : ${tmplog:=${tmplog_root}$Xtimestamp}
+                                  # : ${teetmp:="tee -ai $tmplog"}
+                                    : ${teetmp:="cat"}
+
+                                    : ${mailmsg_root:=$tmp/$name_root"_m_"$id_hex"."} # EMAIL_MSG
+                                    : ${mailmsg:=${mailmsg_root}$Xtimestamp}          # uses this file.
+                                  # : ${teemail:="tee -ai $mailmsg"}
+                                    : ${teemail:="cat"}
+
+                                    : ${log_root=$tmp/$name_root"_log_"$uniqID}
+                                    : ${log=$log_root"."$yyyymmdd}
+                                  # : ${teelog:="tee -ai $log"}
+                                    : ${teelog:="cat"}
+
+                                    #------------------------#
+                                    # Notification default   #
+                                    #------------------------#
+                                    : ${notify:="$LOGNAME@`uname -n`"}
+
+                                    #---------------------------------------------#
+                                    # For "yyyy/mm/dd hh:mm:ss " hanging indents. #
+                                    #     "....'....1....'....2"                  #
+                                    #---------------------------------------------#
+                                    : ${sp:="                    "}
+                                    : ${stdout_sp:="             STDOUT="}
+                                    : ${stderr_sp:="             STDERR="}
+
+                                    #--------------#
+                                    # Et al        #
+                                    #--------------#
+                                    : ${logger_p="user.err"}
+                                    : ${logger_t="$LOGNAME[$$]"}
+                                    : ${syslog_emergency="-p user.emerg -t $USER[$$]_EMER"}
+                                    : ${syslog_critical="-p user.crit -t $USER[$$]_CRIT"}
+                                    : ${syslog_warning="-p user.warn -t $USER[$$]_WARN"}
+                                    : ${syslog_alert="-p user.alert -t $USER[$$]_ALER"}
+                                    : ${syslog_error="-p user.err -t $USER[$$]_UERR"}
+                                    : ${help_wanted=0}
+                                    : ${invalid_opt=0}
+                                    : ${dashes:="------------------------------------------------------"}
+                                    : ${ddashes:="======================================================"}
+
+                                    #----------------------------------------#
+                                    # Our last hope that these are assigned. #
+                                    #----------------------------------------#
+                                    if [ .${SHLIB} = . ]; then
+                                       SHLIB=/usr/local/scripts; export SHLIB
+                                    fi
+
+                                    if [ .${SHBIN} = . ]; then
+                                       SHBIN=/usr/local/bin;     export SHBIN
+                                    fi
+
+                                  #======================================================================#
+                                  #                       <b>D O C U M E N T A T I O N</b>                      #
+                                  #======================================================================#
+                                  #                                                                      #
+                                  #      Author: Bob Orlando                                             #
+                                  #                                                                      #
+                                  #        Date: December 18, 1996                                       #
+                                  #                                                                      #
+                                  #  Program ID: defaults.sh                                             #
+                                  #                                                                      #
+                                  #       Usage: . ./$SHLIB/defaults.sh &lt;no options or arguments&gt;        #
+                                  #                                                                      #
+                                  #     Purpose: Provide default assignments to critical shell library   #
+                                  #              variables that are unassigned by the user.              #
+                                  #                                                                      #
+                                  #     Globals: $SHLIB and $SHBIN are assigned only if they are         #
+                                  #              undefined or unassigned.                                #
+                                  #                                                                      #
+                                  # Exit_status: Nothing.                                                #
+                                  #                                                                      #
+                                  #       Notes: .....................................................   #
+                                  #              .....................................................   #
+                                  #                                                                      #
+                                  #    Modified: 2004-03-31 Bob Orlando                                  #
+                                  #                 v1.17 * Expand OS testing to include HP-UX.          #
+                                  #                                                                      #
+                                  #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

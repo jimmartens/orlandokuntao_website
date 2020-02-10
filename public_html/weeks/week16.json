@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Shell drill (palm)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Langka 5B (Smsh-n'step)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"PU Armlock Defenses",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Defensive back-kick (5 min warmup crossover back)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"BL Kick Combo #3",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Spinning back-fist",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"BL Inside Elbow",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"Obverse front-kick groin (Kickee in R/lead)",
+          "starttime":"7:00" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Langka 4B",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Defensive back-kick",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Spinning back-fist",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"PU Armlock Defenses",
+          "starttime":"10:45" 
+        },
+        {
+          "name":"Shell drill (palm)",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"Langka 5B (Smsh-n'step)",
+          "starttime":"11:05" 
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"11:15" 
+        }, 
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, get_next_yyyymmddhh.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="get_next_yyyymmddhh.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, get_next_yyyymmddhh.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_get_next_yyyymmddhh_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              GNY_name="<b>GET_NEXT_YYYYMMDDHH</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$GNY_name\(\)\{$'`" != . ] &amp;&amp; GNY_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$GNY_name'[=\(]?/'`" != . ] &amp;&amp; GNY_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$GNY_name'[=\(]?/'`" != . ] &amp;&amp; GNY_loaded=1
+                 fi
+              fi
+              if [ 0${GNY_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>GET_NEXT_YYYYMMDDHH</b>() # Function documentation located at bottom.      #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+                if [ .${SHBIN} = . ]; then SHBIN=/usr/local/bin;     export SHBIN; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                GNY_ID="$script_name($GNY_name)"
+
+                #--------------------------------------------------------------------#
+                # Must have either dateplus (compiled C executable) or dateplus.awk. #
+                #--------------------------------------------------------------------#
+                if [ ".$dateplus" = "." ]; then
+                   if [ -x $SHBIN/dateplus ]; then
+                      dateplus=$SHBIN/dateplus
+                   elif [ -f $SHLIB/dateplus.awk ]; then
+                      dateplus="$AWK -f $SHLIB/dateplus.awk -- "
+                   else
+                      EMAIL_MSG "ERROR: $GNY_ID"                          \
+                        "Unable to locate $SHBIN/dateplus (C executable)" \
+                        "${sp}or $SHLIB/dateplus(.awk)* !"                \
+                        "${sp}$GNY_ID terminated."
+                      return 1
+                   fi
+                fi
+
+                GNY_yyyymmddhh=`$AWK -v sp="$sp"             \
+                                     -v dateplus="$dateplus" \
+                                     -v GNY_name=$GNY_name   \
+                  'BEGIN \
+                   {
+                     if (ARGV[1] == "")
+                       exit_usage("Insufficient arguments!")
+                     if (length(ARGV[1]) != 10)
+                       exit_usage("yyyymmddhh argument not 10 digits!")
+                     if (ARGV[1] !~ /^[0-9]+$/)
+                       exit_usage("yyyymmddhh argument not numeric!")
+
+                     yyyymmdd = substr(ARGV[1],1,8)
+                     yyyy     = substr(ARGV[1],1,4)
+                     mm       = substr(ARGV[1],5,2)
+                     dd       = substr(ARGV[1],7,2)
+                     hh       = substr(ARGV[1],9,2)
+
+                     #-----------------------------------------------#
+                     # Exit with fail status on invalid hour.        #
+                     #-----------------------------------------------#
+                     if (hh &lt; "00" || hh &gt; "23")
+                       exit_usage("Invalid hour ("hh")!")
+
+                     #-----------------------------------------------#
+                     # Set up month_table array for error reporting. #
+                     #-----------------------------------------------#
+                     split("January February March"     \
+                           "April   May      June "     \
+                           "July    August   September" \
+                           "October November December", month_table)
+
+                     #-----------------------------------------------#
+                     # Rudimentary validation of mm and dd           #
+                     #-----------------------------------------------#
+                     mm+=0
+                     if (mm==1||mm==3||mm==5||mm==7||mm==8||mm==10||mm==12)
+                       mm_days=31
+                     else if (mm==4||mm==6||mm==9||mm==11)
+                       mm_days=30;
+                     else if (mm==2)
+                       mm_days=((yyyy%4==0&amp;&amp;yyyy%100!=0)||(yyyy%400==0))?29:28
+                     else
+                       exit_usage(mm" is an invalid month number!")
+
+                     if (dd &gt; mm_days)
+                       exit_usage("Day "dd" invalid for "month_table[mm]", "yyyy"!")
+
+                     #-----------------------------------------------#
+                     # If moving from 23 to 00, get the next day.    #
+                     #-----------------------------------------------#
+                     if (hh == "23")
+                     {
+                       hh = "00"
+                       dateplus" +1 "yyyymmdd | getline yyyymmdd
+                       close(dateplus" +1 "yyyymmdd)
+                     }
+                     else
+                       hh = sprintf("%02d", hh + 1)
+
+                     print yyyymmdd""hh
+                     exit 0
+                   } # E.O.BEGIN
+
+                   #-------------------------------------------------------#
+                   function exit_usage(MSG)
+                   #-------------------------------------------------------#
+                   {
+                     print sp""MSG"\n"sp"Usage: "GNY_name" yyyymmddhh."
+                     exit 1
+                   }' "$1"`
+                GNY_status=$?
+
+                if [ $GNY_status -eq 0 ]; then
+                   echo "$GNY_yyyymmddhh"
+                else
+                   EMAIL_MSG "ERROR: $GNY_ID" \
+                     "$GNY_yyyymmddhh"
+                fi
+
+                return $GNY_status
+              } # "GNY_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: get_next_yyyymmddhh.sh                                  #
+              #                                                                      #
+              #       Usage: GET_NEXT_YYYYMMDDHH yyyymmddhh                          #
+              #                                                                      #
+              #     Purpose: Get the date and hour that follows the date and hour    #
+              #              (yyyymmddhh) passed to us.                              #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "GNY_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Failure (1) for severe error (e.g. user supplies        #
+              #              invalid arguments).  Otherwise returns success (0)      #
+              #              echoing the hour that follows our yyyymmddhh.           #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and dateplus as needed.                       #
+              #                                                                      #
+              #       Notes: This function is probably best used like this:          #
+              #                                                                      #
+              #              next_yyyymmddhh=`GET_NEXT_YYYYMMDDHH 1997012517`        #
+              #              status=$?                                               #
+              #              if [ $status -eq $success ]; then                       #
+              #                 next_hh=`echo $next_yyyymmddhh | cut -c9-10`         #
+              #                 echo "`date '+%Y-%m-%d %T'`"             \           #
+              #                   "The next hour will be ............ |" \           #
+              #                   "\b`printf '%20s' $next_hh\``|"                    #
+              #              else                                                    #
+              #                 echo "`date '+%Y-%m-%d %T'`" \                       #
+              #                   "Problem getting next hour!  Status=$status"       #
+              #              fi                                                      #
+              #                                                                      #
+              #              Despite the fact that this function attempts to notify  #
+              #              the user on failure, used as shown (assigned to a       #
+              #              variable via background operation [backquotes]), the    #
+              #              notification (during interactive operation at least)    #
+              #              is lost and the output less than desired.  For this     #
+              #              reason, you are always best to test the function's      #
+              #              exit status and proceed accordingly.                    #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.9  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.8  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

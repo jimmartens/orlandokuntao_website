@@ -1,0 +1,126 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Jab front-kick left (external & internal)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"OR KTS 7-cnt",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"PU 7-Palms",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"Spinning back-fist",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Offensive back-kick",
+          "starttime":"6:00"
+        },
+        {
+          "name":"BR Sombrada Screw (R)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"BR Sombrada Screw (S)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"S.C.J.J. (peeling)",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"BL Knife - Chicken Wing",
+          "starttime":"6:55" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Jab front-kick left",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"OR KTS 7-cnt",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"PU 7-Palms",
+          "starttime":"10:45" 
+        },
+        {
+          "name":"Spinning back-fist",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"BL Knife--Chicken Wing",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

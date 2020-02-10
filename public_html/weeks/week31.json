@@ -1,0 +1,130 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"OR Kilap 2 (left)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"OR Kilap 2 (the switch)",
+          "starttime":"6:10"          
+        },
+        {
+          "name":"Shell drill (palm)",
+          "starttime":"6:20"          
+        },
+        {
+          "name":"OR Kilap 2 application",
+          "starttime":"6:30"          
+        },
+        {
+          "name":"PU Kilap 3 (SHBWC)",
+          "starttime":"6:45"          
+        },
+        {
+          "name":"PU Kilap 3 application",
+          "starttime":"7:00"          
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"PU Kilap 4 (block-up)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"R/eye-flick & L/horiz-punch to Opponet's groin",
+          "starttime":"7:15"          
+        },
+        {
+          "name":"PU Kilap 4 app's",
+          "starttime":"6:30"          
+        },
+        {
+          "name":"BL Kilap 6 (Switch)",
+          "starttime":"6:45"          
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Baseball bat defense thumbs to eyes",
+          "starttime":"10:00"          
+        },
+        {
+          "name":"Kicks to legs",
+          "starttime":"10:15"          
+        },
+        {
+          "name":"Shell drill (palm)",
+          "starttime":"10:30"          
+        },
+        {
+          "name":"OR Kilap 2 (left)",
+          "starttime":"10:35"          
+        },
+        {
+          "name":"PU Kilap 3  (SHBWC)",
+          "starttime":"10:45"          
+        },
+        {
+          "name":"R/eye-flick & L/horiz-punch to opp's groin",
+          "starttime":"10:55"          
+        },
+        {
+          "name":"PU Kilap 4 ",
+          "starttime":"11:10"          
+        },
+        {
+          "name":"BL Kilap 6 (left)",
+          "starttime":"11:20"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

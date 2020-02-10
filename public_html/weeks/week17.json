@@ -1,0 +1,114 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Kicking Practice",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"BR Sombrada Screw (S)",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"BR Sombrada Screw (R)",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"GR In blk, L/palm body",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Offensive back-kick",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"OR Kilap 1 (Switch)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"BR Slide-hammer",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"Slap-down-n'blitz",
+          "starttime":"6:50" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Sombrada Hand",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Kicking Practice",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"BR Sombrada Screw (S)",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"Offensive back-kick",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"Slap-down-n'blitz",
+          "starttime":"11:05" 
+        },
+        {
+          "name":"BR Slide-hammer",
+          "starttime":"11:15" 
+        }, 
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Y-right, L/kick",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"OR KTS (Up-blk-n-ride)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Spinning back-fist",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"PU L/Grabs lapel B (pull - uppercut)",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"Zone back-hand",
+          "starttime":"6:55" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Patada voltear",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Lanka 1A (grind,cinch-n'shuffle)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Back-hand/rev. punch",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"BL Bear hug B (head-butt)",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"7:00" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"BR Kilap 10",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Y-right, L/kick",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Patada voltear",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"Spinning back-fist",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"Zone back-hand",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Back-hand/reverse punch",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"11:20"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

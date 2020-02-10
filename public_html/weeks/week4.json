@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Rocky",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Langka 2A (Grnd-n'step)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"OR KTS 5-cnt (5-cnt used right here)",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"BB Club: Right swings A",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"Obverse front-kick groin (Kickee in R/lead)",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Shell drill (hacksaw)",
+          "starttime":"6:00"
+        },
+        {
+          "name":"OR Kilap 2 (left)",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"BB Club: Right swings B",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"OR R/grabs lapel B (Pull)",
+          "starttime":"6:55" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"BL Kilap 6",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Shell (hacksaw)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"BB Club: Right swings B",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"Langka 2A (Grnd-n'step)",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"OR Kilap 2 (left)",
+          "starttime":"11:05" 
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

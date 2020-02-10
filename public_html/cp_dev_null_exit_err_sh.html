@@ -1,0 +1,297 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, cp_dev_null_exit_err.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="cp_dev_null_exit_err, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, cp_dev_null_exit_err.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_cp_dev_null_exit_err_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CPD_name="<b>CP_DEV_NULL_EXIT_ERR</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CPD_name\(\)\{$'`" != . ] &amp;&amp; CPD_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CPD_name'[=\(]?/'`" != . ] &amp;&amp; CPD_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CPD_name'[=\(]?/'`" != . ] &amp;&amp; CPD_loaded=1
+                 fi
+              fi
+              if [ 0${CPD_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CP_DEV_NULL_EXIT_ERR</b>() # Function documentation located at bottom.     #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${dashes:="------------------------------------------------------"}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                CPD_ID="$script_name($CPD_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                CPD_options="lptv"
+                CPD_opt_l=0
+                CPD_opt_p=0
+                CPD_opt_t=0
+                CPD_opt_v=0
+                CPD_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                CPD_tag="$logger_t" # within library defaults.sh.
+                CPD_opts=""
+                CPD_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   CPD_n=`expr "$1". : '-.*'`
+                   if [ $CPD_n -gt 0 ]; then
+                      if [ $CPD_n -eq 2 ]; then
+                         CPD_optargs="$1"
+                      else
+                         CPD_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for CPD_optarg in $CPD_optargs
+                      do
+                         case $CPD_optarg in
+                           -l ) CPD_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $CPD_opt_l -eq 1 -a $CPD_opt_p -eq 0 ]; then
+                                   CPD_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$CPD_options']'` != "--" ]; then
+                                      CPD_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   CPD_opts="$CPD_opts $CPD_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $CPD_opt_l -eq 1 -a $CPD_opt_t -eq 0 ]; then
+                                   CPD_opt_t=1
+                                   CPD_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$CPD_options']'` != "--" ]; then
+                                      CPD_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   CPD_opts="$CPD_opts $CPD_optarg"
+                                fi
+                                ;;
+                           -v ) CPD_opt_v=1
+                                ;;
+                         esac
+                      done # for CPD_optarg in $CPD_optargs
+                   else
+                      [ ."$CPD_args" != . ]        \
+                        &amp;&amp; CPD_args="$CPD_args|$1" \
+                        || CPD_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                CPD_opts=`expr "$CPD_opts" : ' *\(.*\)'` # Strip leading blanks
+                CPD_args=`expr "$CPD_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #----------------------------------------------------------------#
+                # If we have sufficient arguments, then attempt our cp command.  #
+                #----------------------------------------------------------------#
+                CPD_status=0
+                CPD_cmd="cp $CPD_opts /dev/null"
+
+                if [ ."$CPD_args" != . ]; then
+                   echo "$CPD_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read CPD_file
+                      do
+                         [ $verbose -eq 1 -o $CPD_opt_v -eq 1 ] \
+                           &amp;&amp; echo "`date '+%Y-%m-%d %T'` $CPD_cmd \"$CPD_file\"" \
+                             | $teelog
+                         CPD_stderr=`$CPD_cmd "$CPD_file" 2&gt;&1`
+                         CPD_status=$?
+                         [ $CPD_status -eq 0 ] &amp;&amp; continue
+
+                         #-----------------------------------------#
+                         # Reaching here means something is amiss. #
+                         #-----------------------------------------#
+                         CPD_m1="'$CPD_cmd \"$CPD_file\"'"
+                         CPD_m2="ERROR=$CPD_stderr."
+                         CPD_m3="$script_name terminated."
+                         CPD_m4=`ls -al "$CPD_file"|sed "s/^/$sp/"`
+                         EMAIL_MSG "FATAL ERROR: $CPD_ID"              \
+                           "${sp}$CPD_m1"                              \
+                           "${sp}$CPD_m2"                              \
+                           "${sp}$CPD_m3  File list (in any) follows:" \
+                           "${sp}$dashes"                              \
+                           "$CPD_m4"
+
+                         if [ $CPD_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                            WRITE_ERR_TO_SYSLOGS -p "$CPD_pri" -t "$CPD_tag" \
+                              "ABORT: $CPD_ID $CPD_m1 $CPD_m2 $CPD_m3"
+                         fi
+                         EXIT 1
+                      done # while read CPD_file
+                   return 0
+                fi # if [ ."$CPD_args" != . ]; then
+
+                #--------------------------------------------------------------------#
+                # Reaching this point means we have an insufficient arguments error. #
+                #--------------------------------------------------------------------#
+                CPD_m1="Insufficient args."
+                CPD_m2="$script_name terminated."
+                EMAIL_MSG "FATAL ERROR (Function): $CPD_ID"                \
+                  "${sp}$CPD_m1\n"                                         \
+                  "${sp}Usage: $CPD_name -l -p priority -t tag -v"         \
+                  "${sp}                      fileid [...]\n"              \
+                  "${sp}                 -l = Notify via logger command"   \
+                  "${sp}                      (default is false)"          \
+                  "${sp}                 -p = Logger priority string"      \
+                  "${sp}                      (default is 'user.err')"     \
+                  "${sp}                 -t = Logger tag string"           \
+                  "${sp}                      (default is '$LOGNAME[$$]')" \
+                  "${sp}                 -v = Verbose\n"                   \
+                  "${sp}Option notes: Option (-l) MUST precede -p and -t." \
+                  "${sp}$CPD_m2"
+                if [ $CPD_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$CPD_pri" -t "$CPD_tag" \
+                     "ABORT: $CPD_ID $CPD_m1 $CPD_m2"
+                fi
+
+                EXIT 1
+              } # "CPD_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: cp_dev_null_exit_err.sh                                 #
+              #                                                                      #
+              #       Usage: CP_DEV_NULL_EXIT_ERR -l -p priority -t tag -v \         #
+              #                                         fileid ...                   #
+              #                                                                      #
+              #                          -l = Notify via logger command              #
+              #                               (default is false)                     #
+              #                          -p = Logger priority string                 #
+              #                               (default is "user.err")                #
+              #                          -t = Logger tag string                      #
+              #                               (default is "$LOGNAME[$$]")            #
+              #                          -v = Verbose                                #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede other options.   #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Copy /dev/null to one or more files with error          #
+              #              checking and reporting via email and logger, and        #
+              #              exiting on error.                                       #
+              #                                                                      #
+              # Description: Copy /dev/null to one or more files.  The process       #
+              #              exits on error with notification.  Notification is      #
+              #              always via the EMAIL_MSG library function.  Optionally  #
+              #              (-l), the user may have the error logged in syslogs     #
+              #              (/var/adm/messages) via the logger command.  Logger's   #
+              #              -p and -t options and option arguments also may be      #
+              #              provided (both have defaults if omitted).               #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CPD_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error copying /dev/null to a file is a potential    #
+              #              show stopper (indicating, possibly, a filesystem        #
+              #              error).  Else, returns 0.                               #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              #       Notes: DO NOT use this routine to chgrp $log and $mailmsg.     #
+              #              Use CP_DEV_NULL_EXIT_ERR_NOMAIL instead.  This is       #
+              #              because this function calls EMAIL_MSG function (a       #
+              #              function which uses both $log and $mailmsg to report    #
+              #              problems).  Any problems changing $log and $mailmsg,    #
+              #              therefore, cannot be reported by EMAIL_MSG using mailx. #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.16 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.15 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

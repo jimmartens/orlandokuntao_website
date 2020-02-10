@@ -1,0 +1,315 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, chown_exit_err.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="chown_exit_err, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, chown_exit_err.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_chown_exit_err_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CO_name="<b>CHOWN_EXIT_ERR</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CO_name\(\)\{$'`" != . ] &amp;&amp; CO_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CO_name'[=\(]?/'`" != . ] &amp;&amp; CO_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CO_name'[=\(]?/'`" != . ] &amp;&amp; CO_loaded=1
+                 fi
+              fi
+              if [ 0${CO_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CHOWN_EXIT_ERR</b>() # Function documentation located at bottom.           #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${dashes:="------------------------------------------------------"}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                CO_ID="$script_name($CO_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                CO_options="lptv"
+                CO_opt_l=0
+                CO_opt_p=0
+                CO_opt_t=0
+                CO_opt_v=0
+                CO_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                CO_tag="$logger_t" # within library defaults.sh.
+                CO_opts=""
+                CO_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   CO_n=`expr "$1". : '-.*'`
+                   if [ $CO_n -gt 0 ]; then
+                      if [ $CO_n -eq 2 ]; then
+                         CO_optargs="$1"
+                      else
+                         CO_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for CO_optarg in $CO_optargs
+                      do
+                         case $CO_optarg in
+                           -l ) CO_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $CO_opt_l -eq 1 -a $CO_opt_p -eq 0 ]; then
+                                   CO_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$CO_options']'` != "--" ]; then
+                                      CO_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   CO_opts="$CO_opts $CO_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $CO_opt_l -eq 1 -a $CO_opt_t -eq 0 ]; then
+                                   CO_opt_t=1
+                                   CO_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$CO_options']'` != "--" ]; then
+                                      CO_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   CO_opts="$CO_opts $CO_optarg"
+                                fi
+                                ;;
+                           -v ) CO_opt_v=1
+                                ;;
+                         esac
+                      done # for CO_optarg in $CO_optargs
+                   else
+                      [ ."$CO_args" != . ]        \
+                        &amp;&amp; CO_args="$CO_args|$1" \
+                        || CO_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                CO_opts=`expr "$CO_opts" : ' *\(.*\)'` # Strip leading blanks
+                CO_args=`expr "$CO_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #----------------------------------------------------------#
+                # If we still have args, then the first MUST be the owner. #
+                #----------------------------------------------------------#
+                if [ ."$CO_args" != . ]; then
+                   CO_owner=""
+                   echo "$CO_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read CO_file
+                      do
+                         if [ ."$CO_owner" = . ]; then
+                            CO_owner="$CO_file" # 1st arg MUST be the owner.
+                            CO_cmd="chown $CO_opts $CO_owner"
+                            continue            # Got it, so iterate our for-loop.
+                         fi
+
+                         CO_status=0
+                         if [ ! \( -f "$CO_file" -o -d "$CO_file" \) ]; then
+                            CO_m1="Skipping $CO_cmd '$CO_file'."
+                            CO_m2="'$CO_file' not found!"
+                            CO_m3="$script_name continues."
+                            EMAIL_MSG "WARNING: $CO_ID"     \
+                              "${sp}$CO_m1"                 \
+                              "${sp}$CO_m2"                 \
+                              "${sp}$CO_m3"
+                         elif [ -w "$CO_file" ]; then # If writable, then do ...
+                            [ $verbose -eq 1 -o $CO_opt_v -eq 1 ] \
+                              &amp;&amp; echo "`date '+%Y-%m-%d %T'` $CO_cmd \"$CO_file\"" \
+                                | $teelog
+                            CO_stderr=`$CO_cmd "$CO_file" 2&gt;&1`
+                            CO_status=$?
+                            if [ $CO_status -ne 0 ]; then
+                               CO_m1="'$CO_cmd \"$CO_file\"'"
+                               CO_m2="ERROR=$CO_stderr."
+                               CO_m3="$script_name terminated."
+                               CO_m4=`ls -al "$CO_file"|sed "s/^/$sp/"`
+                               EMAIL_MSG "FATAL ERROR: $CO_ID"              \
+                                 "${sp}$CO_m1"                              \
+                                 "${sp}$CO_m2"                              \
+                                 "${sp}$CO_m3  File list (if any) follows:" \
+                                 "${sp}$dashes"                             \
+                                 "$CO_m4"
+
+                               if [ $CO_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                                  WRITE_ERR_TO_SYSLOGS -p "$CO_pri" -t "$CO_tag" \
+                                    "ABORT: $CO_ID $CO_m1 $CO_m2 $CO_m3"
+                               fi
+                               EXIT 1
+                            fi # if [ $CO_status -ne 0 ]; then
+                         else
+                            CO_m1="Skipping '$CO_cmd \"$CO_file\"'"
+                            CO_m2="$CO_file not writable!"
+                            CO_m3="$script_name continues."
+                            EMAIL_MSG "WARNING: $CO_ID" \
+                              "${sp}$CO_m1"             \
+                              "${sp}$CO_m2"             \
+                              "${sp}$CO_m3"
+                         fi # if [ -w $CO_file ]; then, else
+                      done # while read CO_file
+                   return 0
+                fi # if [ ."$CO_args" != . ]; then
+
+                #--------------------------------------------------------------------#
+                # Reaching this point with zero status means insufficient args error.#
+                #--------------------------------------------------------------------#
+                CO_m1="Insufficient args."
+                CO_m2="$script_name terminated."
+                EMAIL_MSG "FATAL ERROR (Function): $CO_ID"                 \
+                  "${sp}$CO_m1.\n"                                         \
+                  "${sp}Usage: $CO_name -l -p priority -t tag -v"          \
+                  "${sp}                     owner fileid [...]\n"         \
+                  "${sp}                -l = Notify via logger command"    \
+                  "${sp}                     (default is false)"           \
+                  "${sp}                -p = Logger priority string"       \
+                  "${sp}                     (default is 'user.err')"      \
+                  "${sp}                -t = Logger tag string"            \
+                  "${sp}                     (default is '$LOGNAME[$$]')"  \
+                  "${sp}                -v = Verbose\n"                    \
+                  "${sp}Option notes: Option (-l) MUST precede -p and -t." \
+                  "${sp}$CO_m2"
+                if [ $CO_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$CO_pri" -t "$CO_tag" \
+                     "ABORT: $CO_ID $CO_m1 $CO_m2"
+                fi
+
+                EXIT 1
+              } # "CO_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: chown_exit_err.sh                                       #
+              #                                                                      #
+              #       Usage: CHOWN_EXIT_ERR -l -p priority -t tag -v \               #
+              #                                  owner fileid ...                    #
+              #                                                                      #
+              #                             -l = Notify via logger command           #
+              #                                  (default is false)                  #
+              #                             -p = Logger priority string              #
+              #                                  (default is "user.err")             #
+              #                             -t = Logger tag string                   #
+              #                                  (default is "$LOGNAME[$$]")         #
+              #                             -v = Verbose                             #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede other options.   #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Change ownership on one or more files, reporting        #
+              #              errors via email and logger, and exiting on error.      #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              chown command beyond automatic notification/logging     #
+              #              before exiting on error.  Notification is provided      #
+              #              via the EMAIL_MSG library function.  Optionally         #
+              #              (-l), the user may have the error logged in syslogs     #
+              #              (/var/adm/messages) via logger command.  Logger -p      #
+              #              and -t options and option arguments also may be         #
+              #              be passed (both have defaults if omitted).              #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CO_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while changing file permissions (ownership)   #
+              #              is potentially a show stopper.                          #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              #       Notes: DO NOT use this routine to chown $log and $mailmsg.     #
+              #              Use CHOWN_EXIT_ERR_NOMAIL instead.  This is because     #
+              #              this function calls EMAIL_MSG function (a function      #
+              #              which uses both $log and $mailmsg to report problems).  #
+              #              Any problems changing $log and $mailmsg, therefore,     #
+              #              cannot be reported by EMAIL_MSG using mailx.            #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.17 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.16 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

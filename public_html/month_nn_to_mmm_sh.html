@@ -1,0 +1,150 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, month_nn_to_mmm.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="month_nn_to_mmm.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, month_nn_to_mmm.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_month_nn_to_mmm_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              MN2M_name="<b>MONTH_NN_TO_MMM</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$MN2M_name\(\)\{$'`" != . ] &amp;&amp; MN2M_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$MN2M_name'[=\(]?/'`" != . ] &amp;&amp; MN2M_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$MN2M_name'[=\(]?/'`" != . ] &amp;&amp; MN2M_loaded=1
+                 fi
+              fi
+              if [ 0${MN2M_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>MONTH_NN_TO_MMM</b>() # Function documentation located at bottom.          #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -gt 0 ]; then
+                   $AWK     \
+                     'BEGIN \
+                      {
+                        mon_table = "01Jan02Feb03Mar04Apr05May06Jun" \
+                                    "07Jul08Aug09Sep10Oct11Nov12Dec"
+                        mon_idx   = index(mon_table,sprintf("%02d",ARGV[1]))
+                        if (mon_idx &lt; 1)
+                        {
+                          printf("Invalid Month number: %s\n", ARGV[1])
+                          exit 0
+                        }
+                        printf("%s", substr(mon_table,mon_idx+2,3))
+                        exit  ARGV[1]
+                      }' $1
+                   return $?
+                fi
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                MN2M_ID="$script_name($MN2M_name)"
+
+                EMAIL_MSG "ERROR (Function): $MN2M_ID"                    \
+                  "${sp}Usage:   $MN2M_name nn"                           \
+                  "${sp}         nn is month number to be converted to"   \
+                  "${sp}            an abbreviated month name (Jan-Dec)."
+                return 0
+              } # "MNTN_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: June 19, 1997                                           #
+              #                                                                      #
+              #  Program ID: month_nn_to_mmm.sh                                      #
+              #                                                                      #
+              #       Usage: MONTH_NN_TO_MMM nn                                      #
+              #                        where nn is a month number                    #
+              #                                                                      #
+              #     Purpose: Convert nn month number to three-character month        #
+              #              abbreviation.                                           #
+              #                                                                      #
+              # Description: Echos and returns a valid three-digit month name        #
+              #              appropriate to the month number passed, or echos ""     #
+              #              and returns zero on error (zero being an invalid        #
+              #              month number).  Month name returned via stdout.         #
+              #              Error messages returned vis stderr.                     #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "MN2M_" prefix identifies local function variables.     #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function (on error).                  #
+              #                                                                      #
+              # Exit_status: 1-12 for success                                        #
+              #              Zero on error.                                          #
+              #                                                                      #
+              #       Notes: My biggest reason for writing this function is simply   #
+              #              to have this code/method written down somewhere.        #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.8  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

@@ -1,0 +1,629 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, prune_files.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="prune_files.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, prune_files.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_prune_files_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              PF_name="<b>PRUNE_FILES</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$PF_name\(\)\{$'`" != . ] &amp;&amp; PF_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$PF_name'[=\(]?/'`" != . ] &amp;&amp; PF_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$PF_name'[=\(]?/'`" != . ] &amp;&amp; PF_loaded=1
+                 fi
+              fi
+              if [ 0${PF_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>PRUNE_FILES</b>() # Function documentation located at bottom.              #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #----------------------------------------------------------------#
+                # If the following variables are not set, use these as defaults. #
+                #----------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${tmp:=/var/tmp}
+                : ${sp:="                    "}
+                : ${yymmddhhmiss:=`date '+%y''%m%d%H''%M''%S'`}
+                : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`}
+
+                PF_ID="$script_name($PF_name)"
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                echo "`date '+%Y-%m-%d %T'` $PF_name $@" | $teelog
+
+                #--------------------------------#
+                # Parse this function's options. #
+                #--------------------------------#
+                PF_option=0
+                PF_opt_s=0
+                PF_opt_f=0
+                PF_opt_l=0
+                PF_opt_t=0
+                MV_opt_S=0 # Use sudo for mv
+                PF_opt_T=0 # Test run only
+                PF_option=0
+                PF_fld_len=6
+                PF_sep_char="."
+                PF_field_n="last"
+                PF_follow=""
+
+                PF_root=$tmp/$name_root"_PF_go_"$id_hex
+                PF_err=$PF_root"."$Xtimestamp
+                while getopts Ssf:l:Tt: PF_opt 2&gt;&gt; $PF_err
+                do
+                   case $PF_opt in
+                     S ) PF_opt_S=1
+                         PF_option=1
+                         ;;
+                     s ) PF_opt_s=1
+                         PF_follow="-follow"
+                         PF_option=1
+                         ;;
+                     f ) PF_opt_f=1
+                         PF_field_n="$OPTARG"
+                         PF_option=1
+                         ;;
+                     l ) PF_opt_l=1
+                         PF_fld_len="$OPTARG"
+                         PF_option=1
+                         ;;
+                     T ) PF_opt_T=1
+                         PF_option=1
+                         ;;
+                     t ) PF_opt_t=1
+                         PF_sep_char="$OPTARG"
+                         PF_option=1
+                         ;;
+                    \? ) echo "$PF_ID" \
+                           "Invalid option: -`sed 's/^.*-- //' $PF_err`" 1&gt;&2
+                         ;;
+                     * ) ;;
+                   esac
+                done
+                #--------------------------------------------#
+                # Shift past options to remaining arguments. #
+                #--------------------------------------------#
+                [ $PF_option -ne 0 ] &amp;&amp; shift `expr $OPTIND - 1`
+
+                [ ."$PF_root" != . ] &amp;&amp; \rm -f $PF_root* &gt; /dev/null 2&gt;&1
+
+                #----------------------------------------------------------------#
+                # Must reset this dog if this function is apt to be called again #
+                OPTIND=1  # (try and find this fact documented anywhere else).   #
+                #----------------------------------------------------------------#
+
+                #----------------------------------------------------------#
+                # Validate option and 'n' and 'file_root' arguments.       #
+                # Nawk returns nonzero on failure or zero if all is well.  #
+                #----------------------------------------------------------#
+                PF_error_txt=`$AWK -v sp="$sp"             \
+                                   -v PF_ID="$PF_ID"       \
+                                   -v PF_name="$PF_name"   \
+                                   -v opt_f=$PF_opt_f      \
+                                   -v opt_l=$PF_opt_l      \
+                                   -v opt_t=$PF_opt_t      \
+                                   -v len=$PF_fld_len      \
+                                   -v char=$PF_sep_char    \
+                                   -v field=$PF_field_n    \
+                  'BEGIN {
+                           if (ARGV[2] == "")
+                             exit_usage("Insufficient args.")
+                           else if (! match(ARGV[1],/^[0-9]+$/))
+                             exit_usage("Non-numeric keep files number ("ARGV[1]").")
+                           else if (opt_l == 1 &amp;&amp; (! match(len,/^[0-9]+$/)))
+                             exit_usage("Non-numeric field length ("opt_l").\n")
+                           else if (opt_t == 1 &amp;&amp; char == "")
+                           {
+                             msg="Separator option (-t) supplied without its"
+                             msg=msg"\n"sp"corresponding field separator character."
+                             exit_usage(msg)
+                           }
+                           else if (! (field=="last"||match(field,/^[0-9]+$/)))
+                             exit_usage("Non-numeric field number ("field").")
+                           else if (field == 0)
+                           {
+                             msg="Invalid field number, "field
+                             msg=msg" (must be greater than zero)."
+                             exit_usage(msg)
+                           }
+                           exit 0 # Passed all the preceding tests
+                         }
+                         #----------------------------------------------------------#
+                         function exit_usage (MSG)
+                         #----------------------------------------------------------#
+                         {
+                           print sp""PF_ID": "MSG"\n"sp"Usage: "PF_name             ,
+                             "-SsT -f field -l len -t char n file_root\n"           ,
+                             "\n"sp,sp"-S = Use sudo to remove and compress files\n",
+                             "\n"sp,sp"-s = Follow symbolic links.\n"               ,
+                             "\n"sp,sp"-T = Test--neither remove nor compress files",
+                             "\n"sp,sp"       --simply pretend we do.\n"            ,
+                             "\n"sp,sp"-f = Test/sort field, \047field\047"         ,
+                             "\n"sp,sp"       --default is the last field.\n"       ,
+                             "\n"sp,sp"-l = Specifies the field length (6|8)"       ,
+                             "\n"sp,sp"       --default is 6 (for yymmdd).\n"       ,
+                             "\n"sp,sp"-t = Specifies separation character, char"   ,
+                             "\n"sp,sp"       --default is a period.\n"             ,
+                             "\n"sp,sp" n = Number of files we keep"                ,
+                             "\n"sp,sp"       --remove files exceeding \047n\047.\n",
+                             "\n"sp,sp"file_root = fully-qualified fileid"          ,
+                             "\n"sp,sp"       --up to the numeric sort data"        ,
+                             "\n"sp,sp"          (e.g. \047$HOME/vent/????.888\047" ,
+                             "\n"sp,sp"             or \047$HOME/logs/daily_log\047)."
+                           exit 1
+                         }' "$1" "$2" 2&gt;&1` # $1 is our target file_root argument.
+
+                #----------------------------------------------------------------#
+                # Test the returns status and fuss at the user if it is nonzero. #
+                #----------------------------------------------------------------#
+                if [ $? -ne 0 ]; then
+                   EMAIL_MSG "ERROR: $PF_ID"           \
+                     "$PF_error_txt"                   \
+                     "${sp}Skipping prunes today ;-)." \
+                     "${sp}$script_name ($$) continues."
+                   return 1
+                fi
+
+                #--------------------------------------------------------#
+                # Passed validation tests OK, now get about our business.#
+                #--------------------------------------------------------#
+                PF_last_n=$PF_field_n
+                PF_keep_n=`expr $1 + 1`
+                PF_dir=`dirname "$2"`
+                [ $PF_dir = "." ] &amp;&amp; PF_dir=`pwd`
+                PF_file=`basename "$2"`
+
+                #--------------------------------------------------------------#
+                # Isolate the desired (possibly default) 6-digit numeric date  #
+                # field in each line (sort_key) that follows $PF_sep_char and  #
+                # use that field (as a sort key).  Prefix it to the line, then #
+                # sort that new composite by that prefix (sort -inr -k 1,1).   #
+                # Finally, use Awk to remove the prefix (sub(/^.* +/,"")) and  #
+                # print the original (now sorted) lines.  Whew!                #
+                #--------------------------------------------------------------#
+                \find $PF_dir -type f -name "$PF_file*"      \
+                  $PF_follow -print 2&gt; /dev/null             \
+                  | $AWK -F$PF_sep_char -v sp="$sp"          \
+                                        -v dir=$PF_dir       \
+                                        -v field=$PF_field_n \
+                                        -v len=$PF_fld_len   \
+                                        -v keep_n=$PF_keep_n \
+                                        -v opt_S=$PF_opt_S   \
+                                        -v opt_T=$PF_opt_T   \
+                   'BEGIN \
+                    { #-------------------------------------------------#
+                      # Build sort key ([0-9]) that handles len digits. #
+                      #-------------------------------------------------#
+                      if (len == "") len = 6 # Assign default len if omitted
+
+                      for (i = 1; i &lt;= len; i++)
+                        sort_key=sort_key"[0-9]"
+
+                      #-------------------------------------------------#
+                      # Initialize these before Action section.         #
+                      #-------------------------------------------------#
+                      i     = 0
+                      err_n = 0
+
+                      rm_cmd = "rm"   # Assign remove (rm) command
+                      if (opt_S == 1) # Prefix with "sudo"?
+                        rm_cmd = "sudo "rm_cmd
+
+                      gzip="/usr/local/bin/gzip"
+                      status=system("test -f "gzip)
+                      if (status == 0)
+                        cmp_prog = gzip
+                      else
+                      {
+                        gzip="/usr/bin/gzip" # As of Solaris 2.9
+                        status=system("test -f "gzip)
+                        if (status == 0)
+                          cmp_prog = gzip
+                        else
+                          cmp_prog = "compress"
+                      }
+
+                      if (opt_S == 1) cmp_prog = "sudo "cmp_prog # Prefix with "sudo "
+                    } # E.O.BEGIN section
+
+                    #---------------------------------------------------------------#
+                    # Action section isolates the sort field, prefixing each line   #
+                    # with that key, and assigning it to line[] array.  The END     #
+                    # section sorts the array by that key and removes files (via    #
+                    # "system" call) that exceed the number we want to keep.        #
+                    #---------------------------------------------------------------#
+                    {                                # Only until we find a line    #
+                      if (template_found == 0)       # with a sort_key template,    #
+                      {                              # and only if we sort the last #
+                        if (field == "last")         # field, do we check every     #
+                        {                            # period-delimited field (1st  #
+                          for (n = 1; n &lt;= NF; n++)  # to last) to get the last     #
+                          {
+                            if (match($n,sort_key))  # suitable field (prevents a   #
+                            {
+                              field=n                # ".(Z|gz)" from hosing up     #
+                              template_found=1
+                            }
+                          }
+                        }                            # the entire process).         #
+                        else                         # Once we locate a file        #
+                        {                            # matching our template, we    #
+                          template_found=1           # continue processing.         #
+                        }                            #------------------------------#
+                      }
+
+                      file_line = $0
+
+                      #-----------------------------------------------------------#
+                      # Following basename and dirname assignments and "sub()s"   #
+                      # isolate those variables from each fileid.  The test       #
+                      # following that, restricts processing to only those files  #
+                      # found in the target directory (excludes subdirectories).  #
+                      #-----------------------------------------------------------#
+                      dirname = basename = $0
+                      sub(/^.*\//,    "",basename)
+                      sub("/"basename,"",dirname)
+                      if (dirname == dir)
+                      {
+                        gsub(sort_key"*","((&))",$field)
+                        gsub(/^.*\(++/, "",$field)  # Strip all before date field
+                        gsub(/\)++.*$/, "",$field)  # and everything after it, then
+                        $field=substr($field,1,len) # substring it to length.
+                        if (! match($field,"^"sort_key"*$"))
+                          err_files[++err_n] = file_line
+                        else
+                          line[++i]=$field" "file_line # Prefix line with sort key
+                      }
+                    } # End action section
+
+                    END \
+                    {
+                      if (err_n &gt; 0)
+                      {
+                        for (file in err_files)
+                          print sp"Skipping "err_files[file] | "cat 1&gt;&2"
+                        print ""                             | "cat 1&gt;&2"
+                      }
+
+                      if (template_found == 0)
+                      {
+                        print_err_msg()
+                        exit 1
+                      }
+
+                      if (i == 0) exit
+
+                      #-------------------------------------------------------#
+                      # If we are really deleting/compressing files, we do    #
+                      # not really have to sort them (since sorting is slow). #
+                      # However, since "find" does not present its output in  #
+                      # order, sorting does improve output readability.       #
+                      # ----------------------------------------------------- #
+                      # Sort line[] array (built in the preceding action      #
+                      # section) in descending order by the first 6+ digits). #
+                      #-------------------------------------------------------#
+                      for (cursor = 1; cursor &lt; i; cursor++)
+                      {
+                        lowest = cursor
+
+                        for (n=cursor+1; n &lt;= i ; n++)
+                          if (substr(line[lowest],1,len) &lt; substr(line[n],1,len))
+                            lowest = n
+
+                        #--------------------------------------------#
+                        # Only if we find a lower value do we swap.  #
+                        #--------------------------------------------#
+                        if (lowest != cursor)
+                        {
+                          temp         = line[cursor]
+                          line[cursor] = line[lowest]
+                          line[lowest] = temp
+                        }
+                      } # for (cursor = 1 ; cursor &lt; i ; cursor++)
+
+                      if (i == 0) exit
+
+                      #-------------------------------------------------------#
+                      # Remove (or compress) every element in line[] array.   #
+                      #-------------------------------------------------------#
+                      (opt_S == 0) ? deleting="Deleting" : deleting="Deleting (via sudo)"
+
+                      for (n=1 ; n &lt;= i ; n++)
+                      {
+                        if (verbose) print sp""line[n]
+                        sub(/^.* +/,"", line[n]) # Remove sort key,
+                        #-----------------------------------------------------#
+                        # Only if the dog exists, do we try to play with it.  #
+                        #-----------------------------------------------------#
+                        status=system("test -f "line[n])
+                        if (status != 0) continue
+
+                        if (n &gt;= keep_n)
+                        {
+                          print sp""rm_cmd" "line[n]           # Inform the user,
+                          if (! opt_T)                         # and if NOT a test,
+                          {                                    # then go ahead and
+                            status=system(rm_cmd" -f "line[n]) # remove the dog.
+                            if (status != 0)
+                            { #---------------------------------------#
+                              # On error, fuss at the user and exit.  #
+                              #---------------------------------------#
+                              print sp"Delete ERROR "line[n]"!" | "cat 1&gt;&2"
+                              print sp"Delete ERROR "line[n]"!"
+                              exit 1
+                            }
+                          }
+                        }
+                        else if (n &gt; 1 &amp;&amp; (! match(line[n],/\.(Z|gz)$/)))
+                        {
+                          print sp""cmp_prog" "line[n]           # Inform the user
+                          if (! opt_T)                           # and if NOT a test,
+                          {                                      # then go ahead and
+                            status=system(cmp_prog" -f "line[n]) # compress the dog.
+                            if (status == 1)
+                            { #---------------------------------------#
+                              # On error, fuss at the user and exit.  #
+                              #---------------------------------------#
+                              print sp""cmp_prog" ERROR "line[n]"!" | "cat 1&gt;&2"
+                              print sp""cmp_prog" ERROR "line[n]"!"
+                              exit 1
+                            }
+                          }
+                        }
+                      }
+                    } # E.O.END section
+                    #-------------------------------------------------------#
+                    function print_err_msg() # Globals: len
+                    #-------------------------------------------------------#
+                    {
+                      print sp"Nothing deleted. No "len"-digit numeric key",
+                            "in sort target fileid!",
+                            "\n"sp"Use \047-f\047 option to specify a different",
+                            "sort field",
+                            "\n"sp"or \047-l\047 option to specify a different",
+                            "sort field length." | "cat 1&gt;&2"
+                    }' | $teelog
+                PF_status=$?
+
+                if [ $PF_status -ne 0 ]; then
+                   EMAIL_MSG "ERROR: $PF_ID"                        \
+                     "${sp}Problem pruning $2.  Check out the log." \
+                     "${sp}Skipping prunes today ;-)."              \
+                     "${sp}$script_name ($$) continues."
+                fi
+
+                return $PF_status
+              } # "PF_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: April 2, 1997                                           #
+              #                                                                      #
+              #  Program ID: prune_files.sh                                          #
+              #                                                                      #
+              #       Usage: PRUNE_FILES -SsT -f field -l 6|8 -T -t char n file_root #
+              #                                                                      #
+              #                          -S = Use sudo to remove/compress files.     #
+              #                                                                      #
+              #                          -s = Follow symbolic links.                 #
+              #                                                                      #
+              #                          -T = Test: neither remove nor compress      #
+              #                                 files--simply pretend we do.         #
+              #                                                                      #
+              #                          -f = sort field, 'field'                    #
+              #                                 -- default is the last field.        #
+              #                                                                      #
+              #                          -l = specifies the sort field length, len   #
+              #                                 -- default is 6 (for yymmdd).        #
+              #                                                                      #
+              #                          -t = specifies separation character, char   #
+              #                                 -- default is a period.              #
+              #                                                                      #
+              #                           n = number of files we keep                #
+              #                                 -- remove files exceeding 'n'.       #
+              #                                                                      #
+              #                    file_root = fully-qualified fileid                #
+              #                                  -- up to the numeric sort data      #
+              #                                     (e.g. "$HOME/vent/????.888"      #
+              #                                        or "$HOME/logs/daily_log").   #
+              #                                                                      #
+              #     Purpose: Prune files with [yy]yymmdd in the fileid to a given    #
+              #              number.  Additionally, all files, except for the        #
+              #              latest file, are also compressed using gzip (first      #
+              #              choice) or compress (last choice).                      #
+              #                                                                      #
+              # Description: This function requires that the files being pruned have #
+              #              either yymmdd or yyyymmdd date string in their fileids. #
+              #              This is critical because this program deletes these     #
+              #              files by sorting the most recent files to the top of    #
+              #              our list and removing those from the end that exceed    #
+              #              the number of files we want to retain.                  #
+              #                                                                      #
+              #              The ability to specify a field on which to key is       #
+              #              useful because files may have other numeric strings     #
+              #              in their fileids, or they may have multiple date        #
+              #              strings (e.g. a "data" date and a process date --       #
+              #              'deletes.000101_000401' -- data dated January 1,        #
+              #              but processed/created on April 1).                      #
+              #                                                                      #
+              #        NOTE: This process ASSUMES that there are NOT duplicate       #
+              #              values in the sort field which must be retained (e.g.   #
+              #              multiple files with the same dates).  If you wish to    #
+              #              "remove" files by date (yymmdd) and preservation by     #
+              #              date is required, then check out the REMOVE_BY_DATE     #
+              #              library function (it does not compress files).          #
+              #                                                                      #
+              #    Examples: Assume the following files (containing two periods and  #
+              #              two underscores which result in three fields each).     #
+              #                                                                      #
+              #                     +----------+------------ Underscores             #
+              #                     |      +-- | -----+----- Periods                 #
+              #                     |      |   |      |                              #
+              #                     v      v   v      v                              #
+              #                 test_000101.out_000120.10                            #
+              #                 test_000102.out_000119.11                            #
+              #                 test_000103.out_000118.12                            #
+              #                 test_000104.out_000117.13                            #
+              #                 test_000105.out_000116.14                            #
+              #                 test_000106.out_000115.15                            #
+              #                 test_000107.out_000114.16                            #
+              #                 test_000108.out_000113.17                            #
+              #                 test_000109.out_000112.18                            #
+              #                 test_000110.out_000111.19                            #
+              #                                                                      #
+              #                 Using the first line, our period-delimited fields    #
+              #                 are:                                                 #
+              #                       f1 = test_000101                               #
+              #                       f2 = out_000120                                #
+              #                       f3 = 10      -- has no 6-digit (date) string.  #
+              #                                                                      #
+              #                 Using the first line, unserscore-delimited fields    #
+              #                 are:                                                 #
+              #                       f1 = test    -- has no 6-digit (date) string.  #
+              #                       f2 = 000101.out                                #
+              #                       f3 = 000120.10                                 #
+              #                                                                      #
+              #              1. Prunes files based on the last date-like (6-digit)   #
+              #                 period-delimited field.  Example 'a' uses both       #
+              #                 defaults.  Example 'b' uses '-f2' (which is the last #
+              #                 period-delimited field containing a datelike numeric #
+              #                 string).  (Keeping 7 files.)                         #
+              #                                                                      #
+              #                 a. PRUNE_FILES         7 test_00                     #
+              #                 b. PRUNE_FILES -t. -f2 7 test_00                     #
+              #                                                                      #
+              #                    Deleting test_000108.out_000113.17                #
+              #                    Deleting test_000109.out_000112.18                #
+              #                    Deleting test_000110.out_000111.19                #
+              #                                                                      #
+              #              2. Prunes files based on the last, 2-digit, period--    #
+              #                 delimited field.                                     #
+              #                                                                      #
+              #                    PRUNE_FILES -l2 7 test_00                         #
+              #                                                                      #
+              #                    Deleting test_000103.out_000118.12                #
+              #                    Deleting test_000102.out_000119.11                #
+              #                    Deleting test_000101.out_000120.10                #
+              #                                                                      #
+              #              3. Prunes files based on the first date-like (8-digit)  #
+              #                 period-delimited field. Example 'a' uses the default #
+              #                 field delimiter (.), but requests first field (-f1). #
+              #                 Example 'b' is functionally identical.               #
+              #                                                                      #
+              #                 a. PRUNE_FILES     -f1 5 test_00                     #
+              #                 b. PRUNE_FILES -t. -f1 5 test_00                     #
+              #                                                                      #
+              #                    Deleting test_000105.out_000116.14                #
+              #                    Deleting test_000104.out_000117.13                #
+              #                    Deleting test_000103.out_000118.12                #
+              #                    Deleting test_000102.out_000119.11                #
+              #                    Deleting test_000101.out_000120.10                #
+              #                                                                      #
+              #              4. Prunes files based on the first date-like (6-digit)  #
+              #                 underscore-delimited field.  Example uses '-t_' to   #
+              #                 specify an underscore as the field delimiter (it can #
+              #                 be any character).  The last field is the default.   #
+              #                                                                      #
+              #                 PRUNE_FILES -t_ 8 test_00                            #
+              #                                                                      #
+              #                    Deleting test_000109.out_000112.18                #
+              #                    Deleting test_000110.out_000111.19                #
+              #                                                                      #
+              #              5. This example shows a common error as it attempts     #
+              #                 to prune files from the first underscore-delimited   #
+              #                 field.  (The 'test_' portion of the line is the      #
+              #                 the first underscore-delimited field.  The user      #
+              #                 should have specified -f2 to isolate the date        #
+              #                 following 'test_' and before '.out_00...'.)          #
+              #                 Since the first field has no date string, the        #
+              #                 following error message is printed.                  #
+              #                                                                      #
+              #                 PRUNE_FILES -t_ -f1 5 test_00                        #
+              #                                                                      #
+              #                    No date string in field 1!                        #
+              #                    Nothing deleted.                                  #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "PF_" prefix identifies local function variables.       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #                                                                      #
+              # Exit_status: 0 = Success                                             #
+              #              1 = Any failure                                         #
+              #                                                                      #
+              #       Notes: ......................................................  #
+              #              ......................................................  #
+              #                                                                      #
+              #    Modified: 2004-08-05 Bob Orlando                                  #
+              #                 v1.19 * Add sudo (-S) and test (-T) options.         #
+              #                         (Test option neither removes nor compresses  #
+              #                         files, just says what it WOULD remove or     #
+              #                         compress).                                   #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

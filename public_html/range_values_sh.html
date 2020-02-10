@@ -1,0 +1,253 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, range_values.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="range_values.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, range_values.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1998-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_range_values_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              RV_name="<b>RANGE_VALUES</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$RV_name\(\)\{$'`" != . ] &amp;&amp; RV_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$RV_name'[=\(]?/'`" != . ] &amp;&amp; RV_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$RV_name'[=\(]?/'`" != . ] &amp;&amp; RV_loaded=1
+                 fi
+              fi
+              if [ 0${RV_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>RANGE_VALUES</b>() # Function documentation located at bottom.             #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -gt 0 ]; then
+                   RV_range=`echo "$@"|$AWK \
+                     'BEGIN {FS = "-"; RS = " "; exit_status = 0}
+                      { # Iterates for each range passed as arguments.
+                        if ($2 == $1)
+                        {
+                          printf("%s", $1)
+                          exit_status = 1
+                          exit exit_status
+                        }
+                        if ($2 == "")
+                        {
+                          exit_status = 2
+                          exit exit_status
+                        }
+
+                        az = "abcdefghijklmnopqrstuvwxyz" # Add 96 to derive decimal
+                        AZ = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" # Add 64 to derive decimal
+
+                        #----------------------------------------------------------#
+                        # If the letter is lowercase a-z, then add 96 to their     #
+                        # position in the alphabet to get their decimal ASCII code.#
+                        # If uppercase A-Z, then add 64 to get the decimal value.  #
+                        #----------------------------------------------------------#
+                        if (index(az,$1) &gt; 0 )
+                        {
+                          i1 = index(az,$1)
+                          i2 = index(az,$2)
+                          if (i2 == 0) # If 2nd value is not a-z, then exit.
+                          {
+                            print "Invalid range value: "$2" (from "$1"-"$2")."
+                            exit_status = 3
+                            exit exit_status
+                          }
+                          i1 += 96
+                          i2 += 96
+                          case="lower"
+                        }
+                        else if (index(AZ,$1) &gt; 0 )
+                        {
+                          i1 = index(AZ,$1)
+                          i2 = index(AZ,$2)
+                          if (i2 == 0) # If 2nd value is not A-Z, then exit.
+                          {
+                            print "Invalid range value: "$2" (from "$1"-"$2")."
+                            exit_status = 4
+                            exit exit_status
+                          }
+                          i1 += 64
+                          i2 += 64
+                          case="upper"
+                        }
+                        else # Else, its gotta be numeric
+                        {
+                          i1 = $1
+                          i2 = $2
+                          case="numeric"
+                        }
+
+                        #----------------------------------------------------#
+                        # Print numbers with trailing blank but no newlines. #
+                        #----------------------------------------------------#
+                         if (i1 &lt; i2)                #-------------------#
+                            for (p=i1; p&lt;=i2; p++)   # Ascending order   #
+                              if (case == "numeric") #-------------------#
+                                printf("%d ", p)
+                              else if (case == "lower")
+                                printf("%s ", substr(az,p-96,1))
+                              else # case == "upper"
+                                printf("%s ", substr(AZ,p-64,1))
+                         else # i1 is &gt; i2           #-------------------#
+                           for (p=i1; p&gt;=i2; p--)    # Descending order  #
+                             if (case == "numeric")  #-------------------#
+                               printf("%d ", p)
+                             else if (case == "lower")
+                               printf("%s ", substr(az,p-96,1))
+                             else # case == upper
+                               printf("%s ", substr(AZ,p-64,1))
+                      } # E.O.Action Section
+                      END {exit exit_status}' 2&gt;&1` # Errors are not lost this way.
+
+                   if [ $? -eq 0 ]; then
+                      echo "$RV_range"
+                      return 0
+                   fi
+                fi
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                RV_ID="$script_name($RV_name)"
+
+                RV_usage=`$AWK -v sp="$sp"                   \
+                               -v RV_name="$RV_name"         \
+                               -v script_name="$script_name" \
+                  'BEGIN                                     \
+                   { print sp"Usage:   "RV_name" p-q [...]\n"                        ,
+                       "\n"sp"            where p-q represents one or more ranges"   ,
+                       "\n"sp"                      of numbers or letters to be"     ,
+                       "\n"sp"                      converted to expanded strings.\n",
+                       "\n"sp"Purpose: Generate ranges of letters or numbers."       ,
+                       "\n"sp"         For example, 1-5, a-d, or z-r (ascending"     ,
+                       "\n"sp"         or descending) returning, for example,"       ,
+                       "\n"sp"         \0471 2 3 4 5\047 or \047a b c d\047\n"
+                   }'`
+
+                if [ $# -lt 1 ]; then
+                   EMAIL_MSG "ERROR (Function): $RV_ID" \
+                     "${sp}Insufficient args.\n$RV_usage"
+                else # Nawk (above) exited with non-zero status.
+                   EMAIL_MSG "ERROR (Function): $RV_ID" \
+                     "\n$RV_range\n$RV_usage"
+                fi
+
+                return 1
+              } # "RV_" prefix identifies this function's variables
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              # Implementor: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: August 31, 1998                                         #
+              #                                                                      #
+              #  Program ID: range_values.sh                                         #
+              #                                                                      #
+              #       Usage: RANGE_VALUES p-q [...]                                  #
+              #                                                                      #
+              #     Purpose: Convert alphanumeric ranges, like 1-5, s-x,, or I-A     #
+              #              into individual characters or numerals.                 #
+              #                                                                      #
+              # Description: This script will do everything function RANGE_NUMS      #
+              #              will do, but will also return ranges of alphabetic      #
+              #              characters.                                             #
+              #                                                                      #
+              #              The function takes one or more ranges of values (a-z,   #
+              #              A-Z, or numbers) from command-line arguments, and       #
+              #              splits them into a string of individual characters or   #
+              #              numbers that comprise the full range range (it's much   #
+              #              faster than a while-loop doing the same thing), and     #
+              #              is most useful when used like this:                     #
+              #                                                                      #
+              #                 for val in `RANGE_VALUES 1-100` (or a-f, or I-A)     #
+              #                 do                                                   #
+              #                    do-something-with $val                            #
+              #                 done                                                 #
+              #                                                                      #
+              #    Examples: RANGE_VALUES 1-5                                        #
+              #              returns 1 2 3 4 5                                       #
+              #                                                                      #
+              #              RANGE_VALUES I-A                                        #
+              #              returns I H G F E D C B A                               #
+              #                                                                      #
+              #              RANGE_VALUES a-f F-A 1-5                                #
+              #              returns a b c d e f F E D C B A 1 2 3 4 5               #
+              #                                                                      #
+              # Exit_status: On error, failure (nonzero) for function error (e.g.    #
+              #              user supplies invalid arguments).  Otherwise returns    #
+              #              success (0) echoing the ranged values to stdout.        #
+              #                                                                      #
+              #       Calls: NOYIFY_ANALYSTS and and nawk.                           #
+              #                                                                      #
+              #       Notes: If you want some other separator than a blank,          #
+              #              use the translate (tr) command to get it.               #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.9  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.8  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1998-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

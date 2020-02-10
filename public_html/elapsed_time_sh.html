@@ -1,0 +1,415 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, elapsed_time.sh</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="elapsed_time, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, elapsed_time.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_elapsed_time_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              ET_name="<b>ELAPSED_TIME</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$ET_name\(\)\{$'`" != . ] &amp;&amp; ET_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$ET_name'[=\(]?/'`" != . ] &amp;&amp; ET_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$ET_name'[=\(]?/'`" != . ] &amp;&amp; ET_loaded=1
+                 fi
+              fi
+              if [ 0${ET_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>ELAPSED_TIME</b>() # Function documentation located at bottom.             #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+                if [ .${SHBIN} = . ]; then SHBIN=/usr/local/bin;     export SHBIN; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+                : ${ET_yyyymmddhhmiss:=""}
+
+                ET_ID="$script_name($ET_name)"
+
+                #--------------------------------------------------------------------#
+                # Must have either dateplus (compiled C executable) or dateplus.awk. #
+                #--------------------------------------------------------------------#
+                if [ ".$dateplus" = "." ]; then
+                   if [ -x $SHBIN/dateplus ]; then
+                      dateplus=$SHBIN/dateplus
+                   elif [ -f $SHLIB/dateplus.awk ]; then
+                      dateplus="$AWK -f $SHLIB/dateplus.awk -- "
+                   else
+                      EMAIL_MSG "ERROR: $ET_ID"                           \
+                        "Unable to locate $SHBIN/dateplus (C executable)" \
+                        "${sp}or $SHLIB/dateplus(.awk)* !"
+                      return 1
+                   fi
+                fi
+
+                #----------------------------------------------------------------#
+                # Validate arguments.  On validation failure, the error message  #
+                # and usage is assigned to $ET_usage and the nawk script exits   #
+                # with a non-zero status.                                        #
+                #----------------------------------------------------------------#
+                ET_validation_string=`$AWK -v script_name=$script_name \
+                                           -v ET_ID=$ET_ID             \
+                                           -v ET_name=$ET_name         \
+                                           -v sp="$sp"                 \
+                  'BEGIN \
+                   { #-----------------------------------------------------------#
+                     # If user supplies no args (ARGC == 1), then show usage and #
+                     # exit.  Else, continue and see if they gave us options.    #
+                     #-----------------------------------------------------------#
+                     if (ARGC == 1) # Zero-based numbering drives me nuts!
+                       exit_usage("Insufficient arguments!")
+
+                     if (ARGV[1] !~ /^[Ss][Tt][Aa][Rr][Tt]$|^[Ss][Tt][Oo][Pp]$/)
+                       exit_usage("Invalid first argument ("ARGV[1])"!"
+
+                     if (ARGV[2] == "")
+                     {
+                       status="date \"+%Y-%m-%d %T\"" | getline timestamp
+                       close( "date \"+%Y-%m-%d %T\"")
+                       if (status == 0)
+                       {
+                         print "ERROR: "script_name"("ET_name")"
+                         print "\047date\047 did not return \047yyyy-mm-dd hh:mi:ss\047!"
+                         exit 1
+                       }
+                       print timestamp # Otherwise print the timestamp
+                       exit 0 # Adios muchachos.
+                     }
+
+                     #-----------------------------------------------------#
+                     # We have timestamp, so make "yyyy-mm-dd hh:mi:ss"    #
+                     # a single string and process accordingly.            #
+                     #-----------------------------------------------------#
+                     yyyy_mm_dd_hh_mi_ss=ARGV[2]" "ARGV[3]
+                     sub(/ +$/,"",yyyy_mm_dd_hh_mi_ss) # Nix trailing whitespace
+
+                     #-----------------------------------------------------#
+                     # "yyyy-mm-dd hh:mi:ss" should be 19 characters long. #
+                     #-----------------------------------------------------#
+                     if (length(yyyy_mm_dd_hh_mi_ss) != 19)
+                       exit_usage("yyyy-mm-dd hh:mi:ss argument string (\047" \
+                         yyyy_mm_dd_hh_mi_ss"\047) not 19 digits!")
+
+                     yyyy = substr(yyyy_mm_dd_hh_mi_ss, 1,4)
+                     mm   = substr(yyyy_mm_dd_hh_mi_ss, 6,2)
+                     dd   = substr(yyyy_mm_dd_hh_mi_ss, 9,2)
+                     hh   = substr(yyyy_mm_dd_hh_mi_ss,12,2)
+                     mi   = substr(yyyy_mm_dd_hh_mi_ss,15,2)
+                     ss   = substr(yyyy_mm_dd_hh_mi_ss,18,2)
+                     yyyymmddhhmiss = yyyy""mm""dd""hh""mi""ss
+
+                     #-------------------------------------------------#
+                     # Ensure that we have numeric timestamp.          #
+                     #-------------------------------------------------#
+                     if (yyyymmddhhmiss !~ /^[0-9]+$/)
+                       exit_usage("yyyy-mm-dd hh:mi:ss argument string (" \
+                         yyyy_mm_dd_hh_mi_ss"\047) not numeric!")
+
+                     #-------------------------------------------------#
+                     # Exit with fail status on invalid contract hour. #
+                     #-------------------------------------------------#
+                     if (hh &lt; "00" || hh &gt; "23")
+                       exit_usage("Invalid hour ("hh")!")
+
+                     #-----------------------------------------------#
+                     # Set up month_table array for error reporting. #
+                     #-----------------------------------------------#
+                     split("January February March"     \
+                           "April   May      June "     \
+                           "July    August   September" \
+                           "October November December", month_table)
+
+                     #-----------------------------------------------#
+                     # Rudimentary validation of mm and dd           #
+                     #-----------------------------------------------#
+                     mm+=0
+                     if (mm==1||mm==3||mm==5||mm==7||mm==8||mm==10||mm==12)
+                       mm_days=31
+                     else if (mm==4||mm==6||mm==9||mm==11)
+                       mm_days=30
+                     else if (mm==2)
+                       mm_days=((yyyy%4==0&amp;&amp;yyyy%100!=0)||(yyyy%400==0))?29:28
+                     else
+                       exit_usage(mm" is an invalid month number!")
+
+                     if (dd &gt; mm_days)
+                       exit_usage("Day "dd" invalid for "month_table[mm]", "yyyy"!")
+
+                     #-------------------------------------------------#
+                     # Passed all tests, spit it out (backtick assign  #
+                     # to $ET_validation_string variable above).       #
+                     #-------------------------------------------------#
+                     print yyyy_mm_dd_hh_mi_ss # Hoorah!
+                   } # E.O.BEGIN
+
+                   #---------------------------------------------------------------#
+                   function exit_usage(ERRMSG)
+                   #---------------------------------------------------------------#
+                   {
+                     if (ERRMSG != "") print "\n"sp"ERRMSG | "cat 1&gt;&2"
+                     print "\nUsage: [gn]awk -f "ET_name" start|stop [yyyy-mm-dd hh:mi:ss]",
+                       "\n"sp" \047start\047 Echoes the current yyyy-mm-dd hh:mi:ss" ,
+                       "\n"sp"         and assigns it to local variable,"            ,
+                       "\n"sp"         ET_yyyymmddhhmiss.\n"                         ,
+                       "\n"sp" \047stop\047  displays a formatted elapsed time"      ,
+                       "\n"sp"         (hhh:mm:ss).\n"                               ,
+                       "\n"sp"         Optional \047yyyy-mm-dd hh:mi:ss\047 applies" ,
+                       "\n"sp"         to \047start\047 or \047stop\047 time, and is",
+                       "\n"sp"         the time from which we start or stop (and"    ,
+                       "\n"sp"         calculate) the elapsed time.\n"
+                     exit 1
+                   }' $* "$ET_yyyymmddhhmiss"`
+
+                #--------------------------------------------------------------#
+                # If preceding validation completed with non-zero status, then #
+                # fuss at the user and return "ERROR" as elapsed time string.  #
+                #--------------------------------------------------------------#
+                if [ $? -ne 0 ]; then
+                   EMAIL_MSG "ERROR (Function): $ET_ID" \
+                             "$ET_validation_string"
+                   return 1
+                fi # if [ $# -lt 1 ]; then
+
+                #------------------------------------------------------------------#
+                # User wants elapsed time started?  Return current yyyymmddhhmiss. #
+                #------------------------------------------------------------------#
+                if [ `expr "$1" : "[Ss][Tt][Aa][Rr][Tt]"` -eq 5 ]; then # "start"?
+                   ET_yyyymmddhhmiss=$ET_validation_string
+                   echo "`/bin/date '+%Y-%m-%d %T'`" \
+                     "Elapsed time clock started at '$ET_validation_string'."
+                   return 0
+                fi
+
+                #------------------------------------------------------------#
+                # Reaching this point means the user wants an elapsed time.  #
+                #------------------------------------------------------------#
+                if [ $# -gt 1 ]; then
+                   shift
+                   ET_yyyymmddhhmiss="$*"
+                fi
+
+                ET_results=`$AWK -v script_name=$script_name \
+                                 -v ET_name=$ET_name         \
+                                 -v sp="$sp"                 \
+                                 -v dateplus="$dateplus"     \
+                  'BEGIN \
+                   { #-------------------------------------------------------#
+                     # Make yyyy-mm-dd hh:mi:ss a single string.             #
+                     #-------------------------------------------------------#
+                     yyyy_mm_dd_hh_mi_ss=ARGV[1]" "ARGV[2]
+
+                     #-------------------------------------------------------#
+                     # Convert start "yyyy-mm-dd hh:mi:ss" to ddddd and sss. #
+                     #-------------------------------------------------------#
+                     yyyy = substr(yyyy_mm_dd_hh_mi_ss, 1,4)
+                     mm   = substr(yyyy_mm_dd_hh_mi_ss, 6,2)
+                     dd   = substr(yyyy_mm_dd_hh_mi_ss, 9,2)
+                     hh   = substr(yyyy_mm_dd_hh_mi_ss,12,2)
+                     mi   = substr(yyyy_mm_dd_hh_mi_ss,15,2)
+                     ss   = substr(yyyy_mm_dd_hh_mi_ss,18,2)
+                     beg_yyyymmdd = yyyy""mm""dd
+                     yyyymmddhhmiss = yyyy""mm""dd""hh""mi""ss
+                     status=dateplus" -b "beg_yyyymmdd | getline beg_ddddd
+                     close( dateplus" -b "beg_yyyymmdd)
+                     if (status == 0)
+                     {
+                       print "ERROR: "script_name"("ET_name")"
+                       print sp""dateplus" -b "beg_yyyymmdd" did not return ddddd!"
+                       exit 1
+                     }
+                     beg_sss=get_seconds(yyyymmddhhmiss)
+
+                     #---------------------------------------------#
+                     # Get curr date/time for end_yyyymmddhhmiss.  #
+                     #---------------------------------------------#
+                     status="/bin/date +%Y""%m%d%H""%M""%S" | getline end_yyyymmddhhmiss
+                     close( "/bin/date +%Y""%m%d%H""%M""%S")
+                     if (status == 0)
+                     {
+                       print "ERROR: "script_name"("ET_name")"
+                       print sp"date command did not return yyyymmddhhmiss!"
+                       exit 1
+                     }
+
+                     #---------------------------------#
+                     # Convert end yyyymmdd to ddddd.  #
+                     #---------------------------------#
+                     end_yyyymmdd=substr(end_yyyymmddhhmiss,1,8)
+                     status=dateplus" -b "end_yyyymmdd | getline end_ddddd
+                     close( dateplus" -b "end_yyyymmdd)
+                     if (status == 0)
+                     {
+                       print "ERROR: "script_name"("ET_name")"
+                       print sp""dateplus" -b "end_yyyymmdd" did not return ddddd!"
+                       exit 1
+                     }
+                     end_sss=get_seconds(end_yyyymmddhhmiss)
+
+                     elapsed_days = end_ddddd - beg_ddddd
+                     dayss = sprintf("%d", elapsed_days) * 86400
+                     end_sss+=dayss
+                     elapsed_sss = end_sss - beg_sss
+                     hh          = elapsed_sss / 3600 # hours
+                     remaing_sss = elapsed_sss % 3600 # remainder
+                     mi          = remaing_sss /   60 # minutes
+                     ss          = remaing_sss %   60 # seconds
+                     printf("%02d:%02d:%02d\n",hh,mi,ss)
+                   } # E.O.BEGIN
+
+                   #---------------------------------------------------------#
+                   function get_seconds(YYYYMMDDHHMISS)
+                   #---------------------------------------------------------#
+                   {
+                     hh = sprintf("%d", substr(YYYYMMDDHHMISS, 9,2)) * 3600
+                     mi = sprintf("%d", substr(YYYYMMDDHHMISS,11,2)) * 60
+                     ss = sprintf("%d", substr(YYYYMMDDHHMISS,13,2))
+                     return sprintf("%d\n", (hh + mi + ss))
+                   }' $ET_yyyymmddhhmiss`
+
+                #--------------------------------------------------------------#
+                # If preceding validation completed with non-zero status, then #
+                # fuss at the user and return "ERROR" as elapsed time string.  #
+                #--------------------------------------------------------------#
+                if [ $? -eq 0 ]; then
+                   echo "$ET_results"
+                   return 0
+                fi
+
+                EMAIL_MSG "ERROR (Function): $ET_ID" \
+                  "$ET_results"
+                return 1
+              } # "ET_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: elapsed_time.sh                                         #
+              #                                                                      #
+              #       Usage: ELAPSED_TIME start | stop [yyyy-mm-dd hh:mi:ss]         #
+              #                                                                      #
+              #                'start' returns current date/time in the form         #
+              #                        "yyyy-mm-dd hh:mi:ss".                        #
+              #                                                                      #
+              #                'stop'  Returns formatted elapsed time (hhh:mm:ss).   #
+              #                                                                      #
+              #                        Optional 'yyyy-mm-dd hh:mi:ss' applies to     #
+              #                        either 'start' or 'stop' time and is the time #
+              #                        from which we start or stop (and calculate)   #
+              #                        elapsed time.                                 #
+              #                                                                      #
+              #     Purpose: Calculate process elapsed times.                        #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #             "ET_" prefix identifies local function variables.        #
+              #                                                                      #
+              # Exit_status: For call with the 'start' argument:                     #
+              #               - On success, returns zero and echoes the current      #
+              #                 date/time (yyyy-mm-dd hh:mi:ss).  If the user wishes #
+              #                 to calculate elapsed time since this time, he must   #
+              #                 save this time stamp (and pass it to us as an        #
+              #                 argument immediately following the 'stop' argument). #
+              #               - On failure, returns non-zero, calls EMAIL_MSG to     #
+              #                 notify the user, and echoes "ERROR" to stdout.       #
+              #              For call with the 'stop' argument:                      #
+              #               - On success, returns zero and echoes elapsed time     #
+              #                 (hh:mm:ss) to stdout.                                #
+              #               - On failure, returns non-zero, calls EMAIL_MSG to     #
+              #                 notify the user, and echoes "ERROR" to stdout.       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function, nawk, and dateplus          #
+              #              (C executable).                                         #
+              #                                                                      #
+              #       Notes: When the argument "stop" is given, the function echoes  #
+              #              the elapsed time (in the form, hhh:mm:ss) to stdout.    #
+              #              It is probably best called like this:                   #
+              #                                                                      #
+              #                 start_time=`ELAPSED_TIME start` # Assign curr time   #
+              #                 ...                             # to $start_time.    #
+              #                 ..                                                   #
+              #                 .                                                    #
+              #                 # Calculate ET from or since $start_time.            #
+              #                 elapsed_time=`ELAPSED_TIME stop $start_time`         #
+              #                 echo "Job completed in $elapsed_time."               #
+              #                                                                      #
+              #              To provide backward compatibility, the program also     #
+              #              accepts the following usage/methodology (this method,   #
+              #              however, chould not be used with the preceding -- you   #
+              #              should use one method or the other, but not both within #
+              #              the same program).                                      #
+              #                                                                      #
+              #                 ELAPSED_TIME start # Assigns current time to         #
+              #                 ...                # $ET_yyyymmddhhmiss.             #
+              #                 ..                                                   #
+              #                 .                                                    #
+              #                 # Calculate ET since being called with start option. #
+              #                 elapsed_time=`ELAPSED_TIME stop`                     #
+              #                 echo "Job completed in $elapsed_time."               #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.13 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.12 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

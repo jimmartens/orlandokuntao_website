@@ -1,0 +1,761 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Bob Orlando's 'Dateplus' AWK Program</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="AWK Holiday Determination Program by Bob Orlando">
+    <meta name="description"    lang="en" content="AWK Holiday Determination Program by Bob Orlando">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1995-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="#800080" alink="firebrick" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_dateplus_awk.html';">
+    <div align="center" style="font-family:Arial,Verdana; font-size: 12pt">
+      <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+        <tr>
+          <td width="650">
+            <center><b>A dateplus <a href="dateplus_c.html">C program</a> is also available.</b></center>
+            <pre>
+              <code>
+
+                             #!/usr/bin/nawk -f
+                             # SccsId[] = "@(#)dateplus.awk 2.8 03/19/10"
+                             #----------------------------------------------------------------------#
+                             #                            <b>dateplus.awk</b>                              #
+                             # -------------------------------------------------------------------- #
+                             #                                                                      #
+                             #   Copyright (c) 1995-2010 by Bob Orlando.  All rights reserved.      #
+                             #                                                                      #
+                             #   Permission to use, copy, modify and distribute this software       #
+                             #   and its documentation for any purpose and without fee is hereby    #
+                             #   granted, provided that the above copyright notice appear in all    #
+                             #   copies, and that both the copyright notice and this permission     #
+                             #   notice appear in supporting documentation, and that the name of    #
+                             #   Bob Orlando not be used in advertising or publicity pertaining     #
+                             #   to distribution of the software without specific, written prior    #
+                             #   permission.  Bob Orlando makes no representations about the        #
+                             #   suitability of this software for any purpose.  It is provided      #
+                             #   "as is" without express or implied warranty.                       #
+                             #                                                                      #
+                             #   BOB ORLANDO DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS           #
+                             #   SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY      #
+                             #   AND FITNESS.  IN NO EVENT SHALL BOB ORLANDO BE LIABLE FOR ANY      #
+                             #   SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES          #
+                             #   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER    #
+                             #   IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,     #
+                             #   ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF     #
+                             #   THIS SOFTWARE.                                                     #
+                             #                                                                      #
+                             #----------------------------------------------------------------------#
+
+                             #----------------------------------------------------------------------#
+                             #   This program is the Awk equivalent of my C program, dateplus.c.    #
+                             #   However, this program still supported/maintained as part of my     #
+                             #   shell library for those sites which restrict C-compiler access.    #
+                             # -------------------------------------------------------------------- #
+                             #   Program documentation and notes located at the bottom of script.   #
+                             #----------------------------------------------------------------------#
+                             BEGIN \
+                             {
+                               progname = "dateplus.awk"
+                               #------------------------------------------------------------#
+                               # If user supplies no args (ARGC == 1), then show usage and  #
+                               # exit.  Else, continue and see if they gave us options.     #
+                               #------------------------------------------------------------#
+                               if (ARGC == 1) # Zero-based numbering drives me nuts!
+                                 <a href="#exit_usa">exit_usage</a>()
+
+                               #------------------------------------------------------------#
+                               # Set up the following arrays.                               #
+                               #------------------------------------------------------------#
+                               split("0 31 59 90 120 151 181 212 243 273 304 334 365", julian_days)
+                               split("0 31 60 91 121 152 182 213 244 274 305 335 366", julian_leap)
+
+                               adj   = 0
+                               opt_v = 0
+
+                               #------------------------------------------------------------#
+                               # If last arg looks like a valid date, parse, validate, and  #
+                               # use it, else, use the current yyyymmdd.                    #
+                               #------------------------------------------------------------#
+                               if (ARGV[ARGC-1] ~ /^[0-2][0-9][0-9][0-9][0-1][0-9][0-3][0-9]$/)
+                               {
+                                 yyyy = substr(ARGV[ARGC-1],1,4)
+                                 mm   = substr(ARGV[ARGC-1],5,2)
+                                 dd   = substr(ARGV[ARGC-1],7,2)
+                                 <a href="#validate">validate_yyyymmdd</a>(yyyy,mm,dd)
+                               }
+                               else
+                               {
+                                 #-------------------------------------------------------#
+                                 # Calling date with "+\%Y\%m\%d" (with escaped percent  #
+                                 # signs) avoids hassles with SCCS and percentYpercent.  #
+                                 #-------------------------------------------------------#
+                                 "date +\%Y\%m\%d" | getline yyyymmdd
+                                 yyyy = substr(yyyymmdd,1,4)
+                                 mm   = substr(yyyymmdd,5,2)
+                                 dd   = substr(yyyymmdd,7,2)
+                               }
+
+                               #------------------------------------------------------------#
+                               # Verbose (development) output wanted?                       #
+                               #------------------------------------------------------------#
+                               for (n=1; n&lt;ARGC; n++)
+                               {
+                                 if (ARGV[n] == "-v") # Verbose option
+                                 {
+                                   opt_v = 1
+                                   ARGV[n] = ""
+                                   shift_ARGV()
+                                   break
+                                 }
+                               }
+
+                               if (opt_v) print "Using "yyyy""mm""dd
+
+                               #------------------------------------------------------------#
+                               # Validate and process remaining options.                    #
+                               #------------------------------------------------------------#
+                               if      (ARGV[1] == "-y")       # -y = Yesterday's date
+                                 <a href="#calcdate">calculate_date</a>(yyyy,mm,dd,-1)
+                               else if (ARGV[1] == "-t")       # -t = Tomorrow's date
+                                 <a href="#calcdate">calculate_date</a>(yyyy,mm,dd,1)
+                               else if (ARGV[1] == "-b")       # -b = Basedate for today|yyyymmdd
+                                 <a href="#basedate">basedate</a>(yyyy,mm,dd,1)
+                               else if (ARGV[1] ~ /^-[Ww]$/)   # -[Ww] = Weekday for today|yyyymmdd
+                                 <a href="#calcwday">calc_weekday</a>(yyyy,mm,dd)
+                               else if (ARGV[1] == "-S")       # -S = Days since yyyymmdd (unsigned)
+                                 <a href="#daysince">days_since</a>(yyyy,mm,dd,"S")
+                               else if (ARGV[1] == "-s")       # -s = Days since yyyymmdd
+                                 <a href="#daysince">days_since(yyyy,mm,dd)</a>
+                               else if (ARGV[1] == "-u")       # -u = Days since Unix epoch date
+                                 <a href="#daysince">days_since(yyyy,mm,dd,"u")</a>
+                               else if (ARGV[1] == "-j")       # -j = Julian date
+                                 <a href="#jul_date">julian_date</a>(yyyy,mm,dd)
+                               else if (ARGV[1] == "-H")       # -H = Full documentation
+                                 <a href="#show_doc">show_documentation</a>(progname)
+                               else if (ARGV[1] == "-h")       # -h = Summary help (Usage)
+                                 <a href="#exit_usa">exit_usage</a>()
+                               else if (ARGV[1] ~ /^-[0-9]+$/) # Negative adjustment value
+                                 adj =  ARGV[1]
+                               else if (ARGV[1] ~ /^-/ &amp;&amp; ARGV[1] !~ /^-[0-9]+$/) # Oops
+                                 <a href="#exit_usa">exit_usage</a>("Invalid "progname" option, '"ARGV[1]"'.")
+
+                               #------------------------------------------------------------#
+                               # Options (and negative adj days) look good; skip past'em.   #
+                               #------------------------------------------------------------#
+                               if (ARGV[1] ~ /^-[bhstuwy]$/ || ARGV[1] ~ /^-[0-9]+$/)
+                                 shift_ARGV()
+
+                               #------------------------------------------------------------#
+                               # Positive (or unsigned) integer for adj days next?          #
+                               #------------------------------------------------------------#
+                               if (ARGV[1] ~ /^\+?[0-9]+$/ &amp;&amp; adj == 0)
+                               {
+                                 adj = ARGV[1]
+                                 shift_ARGV()
+                               }
+
+                               #------------------------------------------------------------#
+                               # OK, do it the long way--see if I care :-))                 #
+                               #------------------------------------------------------------#
+                               if (opt_v)
+                                 print "<a href="#calcdate">calculate_date</a>("yyyy","mm","dd","adj")"
+                                        <a href="#calcdate">calculate_date</a>( yyyy , mm , dd , adj )
+                               exit 0
+                             } # E.O.BEGIN
+
+                             #======================================================================#
+                             #                     U S E R    F U N C T I O N S                     #
+                             #                        (in alphabetical order)                       #<a name="basedate"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>basedate</b>(                                               \
+                                                YYYY,MM,DD,OPT_B,                             \
+                                                yyyy,cc,ddddd,leapdays,cc_leapdays,accum_days \
+                                              )                                                     #
+                             # -------------------------------------------------------------------- #
+                             # Globals: julian_days[] and julian_leap[]                             #
+                             #   Calls: <a href="#leapyear">leap_year</a>()                                                 #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (opt_v)
+                               {
+                                 print "basedate(YYYY,MM,DD,OPT_B)"
+                                 print "basedate("YYYY","MM","DD","OPT_B")"
+                               }
+                               #--------------------------------------------------------#
+                               # First, decrement the year and get the number of days   #
+                               # for all the years preceeding it (Anno Domini).         #
+                               #--------------------------------------------------------#
+                               yyyy = YYYY
+                               if ((yyyy - 1) &gt; 0)
+                               {                                                   ;if (opt_v) print "   YYYY       =|"YYYY       "|"
+                                 yyyy--                                            ;if (opt_v) print "   yyyy       =|"yyyy       "|"
+                                 cc          = int(yyyy / 100)                     ;if (opt_v) print "   cc         =|"cc         "|"
+                                 ddddd       = yyyy * 365                          ;if (opt_v) print "   ddddd      =|"ddddd      "|"
+                                 leapdays    = int(yyyy / 4)                       ;if (opt_v) print "   leapdays   =|"leapdays   "|"
+                                 cc_leapdays = (cc &gt; 0) ? (int(cc / 4)) : 0        ;if (opt_v) print "   cc_leapdays=|"cc_leapdays"|"
+                                 ddddd       = ddddd + leapdays - cc + cc_leapdays ;if (opt_v) print "   ddddd      =|"ddddd      "|"
+                                 yyyy++                                            ;if (opt_v) print "   yyyy       =|"yyyy       "|"
+                               }
+                               ddddd += DD                                         ;if (opt_v) print "   ddddd      =|"ddddd      "|"
+
+                               #---------------------------------------------------------#
+                               # Add the previous month YTD days to our ddddd.  If it    #
+                               # is a leap year, assign julian_leap[] to accum_days[].   #
+                               # Then add in YTD days for previous months of this year   #
+                               #---------------------------------------------------------#
+                               if (<a href="#leapyear">leap_year</a>(yyyy))
+                                 for (i=0; i&lt;13; i++) accum_days[i] = julian_leap[i]
+                               else
+                                 for (i=0; i&lt;13; i++) accum_days[i] = julian_days[i]
+                               ddddd += accum_days[MM += 0] # 'MM += 0' removes leading zero
+
+                               if (OPT_B) # If all they want is basedate, print it and exit.
+                               {
+                                 print ddddd
+                                 exit 0
+                               }
+
+                               if (opt_v)
+                                 print "==&gt; return ("ddddd")"
+                                            return ( ddddd )
+                             } # function basedate
+                             <a name="calcwday"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>calc_weekday</b>(YYYY,MM,DD,                    ddddd,weekdays,i) #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (opt_v)
+                               {
+                                 print "calculate_weekday(YYYY,MM,DD)"
+                                 print "calculate_weekday("YYYY","MM","DD")"
+                               }
+
+                               if (ARGV[1] == "-w") # -[Ww] = Weekday for today|yyyymmdd
+                                 split("Sun Mon Tue Wed Thu Fri Sat", weekdays)
+                               else
+                                 split("Sunday Monday Tuesday Wednesday Thursday Friday Saturday", weekdays)
+
+                               ddddd = (<a href="#basedate">basedate</a>(YYYY,MM,DD) % 7)
+                               print weekdays[ddddd+1]
+                               exit ddddd # ddddd = day number [0-6]
+                               #------------------------------------------------------------------#
+                               # http://www.tondering.dk/claus/cal/calendar26.txt                 #
+                               # In day of the week calculations, the divisions are integer       #
+                               # divisions, in which remainders are discarded.                    #
+                               # a = (14 - month) / 12                                            #
+                               # y = year - a                                                     #
+                               # m = month + 12*a - 2                                             #
+                               # Julian d = (5 + day + y + y/4 + (31*m)/12) mod 7                 #
+                               # Gregorian d = (day + y + y/4 - y/100 + y/400 + (31*m)/12) mod 7  #
+                               #------------------------------------------------------------------#
+                             } # function calc_weekday
+                             <a name="calcdate"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>calculate_date</b>(YYYY,MM,DD,ADJ,                  i,month_days) #
+                             # -------------------------------------------------------------------- #
+                             # Calls: <a href="#leapyear">leap_year</a>(), <a href="#ddddd_to">ddddd_to_yyyymmdd</a>(), and <a href="#basedate">basedate</a>()              #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (opt_v)
+                               {
+                                 print "calculate_date(YYYY,MM,DD,ADJ)"
+                                 print "calculate_date("YYYY","MM","DD","ADJ")"
+                               }
+
+                               split("31 28 31 30 31 30 31 31 30 31 30 31", month_days)
+                               if (<a href="#leapyear">leap_year</a>(YYYY) &amp;&amp; mm == 2) month_days[2] = 29
+                               if (ADJ &lt; 0 &amp;&amp; ADJ &gt; (DD * -1))                       # Shortcut -n
+                               {
+                                 if (opt_v)
+                                   print "printf(\"%4d%02d%02d\n\","YYYY","MM",("DD" + "ADJ"))"
+                                          printf( "%4d%02d%02d\n" , YYYY , MM ,( DD  +  ADJ ))
+                               }
+                               else if (ADJ &gt; 0 &amp;&amp; ((DD + ADJ) &lt;= month_days[MM+0])) # Shortcut +n
+                               {
+                                 if (opt_v)
+                                   print "printf(\"%4d%02d%02d\n\","YYYY","MM",("DD" + "ADJ"))"
+                                          printf( "%4d%02d%02d\n" , YYYY , MM ,( DD  +  ADJ ))
+                               }
+                               else                                                  # Long way
+                               {
+                                 if (opt_v)
+                                   print "<a href="#ddddd_to">ddddd_to_yyyymmdd</a>(<a href="#basedate" >basedate</a>("YYYY","MM","DD") + "ADJ")"
+                                   print  <a href="#ddddd_to">ddddd_to_yyyymmdd</a>(<a href="#basedate" >basedate</a>( YYYY , MM , DD ) +  ADJ )
+                               }
+                               exit 0
+                             } # function calculate_date
+                             <a name="daysince"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>days_since</b>(                                      \
+                                                  YYYY,MM,DD,OPT,                      \
+                                                  yyyymmdd,mm,dd,yyyy,ddddd,ddddd_yyyy \
+                                                ) # Global variables: progname                      #
+                             #----------------------------------------------------------------------#
+                             {
+                               ddddd = <a href="#basedate">basedate</a>(YYYY,MM,DD)
+                               if (OPT != "u")
+                               {
+                                 ddddd_yyyy = ddddd
+                                "date +\%Y\%m\%d" | getline yyyymmdd # Today's date
+                                 yyyy = substr(yyyymmdd,1,4)
+                                 mm   = substr(yyyymmdd,5,2)
+                                 dd   = substr(yyyymmdd,7,2)
+
+                                 ddddd = <a href="#basedate">basedate</a>(yyyy,mm,dd)
+                                 ddddd -= ddddd_yyyy
+                                 if (OPT == "S" &amp;&amp; ddddd &lt; 0) ddddd = ddddd - ddddd - ddddd
+                               }
+                               else
+                               {
+                                 if (YYYY &gt;= 1970)
+                                 {
+                                   ddddd_yyyy = <a href="#basedate">basedate</a>(1970,01,01)
+                                   ddddd -= ddddd_yyyy
+                                 }
+                                 else
+                                 {
+                                   printf("This is a trick question, right?  ")         |"cat 1&gt;&2"
+                                   printf("You requested the number of days since\n")   |"cat 1&gt;&2"
+                                   printf("Jan. 1, 1970, (-u option) but you provided ")|"cat 1&gt;&2"
+                                   printf("a date that is older than that.\n")          |"cat 1&gt;&2"
+                                   printf("%s terminated.\n", progname)                 |"cat 1&gt;&2"
+                                   exit 6
+                                 }
+                               }
+
+                               print ddddd
+                               exit 0
+                             } # function days_since
+                             <a name="ddddd_to"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>ddddd_to_yyyymmdd</b>(DDDDD,                   ddddd,yyyy,mmdd,i) #
+                             # -------------------------------------------------------------------- #
+                             # Globals: julian_days[] and julian_leap[]                             #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (opt_v)
+                               {
+                                 print "ddddd_to_yyyymmdd(DDDDD)"
+                                 print "ddddd_to_yyyymmdd("DDDDD")"
+                               }
+
+                               yyyy = ddddd = <a href="#reduce">reduce</a>(DDDDD)
+                               if (opt_v) print "yyyy = ddddd = "ddddd
+                               sub(/-.*$/,"", yyyy); yyyy  += 0 # "+= 0" ensures numeric context
+                               sub(/^.*-/,"",ddddd); ddddd += 0
+                               if (opt_v)
+                               {
+                                 print "yyyy  = |"yyyy"|"
+                                 print "ddddd = |"ddddd"|"
+                               }
+
+                               if (<a href="#leapyear">leap_year</a>(yyyy))
+                                 for (i in julian_leap)
+                                   julian[i] = julian_leap[i]
+                               else
+                                 for (i in julian_days)
+                                   julian[i] = julian_days[i]
+
+                               #------------------------------------------------------------#
+                               # Reduce ddddd to month and day (we already have the year).  #
+                               #------------------------------------------------------------#
+                               for (i=13; i&gt;0; i--)
+                               {
+                                 if (opt_v)
+                                 {
+                                   print "if (julian["i"] &lt; "ddddd")"
+                                   print "if ("julian[i]" &lt; "ddddd")"
+                                 }
+                                 if (julian[i] &lt; ddddd)
+                                 {
+                                 # if (<a href="#leapyear">leap_year</a>(yyyy) &amp;&amp; i &gt; 2) ddddd++ # 20080406.164435
+                                   ddddd -= julian[i]
+                                   mmdd = sprintf("%02d%02d", i, ddddd)
+                                   break
+                                 }
+                               }
+
+                               if (opt_v)
+                               {
+                                 print "return (yyyy\"\"mmdd)"
+                                 print "return ("yyyy""mmdd")"
+                               }
+                                        return ( yyyy""mmdd )
+                             } # function ddddd_to_yyyymmdd
+                             <a name="exit_usa"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>exit_usage</b>(ERRMSG) # Global vars: progname                    #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (ERRMSG != "") print "\n"ERRMSG | "cat 1&gt;&2"
+                               print "\nUsage: [gn]awk -f "progname" -- -bHhjSstuvWwy -|+adj yyyymmdd.\n",
+                                     "\n       -- = Allows AWK to pass script options and args."    ,
+                                     "\n       -b = Basedate for today or yyyymmdd."                ,
+                                     "\n       -H = Full formal documentation (functions only"      ,
+                                     "\n            when the current working directory is the"      ,
+                                     "\n            program directory)."                            ,
+                                     "\n       -h = Summary help (Usage)."                          ,
+                                     "\n       -j = Julian day for today or yyyymmdd."              ,
+                                     "\n       -S = Days since (or until) yyyymmdd (unsigned both).",
+                                     "\n       -s = Days since (or until) yyyymmdd (signed future).",
+                                     "\n       -t = Tomorrow's date."                               ,
+                                     "\n       -u = Basedate of today|yyyymmdd since"               ,
+                                     "\n            Jan. 1, 1970--the Unix epoch date"              ,
+                                     "\n            (essentially 'dateplus -s 19700101')."          ,
+                                     "\n       -v = Verbose output (primarily for development)."    ,
+                                     "\n       -W = Date's long weekday"                            ,
+                                     "\n       -w = Date's abbreviated weekday"                     ,
+                                     "\n       -y = Yesterday's date.\n"                            ,
+                                     "\n      adj = Adjustment days that may be positive or"        ,
+                                     "\n            negative (prefix sign annotation only)."        ,
+                                     "\n            By itself (with no yyyymmdd date following,"    ,
+                                     "\n            yields an adjusted date that is calculated"     ,
+                                     "\n            from today's date.\n"                           ,
+                                     "\n yyyymmdd = Optional date from which the adjusted date"     ,
+                                     "\n            is calculated.\n"                               ,
+                                     "\n            "progname" terminated.\n"
+                               exit 7
+                             } # function exit_usage
+                             <a name="jul_date"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>julian_date</b>(YYYY,MM,DD,   ddd) # Global vars: progname        #
+                             #----------------------------------------------------------------------#
+                             {
+                               ddd = <a href="#reduce">reduce</a>(<a href="#basedate">basedate</a>(YYYY,MM,DD))
+                               sub(/^.*-/,"",ddd)
+                               printf("%03d\n", ddd)
+
+                               exit 0
+                             } # function julian_date
+                             <a name="leapyear"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>leap_year</b>(YYYY) # YYYY = year.  Returns true|false (1|0).     #
+                             #----------------------------------------------------------------------#
+                             {
+                               return (((YYYY%4 == 0 &amp;&amp; YYYY%100 != 0) || (YYYY%400 == 0)) ? 1 : 0)
+                             } # function leap_year
+                             <a name="reduce"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>reduce</b>(DDDDD,           yyyy,ddddd,cc,leapdays,cc_leapdays,i) #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (opt_v)
+                               {
+                                 print "reduce(DDDDD)"
+                                 print "reduce("DDDDD")"
+                               }
+
+                               for (i=1; ; i++)
+                               {                                            ;if (opt_v) print i". DDDDD      =|"DDDDD      "|"
+                                 yyyy        = int(DDDDD / 365) - i         ;if (opt_v) print i". yyyy       =|"yyyy       "|"
+                                 ddddd       = DDDDD - yyyy * 365           ;if (opt_v) print i". ddddd      =|"ddddd      "|"
+                                 cc          = int(yyyy / 100)              ;if (opt_v) print i". cc         =|"cc         "|"
+                                 leapdays    = int(yyyy / 4)                ;if (opt_v) print i". leapdays   =|"leapdays   "|"
+                                 cc_leapdays = (cc &gt; 0) ? (int(cc / 4)) : 0 ;if (opt_v) print i". cc_leapdays=|"cc_leapdays"|"
+                                 leapdays    = leapdays - cc + cc_leapdays  ;if (opt_v) print i". leapdays   =|"leapdays   "|"
+                                 ddddd      -= leapdays                     ;if (opt_v) print i". ddddd      =|"ddddd      "|"
+                                 yyyy++                                     ;if (opt_v) print i". yyyy       =|"yyyy       "|"
+                                 if (ddddd &gt; 0) break
+                               }
+                               if (opt_v)
+                                 print "return "yyyy"-"ddddd
+                                        return  yyyy"-"ddddd
+                             } # function reduce
+                             <a name="shftargv"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>shift_ARGV</b>(i,j,k)                                             #
+                             #----------------------------------------------------------------------#
+                             {
+                               k = ARGC
+                               for (i=1; i&lt;=ARGC; i++)
+                               {
+                                 if (ARGV[i] == "")     # If the argument is empty, see is we
+                                 {                      # can shift the next one down to it.
+                                   for (j=i+1; j&lt;=k; j++)
+                                   {
+                                     if (ARGV[j] == "") # If the next one is empty, try the one
+                                       continue         # following that.
+                                     ARGV[i] = ARGV[j]  # Once we find an argument, move it down,
+                                     ARGV[j] = ""       # null where it was, decrement arg counter,
+                                     break              # then do this with the next argument.
+                                   }
+                                 }
+                               }
+
+                               for (i=1; i&lt;k; i++)      # Adjust ARGC
+                                 if (ARGV[i] == "")     # If the argument is empty,
+                                   ARGC--               # decrement ARGC
+                               return ARGC
+                             } # function shift_ARGV
+                             <a name="show_doc"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>show_documentation</b>(MOI,                               n,line) #
+                             #----------------------------------------------------------------------#
+                             {
+                               n = 0
+                               while (getline &lt;MOI &gt; 0) # Searching ourselves for the doc'n section.
+                               {
+                                 #------------------------------------------#
+                                 # Until we find the documentation section, #
+                                 # keep looking at each line.               #
+                                 #------------------------------------------#
+                                 if (n == 0)
+                                 {
+                                   if ($0 ~ /^\043 +D O C U M E N T A T I O N/)
+                                   {
+                                     n = 1
+                                     print line
+                                     print $0
+                                   }
+                                   else
+                                     line = $0
+
+                                   continue
+                                 }    #-----------------------------------#
+                                 else # Once we find it, print until EOF. #
+                                 {    #-----------------------------------#
+                                   print
+                                 }
+                               } # while (getline &lt;MOI &gt; 0)
+
+                               if (n == 0) # Means we did not find documentation section.
+                               {
+                                 print "NO DOCUMENTATION section found for "MOI" in the",
+                                       "current directory (cwd).\nTry again after first",
+                                       "changing to the program directory." | "cat 1&gt;&2"
+                                 exit 10 # Exit failure
+                               }
+                               exit 11 # Exit failure anyway because we don'y live for this.
+                             } # function show_documentation
+                             <a name="validate"></a>
+                             #----------------------------------------------------------------------#
+                             function <b>validate_yyyymmdd</b>(                                \
+                                                         YYYY,MM,DD,                    \
+                                                         yyyy,mm,dd,mm_days,month_names \
+                                                       ) # Calls: <a href="#leapyear">leap_year</a>()                       #
+                             #----------------------------------------------------------------------#
+                             {
+                               if (opt_v)
+                               {
+                                 print "validate_yyyymmdd(YYYY,MM,DD)"
+                                 print "validate_yyyymmdd("YYYY","MM","DD")"
+                               }
+
+                               yyyy = YYYY
+                               mm   = MM
+                               dd   = DD
+                               dd  += 0
+                               mm  += 0
+
+                               split("January  February March "     \
+                                     "April    May      June "      \
+                                     "July     August   September " \
+                                     "October  November December",  month_names)
+
+                               if (mm==1||mm==3||mm==5||mm==7||mm==8||mm==10||mm==12)
+                                 mm_days=31
+                               else if (mm==4||mm==6||mm==9||mm==11)
+                                 mm_days=30
+                               else if (mm==2)
+                                 mm_days = (<a href="#leapyear">leap_year</a>(yyyy)) ? 29 : 28
+                               else
+                               {
+                                 print "Month "MM" is invalid!\n" | "cat 1&gt;&2"
+                                 exit 8
+                               }
+                               if (dd &gt; mm_days)
+                               {
+                                 print month_names[mm]", "yyyy,
+                                   " does not have "dd" days!\n" | "cat 1&gt;&2"
+                                 exit 9
+                               }
+                               if (dd &lt; 1)
+                               {
+                                 print DD " is an invalid day for any month!\n" | "cat 1&gt;&2"
+                                 exit 10
+                               }
+                               return 0
+                             } # function validate_yyyymmdd
+
+                             #======================================================================#
+                             #                       D O C U M E N T A T I O N                      #
+                             #======================================================================#
+                             #                                                                      #
+                             #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+                             #                                                                      #
+                             #        Date: July 2, 1995                                            #
+                             #                                                                      #
+                             #  Program ID: dateplus.awk                                            #
+                             #                                                                      #
+                             #       Usage: [gn]awk -f dateplus.awk -- -bHhjSstuvWwy \              #
+                             #                                         -|+adj yyyymmdd              #
+                             #                                                                      #
+                             #          nawk|gawk = Program runs with either. (See "Usage Note:"    #
+                             #                      below for "#!" operation.)                      #
+                             #                 -- = Allows AWK to pass script options and args.     #
+                             #                 -b = Basedate for today or yyyymmdd.                 #
+                             #                 -H = Full formal documentation (functions only       #
+                             #                      when the current working directory is the       #
+                             #                      program directory).                             #
+                             #                 -h = Summary help (Usage).                           #
+                             #                 -j = Julian day for today or yyyymmdd.               #
+                             #                 -S = Days since (or until) yyyymmdd (unsigned both). #
+                             #                 -s = Days since (or until) yyyymmdd (signed future). #
+                             #                 -t = Tomorrow's date.                                #
+                             #                 -u = Basedate of today|yyyymmdd since                #
+                             #                      Jan. 1, 1970--the Unix epoch date               #
+                             #                      (essentially "dateplus -s 19700101").           #
+                             #                 -v = Verbose output (primarily for development).     #
+                             #                 -W = Date's long weekday                             #
+                             #                 -w = Date's abbreviated weekday                      #
+                             #                      (see 'Exit Codes' below for -W and -w)          #
+                             #                 -y = Yesterday's date.                               #
+                             #                                                                      #
+                             #                adj = Adjustment days that may be positive or         #
+                             #                      negative (prefix sign annotation only).         #
+                             #                      By itself (with no yyyymmdd date following,     #
+                             #                      yields an adjusted date that is calculated      #
+                             #                      from today's date.                              #
+                             #           yyyymmdd = Optional date from which the adjusted date      #
+                             #                      is calculated.                                  #
+                             #                                                                      #
+                             #  Usage Note: If your OS recognizes the "#!" (shebang) syntax,        #
+                             #              you can place a "#!/usr/bin/nawk -f" (or gawk)          #
+                             #              at the start of this program (as I have) thereby        #
+                             #              allowing you skip the "[gn]awk -f" during invocation.   #
+                             #                                                                      #
+                             #     Purpose: This program calculates a date or dates that is         #
+                             #              nnnnn days (+ or -) distant from either today's         #
+                             #              date or another user-supplied date.                     #
+                             #                                                                      #
+                             # Description: This program is the Awk equivalent of my C program,     #
+                             #              dateplus.c.  With the exception of -J (capital "J")     #
+                             #              option and the iterations argument, all of the C        #
+                             #              program options are available here.  This Awk           #
+                             #              version of the dateplus.c program is supported and      #
+                             #              maintained as part of my shell library for those        #
+                             #              sites with limited C-compiler access.                   #
+                             #                                                                      #
+                             #              For all practical purposes, any date the user           #
+                             #              wishes to use as a yyyymmdd (from 01/01/0001            #
+                             #              through 12/31/9999) is accepted.  The resultant         #
+                             #              date is returned via stdout in yyyymmdd form.           #
+                             #              The program is especially useful for calculating        #
+                             #              yesterday's, tomorrow's, or any other desired           #
+                             #              date.  Additionally, by specifying an iteration         #
+                             #              value (the last argument) the program generates         #
+                             #              that number of dates, each adjusted on the              #
+                             #              previous date (handy for calculating paydays and        #
+                             #              the like).  Because the program writes to stdout        #
+                             #              its output is easily redirected to a file where         #
+                             #              the results can be subsequently edited or munged        #
+                             #              as needed.  The program also comes with help            #
+                             #              options (-h and -H for summary and detailed             #
+                             #              outputs, respectively).                                 #
+                             #                                                                      #
+                             #  Exit Codes: For all options except weekday (-w)                     #
+                             #                 Zero    = Normal   | Success                         #
+                             #                 Nonzero = Abnormal | Failure                         #
+                             #              For weekday (-w) option                                 #
+                             #                 0-6 = Success (zero-based weekday: Sun = 0)          #
+                             #                 7+  = Failure                                        #
+                             #                                                                      #
+                             #     History: The Gregorian correction to the Julian calendar         #
+                             #              made in October, 1582 dropped 10 days.  That            #
+                             #              is, October 4, 1582 was followed immediately by         #
+                             #              October 15.  This Papal correction, although            #
+                             #              scientifically correct, was not adopted by              #
+                             #              non-Catholic countries until almost two                 #
+                             #              centuries later in 1752.  In September, 1752            #
+                             #              the English calendar was adjusted to Pope               #
+                             #              Gregory's method of correction and 11 days were         #
+                             #              dropped (September 14, followed September 2).           #
+                             #                                                                      #
+                             #              While this routine easily calculates the date           #
+                             #              that far back, it does not drop October 5-14,           #
+                             #              1582 or September 3-13, 1752.  If this routine          #
+                             #              is used to calculate dates that far back, the           #
+                             #              previously adjusted and dropped dates will              #
+                             #              appear as if no calendar corrections were ever          #
+                             #              made.  All of this is only for technical                #
+                             #              purists.  Most real-world applications will not         #
+                             #              go back that far.  This program's accuracy,             #
+                             #              then, is sufficient for most purposes.                  #
+                             #                                                                      #
+                             #       Notes: I am also no mathematician.  Neither do I consider      #
+                             #              myself an AWK expert.  If, therefore, any find          #
+                             #              errors in my code, logic, or computations, please       #
+                             #              advise me at Bob@OrlandoKuntao.com.  Your input         #
+                             #              is sincerely appreciated.  Thank you in advance.        #
+                             #                                                                      #
+                             #      +----------------------------------------------------------+    #
+                             #      |     For modifications, see 'Modified' section in the     |    #
+                             #      |     source code immediately following this statement.    |    #
+                             #      +----------------------------------------------------------+    #
+                             #                                                                      #
+                             #    Modified: 2010-03-19 Bob Orlando                                  #
+                             #                 v2.8  * Bug fix: Added code to reject day '00'       #
+                             #                         supplied by user.                            #
+                             #                                                                      #
+                             #              2008-04-06 Bob Orlando                                  #
+                             #                 v2.7  * Bug fix: Commented out the following line    #
+                             #                         ddddd_to_yyyymmdd function:                  #
+                             #                                                                      #
+                             #                           if (leap_year(yyyy) &amp;&amp;  i > 2) ddddd++     #
+                             #                                                                      #
+                             #                         The line was adding a day if the year        #
+                             #                         is a leap year and the month is after        #
+                             #                         February.  This was unnecessary because I    #
+                             #                         already use separate tables for leap and     #
+                             #                         normal years.                                #
+                             #                                                                      #
+                             #              2005-02-08 Bob Orlando                                  #
+                             #                 v2.6  * Bug fix: Changed                             #
+                             #                           if (leap_year(yyyy) &amp;&amp; mm > 2) ddddd++     #
+                             #                         to                                           #
+                             #                           if (leap_year(yyyy) &amp;&amp; i > 2) ddddd++      #
+                             #                                                                      #
+                             #----------------------------------------------------------------------#
+              </code>
+            </pre>
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              <a href="copyright.html">&copy;Copyright</a> Bob Orlando, 1995-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

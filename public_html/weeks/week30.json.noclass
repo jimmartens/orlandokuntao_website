@@ -1,0 +1,66 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"No Class, Instructor unavailable.",
+          "starttime":""          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"No Class, Instructor unavailable.",
+          "starttime":""          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Langka 5C (Smsh-n'shuff)",
+          "starttime":"10:00"          
+        },
+	{
+          "name":"OR Kilap 1+ (Left)",
+          "starttime":"10:30"          
+        },
+	{
+          "name":"Patada Voltear",
+          "starttime":"10:40"          
+        },
+	{
+          "name":"OR Kilap 2+ (Right)",
+          "starttime":"10:50"          
+        },
+	{
+          "name":"Escaping the mount",
+          "starttime":"11:00"          
+        },
+	{
+          "name":"Knife Sombrada (rev)",
+          "starttime":"11:15"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

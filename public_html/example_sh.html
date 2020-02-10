@@ -1,0 +1,1992 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <title>Bob Orlando's 'Example.sh' Unix Shell Library Example Script</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="Example.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's 'Example.sh' Unix Shell Library Example Script">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2012, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_example_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+                      #!/usr/bin/sh
+                      #
+                      # SccsId[] = "%W% (shell library test script) %G%"
+                      #
+                      #----------------------------------------------------------------------#
+                      #                              <b>example.sh</b>                              #
+                      # -------------------------------------------------------------------- #
+                      #   Program documentation and notes located at the bottom of script.   #
+                      #----------------------------------------------------------------------#
+
+                        #--------------------------------------------------------------#
+                        # Assignments for name_root and script_name are necessary if   #
+                        # there exists the possibility that this process may be run    #
+                        # by the 'at' command. Run via 'at' and the `basename $0` used #
+                        # in /usr/local/scripts/defaults.sh to assign $script_name,    #
+                        # simply returns the name, 'sh' (hardly desirable).            #
+                        #--------------------------------------------------------------#
+                        name_root="example"
+                        script_name=$name_root.sh
+                        args=`echo "$@" | sed 's/-/\\-/g'` # Escape dashes
+                        prelims="`date '+%Y-%m-%d %T'` $script_name (v%I%)" # SCCS keyword
+
+                        #--------------------------------------------------------------#
+                        # Make sure we can find all OS commands (use preferred path).  #
+                        #--------------------------------------------------------------#
+                        PATH=/usr/bin:/sbin:/bin:/usr/sbin:/usr/ucb:$PATH; export PATH
+
+                        program_start=`date '+%Y-%m-%d %T'`
+
+                        #--------------------------------------------------------------#
+                        # Use nawk or gawk, et al, depending on the OS.                #
+                        #--------------------------------------------------------------#
+                        # type gawk &gt; /dev/null 2&gt;&1 &amp;&amp; awk=gawk || awk=nawk ## FYI
+                        OZ=`uname -s 2&gt; /dev/null | tr '[A-Z]' '[a-z]' 2&gt; /dev/null`
+                        id_num=`id | sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`
+                        bin_dir=/usr/bin    # Defaults
+                        MAIL=$bin_dir/mailx #    ''
+                        ECHO=$bin_dir/echo  # Ensure we get the echo we want (! UCB)
+
+                           { [ -x /usr/bin/nawk     ] &amp;&amp; AWK=/usr/bin/nawk     ; } \
+                        || { [ -x /bin/nawk         ] &amp;&amp; AWK=/bin/nawk         ; } \
+                        || { [ -x /usr/bin/gawk     ] &amp;&amp; AWK=/usr/bin/gawk     ; } \
+                        || { [ -x /bin/gawk         ] &amp;&amp; AWK=/bin/gawk         ; } \
+                        || { [ -x /usr/gnu/bin/gawk ] &amp;&amp; AWK=/usr/gnu/bin/gawk ; } \
+                        || { [ -x /usr/bin/awk      ] &amp;&amp; AWK=/usr/bin/awk      ; } \
+                        || { [ -x /bin/awk          ] &amp;&amp; AWK=/bin/awk          ; }
+
+                        if   [ ."$OZ" = ."hp-ux" ]; then
+                           ps_opts="-edafl"
+                        elif [ ."$OZ" = ."linux" ]; then
+                           bin_dir=/bin
+                           MAIL=$bin_dir/mail
+                           ECHO="$bin_dir/echo -e"
+                           ps_opts='-aux'
+                        elif [ ."$OZ" = ."sunos" ]; then
+                           bin_dir=/usr/bin
+                           ps_opts="-fu $id_num -o pid,time,args"
+                        else # Unknown OS, see if there's any kind'a Awk available.
+                          if   [ ."$AWK" = . ]; then
+                             echo "Unable to locate [gn]awk program! $0 terminating." 1&gt;&2
+                             EXIT 1
+                          fi
+                          ps_opts="-elf" # AIX, IRIX?
+                        fi
+
+                        host=`hostname || uname -n`
+                        HOST=`echo $host | $AWK '{sub(/\..*/,"");print toupper($0)}'`
+
+
+                      #======================================================================#
+                      #                 <b>I N T E R N A L    F U N C T I O N S</b>                 #
+                      #----------------------------------------------------------------------#
+                      <b>LOG_ERROR()</b> # Requires $syslog_msg1 and $syslog_msg2 to be assigned.   #
+                      #----------------------------------------------------------------------#
+                      {
+                        echo "`date '+%Y-%m-%d %T'` ERROR: $script_name" 1&gt;&2
+                        echo "$syslog_msg1"                              1&gt;&2
+                        echo "$syslog_msg2"                              1&gt;&2
+                        if [ ."$TERM" = . ]; then
+                           logger -p "user.emerg" -t "$USER[$$]_EMER" \
+                             "$script_name: $syslog_msg1 $syslog_msg2"   1&gt;&2
+                        fi
+                      }
+
+                      #----------------------------------------------------------------------#
+                      <b>MAIL_ERROR()</b> # Requires $subject and $msg to be assigned.              #
+                      #----------------------------------------------------------------------#
+                      {
+                        $ECHO "`date '+%Y-%m-%d %T'` $subject\n$msg" 1&gt;&2
+                        $ECHO "`date '+%Y-%m-%d %T'` $msg" \
+                          | $MAIL -s "$HOST: $subject" "$LOGNAME@$host"
+                      }
+
+
+                      #======================================================================#
+                      #                  <b>L I B R A R Y    F U N C T I O N S</b>                  #
+                      #                       (in alphabetical order)                        #
+                      #----------------------------------------------------------------------#
+                        cwd=`pwd`
+
+                      #--------------------------------------------------------------------#
+                      # /usr/local/scripts and /usr/local/bin library location             #
+                      #--------------------------------------------------------------------#
+                      # if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+                      # if [ .${SHBIN} = . ]; then SHBIN=/usr/local/bin;     export SHBIN; fi
+
+                      #--------------------------------------------------------------------#
+                      # Nagios library location                                            #
+                      #--------------------------------------------------------------------#
+                        if [ .${SHLIB} = . ]; then SHLIB=/usr/local/nagios/shlib; export SHLIB; fi
+                        if [ .${SHBIN} = . ]; then SHBIN=/usr/local/nagios/shlib; export SHBIN; fi
+
+                        if [ ."$1" = ."-TEST" ]; then
+                           shift # GET_OPTIONS (below) must not this this special option.
+                         # SHLIB=$HOME/usr/local/nagios/shlib; export SHLIB
+                        fi
+
+                        #----------------------------------------------------------------#
+                        # If we can't get to shell library, call for help and exit.      #
+                        #----------------------------------------------------------------#
+                        `cd $SHLIB 2&gt;&1` # Captures failures without immediately exiting.
+                        status=$?
+                        if [ $status -ne 0 ]; then
+                           syslog_msg1="Problems cd'ng to $SHLIB."
+                           syslog_msg2="Chdir status=$status.  $script_name ($$) terminated."
+
+                           subject="$HOST: FATAL ERROR--CD SHLIB Failure"
+                           msg="$syslog_msg1\n$syslog_msg2"
+                           MAIL_ERROR # () The '()' makes easy grep for function location.
+                         # LOG_ERROR  # () You can also write errors via logger if you wish.
+                           exit 1
+                        fi
+                        cd $SHLIB 2&gt;&1
+
+                        #----------------------------------------------------------------#
+                        # We do this first.  Set it up so that when we receive a signal  #
+                        # (CTL-C, kill, whatever) we echo the signal we received and     #
+                        # exit accordingly. (We expand this once we get into 'M A I N'.) #
+                        #----------------------------------------------------------------#
+                        prelims="$prelims\n`date '+%Y-%m-%d %T'` Assign signal traps."
+                        n=0
+                        for sig in `kill -l`
+                        do
+                           n=`expr $n + 1`
+                              [ ".$sig" = ".EXIT" -o ".$sig" = ".SEGV" \
+                             -o ".$sig" = ".CHLD" -o ".$sig" = ".CLD"  \
+                             -o ".$sig" = ".TSTP" -o ".$sig" = ".CONT" ] &amp;&amp; continue
+                           trap "echo Exit $sig \($n\) 1&gt;&2; exit $n" $n
+                        done
+
+                        #------------------------------------------------------------#
+                        # More functions are loaded here than are actually called    #
+                        # by this script, thus performing syntax check on all.       #
+                        # Failure of any function to load causes exit with 1 status. #
+                        #------------------------------------------------------------#
+                        prelims="$prelims\n`date '+%Y-%m-%d %T'` Load library functions."
+                        . ./chdir_exit_err.sh             ; status=$?
+                        . ./chdir_exit_err_nomail.sh      ; status=`expr $status + $?`
+                        . ./check_tape_status.sh          ; status=`expr $status + $?`
+                        . ./chgrp_exit_err.sh             ; status=`expr $status + $?`
+                        . ./chgrp_exit_err_nomail.sh      ; status=`expr $status + $?`
+                        . ./chmod_exit_err.sh             ; status=`expr $status + $?`
+                        . ./chmod_exit_err_nomail.sh      ; status=`expr $status + $?`
+                        . ./chown_exit_err.sh             ; status=`expr $status + $?`
+                        . ./chown_exit_err_nomail.sh      ; status=`expr $status + $?`
+                        . ./cleanup_work_files.sh         ; status=`expr $status + $?`
+                        . ./compress_by_date.sh           ; status=`expr $status + $?`
+                        . ./cp_dev_null_exit_err.sh       ; status=`expr $status + $?`
+                        . ./cp_dev_null_exit_err_nomail.sh; status=`expr $status + $?`
+                        . ./cp_exit_err.sh                ; status=`expr $status + $?`
+                        . ./cp_exit_err_nomail.sh         ; status=`expr $status + $?`
+                        . ./debug_pause_loop.sh           ; status=`expr $status + $?`
+                        . ./display_fs_size.sh            ; status=`expr $status + $?`
+                        . ./display_fs_space.sh           ; status=`expr $status + $?`
+                        . ./echo_exec.sh                  ; status=`expr $status + $?`
+                        . ./elapsed_time.sh               ; status=`expr $status + $?`
+                        . ./email_msg.sh                  ; status=`expr $status + $?`
+                        . ./exit.sh                       ; status=`expr $status + $?`
+                        . ./exit_if_already_running.sh    ; status=`expr $status + $?`
+                        . ./exit_on_process_conflicts.sh  ; status=`expr $status + $?`
+                        . ./format_num_with_commas.sh     ; status=`expr $status + $?`
+                        . ./frame_text.sh                 ; status=`expr $status + $?`
+                        . ./ftp_host.sh                   ; status=`expr $status + $?`
+                        . ./get_file_perms.sh             ; status=`expr $status + $?`
+                        . ./get_file_yymmddhhmi.sh        ; status=`expr $status + $?`
+                        . ./get_next_yyyymmddhh.sh        ; status=`expr $status + $?`
+                        . ./get_options.sh                ; status=`expr $status + $?`
+                        . ./get_prev_yyyymmddhh.sh        ; status=`expr $status + $?`
+                        . ./isint.sh                      ; status=`expr $status + $?`
+                        . ./isnum.sh                      ; status=`expr $status + $?`
+                        . ./kill_pid.sh                   ; status=`expr $status + $?`
+                        . ./leap_year.sh                  ; status=`expr $status + $?`
+                        . ./mkdir_exit_err.sh             ; status=`expr $status + $?`
+                        . ./mkdir_exit_err_nomail.sh      ; status=`expr $status + $?`
+                        . ./month_mmm_to_nn.sh            ; status=`expr $status + $?`
+                        . ./month_nn_to_mmm.sh            ; status=`expr $status + $?`
+                        . ./mv_exit_err.sh                ; status=`expr $status + $?`
+                        . ./mv_exit_err_nomail.sh         ; status=`expr $status + $?`
+                        . ./parse_parameters.sh           ; status=`expr $status + $?`
+                        . ./pause_y_or_n.sh               ; status=`expr $status + $?`
+                        . ./ping_host.sh                  ; status=`expr $status + $?`
+                        . ./print_vars.sh                 ; status=`expr $status + $?`
+                        . ./prune_files.sh                ; status=`expr $status + $?`
+                        . ./ps_auxww.sh                   ; status=`expr $status + $?`
+                        . ./range_nums.sh                 ; status=`expr $status + $?`
+                        . ./range_values.sh               ; status=`expr $status + $?`
+                        . ./read_noecho.sh                ; status=`expr $status + $?`
+                        . ./readkey.sh                    ; status=`expr $status + $?`
+                        . ./readkey_noecho.sh             ; status=`expr $status + $?`
+                        . ./remove_by_date.sh             ; status=`expr $status + $?`
+                        . ./rm_exit_err.sh                ; status=`expr $status + $?`
+                        . ./rm_exit_err_nomail.sh         ; status=`expr $status + $?`
+                        . ./show_documentation.sh         ; status=`expr $status + $?`
+                        . ./terminate.sh                  ; status=`expr $status + $?`
+                        . ./terminate_subprocesses.sh     ; status=`expr $status + $?`
+                        . ./touch_exit_err.sh             ; status=`expr $status + $?`
+                        . ./touch_exit_err_nomail.sh      ; status=`expr $status + $?`
+                        . ./trap_exit.sh                  ; status=`expr $status + $?`
+                        . ./validate_date.sh              ; status=`expr $status + $?`
+                        . ./validate_time.sh              ; status=`expr $status + $?`
+                        . ./verify_num_vars.sh            ; status=`expr $status + $?`
+                        . ./verify_vars.sh                ; status=`expr $status + $?`
+                        . ./wait_on_process.sh            ; status=`expr $status + $?`
+                        . ./write_err_to_syslogs.sh       ; status=`expr $status + $?`
+                        # This one last.
+                        . ./defaults.sh                   ; status=`expr $status + $?`
+
+                        #--------------------------------------------------------------#
+                        # If anything fails to load, fuss about it and exit.           #
+                        #--------------------------------------------------------------#
+                        if [ $status -ne 0 ]; then
+                           syslog_msg1="Function load problems (status=$status)."
+                           syslog_msg2="$script_name '$args' ($$) terminated."
+
+                           subject="$HOST: FATAL ERROR--SHLIB LOAD Failure"
+                           msg="$syslog_msg1\n$syslog_msg2"
+                           MAIL_ERROR # ()
+                         # LOG_ERROR  # ()
+                           exit 1
+                        fi
+                        prelims="$prelims\n`date '+%Y-%m-%d %T'` Function load complete."
+
+                        #--------------------------------------------------------------#
+                        # Display loaded function list.                                #
+                        #--------------------------------------------------------------#
+                        prelims="${prelims} List follows:"
+                        if [ ".${SECONDS}" = "." ]; then # Bourne shell?
+                           prelims="$prelims\n`set | cut -c1-120 \
+                            | $AWK -v sp=\"$sp\" '/^[A-Z0-9_]+\(\)\{$/ {print sp\"\"$0}'`"
+                        else # Korn or Bash shell?
+                           if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                              prelims="$prelims\n`typeset +f | sed \"s/^/$sp/\"`"
+                           else # Linux
+                              prelims="$prelims\n`typeset -F | sed \"s/^/$sp/\"`"
+                           fi
+                        fi
+
+                        #--------------------------------------------------------------#
+                        # Problems changing to $cwd?  Fuss about it and split.         #
+                        #--------------------------------------------------------------#
+                        `cd $cwd 2&gt;&1` # Captures failures without immediately exiting.
+                        status=$?
+                        if [ $status -ne 0 ]; then
+                           syslog_msg1="Problems cd'ng to $cwd!"
+                           syslog_msg2="Chdir status=$status.  $script_name ($$) terminated."
+
+                           subject="$HOST: FATAL ERROR--CD Failure"
+                           msg="$syslog_msg1\n$syslog_msg2"
+                           MAIL_ERROR # ()
+                         # LOG_ERROR  # ()
+                           exit 1
+                        fi
+                        cd $cwd
+
+                        #--------------------------------------------------------------#
+                        # Before going much further, parse options and give'em help as #
+                        # needed (command line options come before other arguments).   #
+                        #--------------------------------------------------------------#
+                        GET_OPTIONS $*
+
+                        #--------------------------------------------------------------#
+                        # If the user wants full documemnation, find the documentation #
+                        # section and print everything from there down.                #
+                        #--------------------------------------------------------------#
+                        if [ $show_documentation -eq $true ]; then
+                           SHOW_DOCUMENTATION
+                           exit 1
+                        fi
+
+
+                      #======================================================================#
+                      #                     <b>U S E R    F U N C T I O N S</b>                     #
+                      #                        (in alphabetical order)                       #
+                      # -------------------------------------------------------------------- #
+                      # User/local function variables all begin with an underscore to ensure #
+                      # that they do not conflict with any library function variable names.  #
+                      #----------------------------------------------------------------------#
+                      <b>ANONYMOUS_FTP()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        PAUSE_Y_OR_N "`date '+%Y-%m-%d %T'`" \
+                          "List (DIR) $ftp_site (via anonymous FTP)?  y|n [n] "
+                        if [ $? -eq $yes ]; then   # Default answer is "no."
+                           /bin/echo "`date '+%Y-%m-%d %T'`"             \
+                             "FTP attempt will commit ritual seppuku if" \
+                             "\n${sp}it fails to complete in a couple of minutes." | $teelog
+
+                           $ECHO "${sp}FTP_HOST -v -t $self_destruct $ftp_site" \
+                                 "\n${sp}  user anonymous $LOGNAME@$host"       \
+                                 "\n${sp}  dir"                                 \
+                                 "\n${sp}  bye" | $teelog
+
+                                       FTP_HOST -v -t $self_destruct $ftp_site  \
+                                          "user anonymous $LOGNAME@$host"       \
+                                          "dir"                                 \
+                                          "bye" &gt; $stdout 2&gt; $stderr
+                           _AFTP_status=$?
+                           if [ $_AFTP_status -eq $success ]; then
+                              if [ -s $stdout ]; then
+                                 sed "s/^/$sp/" $stdout | $teelog
+                                 echo "${sp}$dashes"    | $teelog
+                              fi
+                           fi
+                           PAUSE_Y_OR_N -1 "`date '+%Y-%m-%d %T'`" \
+                             "Wanna see FTP's stdout & stderr?  y|n [n] "
+                           if [ $? -eq $yes ]; then   # Default answer is "no."
+                              [ -s $stdout ] &amp;&amp; sed "s/^/$ftp_stdout_sp/" $stdout | $teelog
+                              [ -s $stderr ] &amp;&amp; sed "s/^/$ftp_stderr_sp/" $stderr | $teelog
+                           fi
+                        else
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "I know.  I know.  Boooring." | $teelog
+                        fi
+                      } # "_AFTP_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>CALC_ELAPSED_DAYS()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #--------------------------------------------------------------------#
+                        # This is only in a function to maintain the script's modular design.#
+                        #--------------------------------------------------------------------#
+                        echo "`date '+%Y-%m-%d %T'` Days since October 26, 1944 are" \
+                          "`$<a href="dateplus_awk.html">dateplus</a> -s 19441026 | sed 's/...$/,&/'`" | $teelog
+                        echo "`date '+%Y-%m-%d %T'` Days since via <a href="dateplus_awk.html">dateplus.awk</a> are" \
+                          "`$AWK -f $SHLIB/<a href="dateplus_awk.html">dateplus.awk</a> -- -s 19441026               \
+                            | sed 's/...$/,&/'` (should be the same)." | $teelog
+                      }
+
+                      #----------------------------------------------------------------------#
+                      <b>CHECK_TAPE_DEVICE()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #------------------------------------------------#
+                        # If we have a $tape_dev, see if the user wants  #
+                        # its status checked.                            #
+                        #------------------------------------------------#
+                        if [ .${tape_dev} != . ]; then
+                           PAUSE_Y_OR_N "`date '+%Y-%m-%d %T'`" \
+                             "Check status of $tape_dev?  y|n [n]: "
+                           if [ $? -eq $yes ]; then   # Default answer is "no."
+                              CHECK_TAPE_STATUS $tape_dev
+                              _CTD_status=$?
+                              if [ $_CTD_status -eq $success ]; then
+                                 /bin/echo "${sp}Tape $tape_dev is OK." \
+                                   "Status=$_CTD_status.\n" | $teelog
+                              else
+                                 /bin/echo "${sp}Tape $tape_dev is feeling poorly right now." \
+                                   "Status=$_CTD_status.\n" | $teelog
+                              fi
+                           fi
+                        fi
+                      } # "_CTD_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>CONVERT_MONTH_MMM_AND_NN()</b> # Example code to test functions.           #
+                      #----------------------------------------------------------------------#
+                      {
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "$1's month number is `MONTH_MMM_TO_NN $1`" | $teelog
+                        echo "${sp}Abbreviated month name" \
+                          "for $2 is `MONTH_NN_TO_MMM $2`" | $teelog
+                      }
+
+                      #----------------------------------------------------------------------#
+                      <b>DISPLAY_FILESYSTEM_INFO()</b>
+
+                      #----------------------------------------------------------------------#
+                      {
+                        _DFI_fs="/usr"
+                        _DFI_msg_text=`DISPLAY_FS_SPACE $_DFI_fs`
+                        _DFI_status=$?
+                        echo "$_DFI_msg_text" | $teelog
+                        echo "${sp}Filesystem capacity (used)" \
+                          "returned via \$_DFI_status is $_DFI_status%" | $teelog
+
+                        #------------------------------------------------------------------#
+                        # Note: expr is faster because it is internal and just one process.#
+                        #------------------------------------------------------------------#
+                        _DFI_kbytes=`DISPLAY_FS_SIZE $_DFI_fs`
+                        _DFI_ktotl=`expr "$_DFI_kbytes" : '\([0-9]*\) .*'` # 1st word
+                        _DFI_kused=`echo "$_DFI_kbytes" | cut -d ' ' -f2`  # 2nd word
+                        _DFI_kfree=`expr "$_DFI_kbytes" : '.* \(.*\)'`     # Last word.  Hah!
+                        _DFI_reserved=`expr $_DFI_ktotl - $_DFI_kused - $_DFI_kfree`
+
+                        /bin/echo "${sp}$_DFI_fs Total space = "                        \
+                          "\b`printf '%11s' \`FORMAT_NUM_WITH_COMMAS $_DFI_ktotl\`` KB" \
+                          "(100.00%)" | $teelog
+                        #------------------------------------------------------------------#
+                        # These 'printf's do not work on Solaris 2.4 -- used nawk instead. #
+                        #    free_pct=`printf '%5.2f\n' \                                  #
+                        #      \`echo "scale=10;$_DFI_kused/$_DFI_ktotl*100" | bc\``       #
+                        #------------------------------------------------------------------#
+                        _DFI_used_pct=`$AWK 'BEGIN {printf("%5.2f\n",ARGV[1])}' \
+                          \`echo "scale=10;$_DFI_kused/$_DFI_ktotl*100" | bc\``
+                        /bin/echo "${sp}$_DFI_fs Used        = "                        \
+                          "\b`printf '%11s' \`FORMAT_NUM_WITH_COMMAS $_DFI_kused\`` KB" \
+                          "\b ( $_DFI_used_pct%)" | $teelog
+
+                        _DFI_free_pct=`$AWK 'BEGIN {printf("%5.2f\n",ARGV[1])}' \
+                          \`echo "scale=10;$_DFI_kfree/$_DFI_ktotl*100" | bc\``
+                        /bin/echo "${sp}$_DFI_fs Available   = "                        \
+                          "\b`printf '%11s' \`FORMAT_NUM_WITH_COMMAS $_DFI_kfree\`` KB" \
+                          "\b ( $_DFI_free_pct%)" | $teelog
+
+                        #--------------------------------------------------#
+                        # Now show'em the (emergency) reserved allocation. #
+                        #--------------------------------------------------#
+                        _DFI_resv_pct=`$AWK 'BEGIN {printf("%5.2f\n",ARGV[1])}' \
+                          \`echo "scale=10;$_DFI_reserved/$_DFI_ktotl*100" | bc\``
+                        /bin/echo "${sp}$_DFI_fs Reserved    = "                           \
+                          "\b`printf '%11s' \`FORMAT_NUM_WITH_COMMAS $_DFI_reserved\`` KB" \
+                          "\b ( $_DFI_resv_pct%)" | $teelog
+                      } # "_DFI_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>DISPLAY_PREVIOUS_AND_NEXT_HOUR()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        _DPNH_prev_yyyymmddhh=`GET_PREV_YYYYMMDDHH \`date '+%Y''%m%d%H'\``
+                        _DPNH_status=$?
+                        if [ $_DPNH_status -eq $success ]; then
+                           _DPNH_prev_hh=`expr "$_DPNH_prev_yyyymmddhh" : '.*\([0-2][0-9]\)'`
+                           /bin/echo "`date '+%Y-%m-%d %T'`"        \
+                             "The previous hour was ............ |" \
+                             "\b`printf '%20s' $_DPNH_prev_hh`|"  | $teelog
+                        else
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "Problem getting previous hour!  Status=$_DPNH_status" | $teelog
+                        fi
+
+                        _DPNH_next_yyyymmddhh=`GET_NEXT_YYYYMMDDHH \`date '+%Y''%m%d%H'\``
+                        _DPNH_status=$?
+                        if [ $_DPNH_status -eq $success ]; then
+                           _DPNH_next_hh=`expr "$_DPNH_next_yyyymmddhh" : '.*\([0-2][0-9]\)'`
+                           /bin/echo "`date '+%Y-%m-%d %T'`"        \
+                             "The next hour will be ............ |" \
+                             "\b`printf '%20s' $_DPNH_next_hh`|"  | $teelog
+                        else
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "Problem getting next hour!  Status=$_DPNH_status" | $teelog
+                        fi
+                      } # "_DPNH_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>EXIT_USAGE()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        echo ""                                                1&gt;&2
+                       $ECHO " Name: $script_name (%I%)\n"                     1&gt;&2
+                        echo "Usage: $script_name [-Hh] TEST_PARAM"            1&gt;&2
+                        echo ""                                                1&gt;&2
+                        echo "         -H = Displays detailed documentation."  1&gt;&2
+                        echo "         -h = Provides usage brief."             1&gt;&2
+                        echo "         TEST_PARAM = Argument showing dynamic"  1&gt;&2
+                        echo "                      parameter key processing." 1&gt;&2
+                        echo ""                                                1&gt;&2
+                        exit 1
+                      }
+
+                      #----------------------------------------------------------------------#
+                      <b>FRAME_YESTERDAYS_DATE()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        _FYD_yesterday=`$<a href="dateplus_awk.html">dateplus</a> -y`
+                        _FYD_status=$?
+                        if [ $_FYD_status -eq 0 ]; then
+                           _FYD_yyyy=`expr "$_FYD_yesterday" : '\([12][0-9][0-9][0-9]\)'`
+                           _FYD_mm=`  expr "$_FYD_yesterday" : '....\([012][0-9]\)'`
+                           _FYD_dd=`  expr "$_FYD_yesterday" : '.*\([0-2][0-9]\)'`
+                           #-------------------------------------------------------------#
+                           # The 5 extra spaces in the following (two) "s/^/$sp     /"   #
+                           # are intentional.  They demonstrate (when the log is mailed) #
+                           # how EMAIL_MSG strips leading $sp, without affecting any     #
+                           # additional leading spaces, thereby preserving indentation.  #
+                           #-------------------------------------------------------------#
+                           echo "`date '+%Y-%m-%d %T'`" \
+                                "Here's yesterday's date framed in a box." | $teelog
+                           FRAME_TEXT "Yesterday's mm/dd/yyyy = $_FYD_mm/$_FYD_dd/$_FYD_yyyy." \
+                              45 | sed "s/^/$sp     /" | $teelog
+
+                           if [ .$TERM != . ]; then
+                              #-------------------------------------------------------#
+                              # If running interactively, prompt user to see if he    #
+                              # wants to see the date with hypens instead of slashes. #
+                              #-------------------------------------------------------#
+                              PAUSE_Y_OR_N -1 "`date '+%Y-%m-%d %T'`" \
+                                "Show date with hyphens? y|n [n]"     \
+                                "\n${sp}YOU WILL NOT HAVE TO 'ENTER' (after typing y|n): "
+                              if [ $? -ne $yes ]; then
+                                 /bin/echo "\n${sp}It was a bad idea anyway.\n"
+                              else
+                                 _FYD_mm_dd_yyyy=`echo $_FYD_yesterday \
+                                   | sed 's/\(....\)\(..\)\(..\)/\2-\3-\1/'`
+                                 FRAME_TEXT "Yesterday's mm-dd-yyyy = $_FYD_mm_dd_yyyy." \
+                                    45 "|" | sed "s/^/$sp     /" | $teelog
+                              fi
+                           fi
+                        else
+                           EMAIL_MSG "$script_name ERROR" \
+                             "${sp}Failure from $<a href="dateplus_awk.html">dateplus</a> -- status=$status"
+                        fi
+                      } # "_FYD_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>HOLIDAYS()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        _H_holidays_awk=$SHBIN/<a href="holidays_awk.html">holidays.awk</a>
+                        _H_holiday_file=$SHBIN/<a href="holidays_file.html">holidays</a>
+                        _H_holiday_cmd="$AWK -f $_H_<a href="holidays_awk.html">holidays_awk</a> --"
+
+                        echo "`date '+%Y-%m-%d %T'`"          \
+                             "Holidays from $_H_<a href="holidays_file.html">holiday_file</a>" \
+                             "\n${sp}via $_H_<a href="holidays_awk.html">holidays_awk</a>."   | $teelog
+
+                        #--------------------------------------------------------------------#
+                        # What follows are examples of how to use <a href="holidays_awk.html">holidays.awk</a> and its       #
+                        # <a href="holidays_file.html">holidays file</a>.  Begin by loading space-delimited holiday yyyymmdd  #
+                        # dates into $HOLIDAYS env var.                                      #
+                        #--------------------------------------------------------------------#
+                        HOLIDAYS=`$_H_holiday_cmd -s $_H_<a href="holidays_file.html">holiday_file</a>`; export HOLIDAYS
+
+                        #--------------------------------------------------------------------#
+                        # To see if today is a holiday, simply test $HOLIDAYS as follows     #
+                        # (most of the time, this is all you will want or need):             #
+                        #--------------------------------------------------------------------#
+                        if [ ."`echo $HOLIDAYS | grep \`date +%Y%m%d\``" != . ]; then
+                           echo "${sp}Today is a holiday.  Yeaaaaaah! :-)" | $teelog
+                        else
+                           echo "${sp}Today's no holiday, get busy. :-(("  | $teelog
+                        fi
+
+                        #--------------------------------------------------------------------#
+                        # For a full holidays (date, weekday, and holiday name), we do this. #
+                        #--------------------------------------------------------------------#
+                        echo "${sp}Here are this year's holidays:" | $teelog
+                        $_H_holiday_cmd $_H_<a href="holidays_file.html">holiday_file</a> | sort               \
+                         | $AWK -v sp="${sp}" -v today="`date +%Y""%m""%d`"   \
+                           '{
+                               gsub(/:/," ",$0)
+                               gsub(/_/," ",$0)
+                               if (match($0,today))
+                                  $0 = $0"\t  ** HOLIDAY TODAY!! **"
+                               print sp"  "$0
+                            }' | $teelog
+
+                        #--------------------------------------------------------------------#
+                        # To see if today is the 2nd business day of the month, do this.     #
+                        #--------------------------------------------------------------------#
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Some business day calculations.." | $teelog
+                        _H_biz_day2="`$_H_holiday_cmd -b 2 $_H_<a href="holidays_file.html">holiday_file</a>`"
+                        if [ `date "+%Y%m%d"` = "$_H_biz_day2" ]; then
+                           echo "${sp}Today is the 2nd business day of the month."     | $teelog
+                        else
+                           echo "${sp}Today is NOT the 2nd business day of the month." | $teelog
+                        fi
+
+                      } # "_H_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>NUMERICAL_VALIDATIONS()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #--------------------------------------------------------#
+                        # Examples of numerical validation.                      #
+                        #--------------------------------------------------------#
+                        for _NV_string in 1234.56 -1234.56 123 "ABC" $pos_int $neg_int
+                        do
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "Numeric and integer validation of $_NV_string." | $teelog
+
+                           ISNUM $_NV_string
+                           if [ $? -eq $true ]; then
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "$_NV_string is  numeric." | $teelog
+                           else
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "$_NV_string NOT numeric." | $teelog
+                           fi
+
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "ISINT $_NV_string"        | $teelog
+                              ISINT $_NV_string
+                           if [ $? -eq $true ]; then
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "$_NV_string is an unsigned integer." | $teelog
+                           else
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "$_NV_string NOT an unsigned integer." | $teelog
+                           fi
+                        done
+
+                        for _NV_string in $pos_int $neg_int -1234.56
+                        do
+                           echo "`date '+%Y-%m-%d %T'` Integer validation" \
+                             "(signed or unsigned) of $_NV_string." | $teelog
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "ISINT -s $_NV_string"     | $teelog
+                              ISINT -s $_NV_string
+                           if [ $? -eq $true ]; then
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "$_NV_string is an integer." | $teelog
+                           else
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "$_NV_string NOT an integer." | $teelog
+                           fi
+                        done
+                      } # "_NV_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>PERFORM_FILE_OPERATIONS()</b> # We're only echoing all these operations    #
+                      #                         # for demonstration.  You wouldn't normally  #
+                      #                         # do this--you'd let them run quietly.       #
+                      #----------------------------------------------------------------------#
+                      {
+                        #------------------------------------------------------------------#
+                        # Show the various functions that exit on error and show'em both   #
+                        # echoing their names before the call and with descriptive text.   #
+                        # Note: You wouldn't normally echo the function calls (which is    #
+                        #       why they're commented out).  Using their -v (verbose)      #
+                        #       options will echo their operation if you want or need that.#
+                        #------------------------------------------------------------------#
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Performing various file operations on $testfil." | $teelog
+
+
+                        #----------------------------------------------------------------#
+                        # Directory operations (with and without embedded blanks).       #
+                        #----------------------------------------------------------------#
+                        _PFO_dir="$testdir"
+                        _PFO_subdir="dumb subdir"
+
+                        echo "${sp}ls -al \"$_PFO_dir\" (should not exist)"         | $teelog
+                                   ls -al  "$_PFO_dir" 2&gt;&1 | sed "s/^/$sp/"        | $teelog
+
+                      # echo "${sp}MKDIR_EXIT_ERR -p -m 0775 \"$_PFO_dir\""         | $teelog
+                                   MKDIR_EXIT_ERR -p -m 0775  "$_PFO_dir"
+
+                      # echo "${sp}MKDIR_EXIT_ERR_NOMAIL -pm 0755 \"$_PFO_dir/$_PFO_subdir\"" | $teelog
+                                   MKDIR_EXIT_ERR_NOMAIL -pm 0755  "$_PFO_dir/$_PFO_subdir"
+
+                        echo "${sp}ls -ald \"$_PFO_dir" "$_PFO_dir/$_PFO_subdir"    | $teelog
+                                   ls -ald  "$_PFO_dir" "$_PFO_dir/$_PFO_subdir" 2&gt;&1 \
+                                     | sed "s/^/$sp/" | $teelog
+
+                        #----------------------------------------------------------------#
+                        # Using -v option for this demo (I would not use it normally).   #
+                        #----------------------------------------------------------------#
+                      # echo "${sp}CHDIR_EXIT_ERR -v \"$_PFO_dir\""                 | $teelog
+                                   CHDIR_EXIT_ERR -v  "$_PFO_dir"
+
+                        echo "${sp}\`pwd\`="`pwd`                                   | $teelog
+
+                      # echo "${sp}CHDIR_EXIT_ERR -v \"$_PFO_dir/$_PFO_subdir\""    | $teelog
+                                   CHDIR_EXIT_ERR -v  "$_PFO_dir/$_PFO_subdir"
+
+                        echo "${sp}\`pwd\`="`pwd`                                   | $teelog
+
+                      # echo "${sp}CHDIR_EXIT_ERR_NOMAIL -v $cwd"                   | $teelog
+                                   CHDIR_EXIT_ERR_NOMAIL -v $cwd
+
+                        echo "${sp}\`pwd\`="`pwd`                                   | $teelog
+
+                      # echo "${sp}CHDIR_EXIT_ERR -v \"$working_dir\""              | $teelog
+                                   CHDIR_EXIT_ERR -v  "$working_dir"
+
+                        echo "${sp}\`pwd\`="`pwd`                                   | $teelog
+
+                        echo "${sp}ls -al \"$_PFO_dir\" \"$_PFO_dir/$_PFO_subdir\"" | $teelog
+                                   ls -al  "$_PFO_dir"   "$_PFO_dir/$_PFO_subdir" 2&gt;&1  \
+                                     | sed "s/^/$sp/"                               | $teelog
+
+                        #----------------------------------------------------------------#
+                        # File operations (one file with, one without embedded blank).   #
+                        #----------------------------------------------------------------#
+                        _PFO_files="$testfil dumb&lt;SP&gt;file"
+
+                        _PFO_tomorrow=`$<a href="dateplus_awk.html">dateplus</a> -t`
+                        _PFO_perms=640
+                        for _PFO_fil in $_PFO_files
+                        do
+                           _PFO_fil=`echo "$_PFO_fil" | sed 's/&lt;SP&gt;/ /g'`
+                         # echo "${sp}CP_DEV_NULL_EXIT_ERR -v"           "\"$_PFO_fil\"" | $teelog
+                                      CP_DEV_NULL_EXIT_ERR -v              "$_PFO_fil"
+
+
+                           echo "${sp}ls -al \"$_PFO_fil\""                              | $teelog
+                                      ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/"          | $teelog
+
+                         # echo "${sp}GET_FILE_YYMMDDHHMI -qx"           "\"$_PFO_fil\"" | $teelog
+                                      GET_FILE_YYMMDDHHMI -qx              "$_PFO_fil"
+                                    #--------------------------------------------------#
+                                    # You can use $GFY_yymmddhhmi (not recommended) or #
+                                    # assign it to your own variable  (recommended).   #
+                                      yymmddhhmi=$GFY_yymmddhhmi # Keeps it safe.
+                                    #--------------------------------------------------#
+                           echo "${sp}Time stamp = $yymmddhhmi (yymmddhhmi format)"      | $teelog
+
+                         # echo "${sp}RM_EXIT_ERR -v"                    "\"$_PFO_fil\"" | $teelog
+                                      RM_EXIT_ERR -v                       "$_PFO_fil"
+
+                           echo "${sp}ls -al \"$_PFO_fil\" (should not exist)"           | $teelog
+                                      ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/"          | $teelog
+
+                         # echo "${sp}CP_DEV_NULL_EXIT_ERR_NOMAIL -v"    "\"$_PFO_fil\"" | $teelog
+                                      CP_DEV_NULL_EXIT_ERR_NOMAIL -v       "$_PFO_fil"
+
+                           echo "${sp}ls -al \"$_PFO_fil\""                              | $teelog
+                                      ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/"          | $teelog
+
+                         # echo "${sp}RM_EXIT_ERR -v"                    "\"$_PFO_fil\"" | $teelog
+                                      RM_EXIT_ERR -v                       "$_PFO_fil"
+
+                           echo "${sp}ls -al \"$_PFO_fil\" (should not exist)"           | $teelog
+                                      ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/"          | $teelog
+
+                         # echo "${sp}TOUCH_EXIT_ERR -v"                 "\"$_PFO_fil\"" | $teelog
+                                      TOUCH_EXIT_ERR -v                    "$_PFO_fil"
+
+                           echo "${sp}ls -al \"$_PFO_fil\""                              | $teelog
+                                      ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/"          | $teelog
+
+                         # echo "${sp}RM_EXIT_ERR -v"                    "\"$_PFO_fil\"" | $teelog
+                                      RM_EXIT_ERR -v                       "$_PFO_fil"
+
+                           echo "${sp}ls -al \"$_PFO_fil\" (should not exist)"           | $teelog
+                                      ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/"          | $teelog
+
+                           echo "${sp}sleep 60 (so you can see a change in the time stamp)"
+                                      sleep 60
+
+                         # echo "${sp}TOUCH_EXIT_ERR_NOMAIL -v"          "\"$_PFO_fil\"" | $teelog
+                                      TOUCH_EXIT_ERR_NOMAIL -v             "$_PFO_fil"
+
+                           ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/" | $teelog
+
+                         # echo "${sp}CHMOD_EXIT_ERR -v"             644 "\"$_PFO_fil\"" | $teelog
+                                      CHMOD_EXIT_ERR -v              644   "$_PFO_fil"
+
+                           ls -al  "$_PFO_fil" | sed "s/^/$sp/" | $teelog
+
+                         # echo "${sp}CHMOD_EXIT_ERR_NOMAIL -v" $_PFO_perms "\"$_PFO_fil\"" | $teelog
+                                      CHMOD_EXIT_ERR_NOMAIL -v  $_PFO_perms   "$_PFO_fil"
+
+                           ls -al  "$_PFO_fil" 2&gt;&1 | sed "s/^/$sp/" | $teelog
+
+                         # echo "${sp}CHOWN_EXIT_ERR -v"        $LOGNAME "\"$_PFO_fil\"" | $teelog
+                                      CHOWN_EXIT_ERR -v         $LOGNAME   "$_PFO_fil"
+
+                         # echo "${sp}CHOWN_EXIT_ERR_NOMAIL -v" $LOGNAME "\"$_PFO_fil\"" | $teelog
+                                      CHOWN_EXIT_ERR_NOMAIL -v  $LOGNAME   "$_PFO_fil"
+
+                           _PFO_group=`/usr/bin/id | /bin/sed 's/^\(.*gid=\)\([0-9]*\)\(.*\)/\2/'`
+
+                         # echo "${sp}CHGRP_EXIT_ERR -v"     $_PFO_group "\"$_PFO_fil\"" | $teelog
+                                      CHGRP_EXIT_ERR -v      $_PFO_group   "$_PFO_fil"
+
+                         # echo "${sp}CHGRP_EXIT_ERR_NOMAIL -v" $_PFO_group "\"$_PFO_fil\"" | $teelog
+                                      CHGRP_EXIT_ERR_NOMAIL -v  $_PFO_group   "$_PFO_fil"
+
+                         # echo "${sp}CP_EXIT_ERR \"$_PFO_fil\" \"${_PFO_fil}_1\""       | $teelog
+                                      CP_EXIT_ERR  "$_PFO_fil"   "${_PFO_fil}_1"
+
+                           ls -al  "$_PFO_fil"* 2&gt;&1 | sed "s/^/$sp/"                    | $teelog
+
+                         # echo "${sp}CP_EXIT_ERR_NOMAIL \"${_PFO_fil}_1\" \"${_PFO_fil}_2\"" | $teelog
+                                      CP_EXIT_ERR_NOMAIL  "${_PFO_fil}_1"   "${_PFO_fil}_2"
+
+                           ls -al  "$_PFO_fil"* 2&gt;&1 | sed "s/^/$sp/"                    | $teelog
+
+                         # echo "${sp}MV_EXIT_ERR -v \"${_PFO_fil}_1\" \"${_PFO_fil}_3\"" | $teelog
+                                      MV_EXIT_ERR -v  "${_PFO_fil}_1"   "${_PFO_fil}_3"
+
+                           ls -al  "$_PFO_fil"* 2&gt;&1 | sed "s/^/$sp/"                    | $teelog
+
+                         # echo "${sp}MV_EXIT_ERR_NOMAIL -v \"${_PFO_fil}_2\" \"${_PFO_fil}_4\"" | $teelog
+                                      MV_EXIT_ERR_NOMAIL -v  "${_PFO_fil}_2"   "${_PFO_fil}_4"
+
+                           ls -al  "$_PFO_fil"* 2&gt;&1 | sed "s/^/$sp/"                    | $teelog
+
+                         # echo "${sp}RM_EXIT_ERR -v \"${_PFO_fil}_3\""                  | $teelog
+                                      RM_EXIT_ERR -v  "${_PFO_fil}_3"
+
+                           echo "${sp}ls -al \"${_PFO_fil}_3\" (should not exist)"       | $teelog
+                                      ls -al  "${_PFO_fil}_3" 2&gt;&1 | sed "s/^/$sp/"      | $teelog
+
+                         # echo "${sp}RM_EXIT_ERR_NOMAIL -v \"${_PFO_fil}_4\""           | $teelog
+                                      RM_EXIT_ERR_NOMAIL -v  "${_PFO_fil}_4"
+
+                           echo "${sp}ls -al \"${_PFO_fil}_4\" (should not exist)"       | $teelog
+                                      ls -al  "${_PFO_fil}_4" 2&gt;&1 | sed "s/^/$sp/"      | $teelog
+
+                           echo "${sp}ls -al \"$_PFO_fil\"*"                             | $teelog
+                                      ls -al  "$_PFO_fil"*  2&gt;&1 | sed "s/^/$sp/"        | $teelog
+                        done # for _PFO_fil in $_PFO_files
+
+                        #----------------------------------------------------------------#
+                        # We're done playing with these directories now.                 #
+                        #----------------------------------------------------------------#
+                      # echo "${sp}RM_EXIT_ERR -v -f -R \"$_PFO_dir/$_PFO_subdir\""      | $teelog
+                                   RM_EXIT_ERR -v -f -R  "$_PFO_dir/$_PFO_subdir"
+
+                        echo "${sp}ls -al \"$_PFO_dir/$_PFO_subdir\" (should not exist)" | $teelog
+                                   ls -al  "$_PFO_dir/$_PFO_subdir" 2&gt;&1 | sed "s/^/$sp/"   | $teelog
+
+                      # echo "${sp}RM_EXIT_ERR_NOMAIL -vfR \"$_PFO_dir\""                | $teelog
+                                   RM_EXIT_ERR_NOMAIL -vfR  "$_PFO_dir"
+
+                        echo "${sp}ls -al \"$_PFO_dir\" \"$_PFO_dir/$_PFO_subdir\""      | $teelog
+                                   ls -al  "$_PFO_dir"   "$_PFO_dir/$_PFO_subdir" 2&gt;&1   \
+                                     | sed "s/^/$sp/"                                    | $teelog
+
+                        echo "`date '+%Y-%m-%d %T'`"  \
+                          "Operations on $_PFO_fil and $_PFO_dir successful."            | $teelog
+                      } # "_PFO_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>PRINT_RANGES_OF_CHARS_AND_NUMS()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Numeric range      (1-5 5-1)     = `RANGE_NUMS 1-5 5-1`" | $teelog
+                        echo "${sp}Alphanumeric"     \
+                          "range (a-f F-A 1-5) = `RANGE_VALUES a-f F-A 1-5`"        | $teelog
+                      }
+
+                      #----------------------------------------------------------------------#
+                      <b>PROCESS_CONTENTION_ROUTINES()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #--------------------------------------------------------------#
+                        # If the fictitious process is running, then we might perform  #
+                        # some holding action until the contentious process completes. #
+                        #--------------------------------------------------------------#
+                        echo "`date '+%Y-%m-%d %T'` Checking process conflicts." | $teelog
+                        _PCR_contentious_process="fictitious.sh"
+
+                        #--------------------------------------------------------------#
+                        # If the following process is running, then wait a while.      #
+                        #--------------------------------------------------------------#
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "WAIT_ON_PROCESS -s 5 -t 15 $_PCR_contentious_process" | $teelog
+                           WAIT_ON_PROCESS -s 5 -t 15 $_PCR_contentious_process
+                        _PCR_status=$?
+                        if [ $? -ne $success ]; then
+                           echo "`date '+%Y-%m-%d %T'`" \
+                             "Still waiting on $_PCR_contentious_process" | $teelog
+                        fi
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Wait's over (instant everything today :)" | $teelog
+
+                        #--------------------------------------------------------------#
+                        # If the following process is running, then exit immediately.  #
+                        #--------------------------------------------------------------#
+                        EXIT_ON_PROCESS_CONFLICTS $_PCR_contentious_process
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Likewise, no conflict with $_PCR_contentious_process" | $teelog
+
+                        #--------------------------------------------------------------------#
+                        # The 'EXIT_ON_PROCESS_CONFLICTS syslogd' below doesn't exit because #
+                        # its output is piped (PIPING 'exit' ANYWHERE FAILS--DOES NOT EXIT). #
+                        #--------------------------------------------------------------------#
+                        /bin/echo "`date '+%Y-%m-%d %T'` Here's an example of what" \
+                          "you'd see if there was a conflict"                       \
+                          "\n$sp(obviously we're not really exiting here)." | $teelog
+
+                        #--------------------------------------------------------#
+                        # Piping it thru cat prevents the function from exiting. #
+                        #--------------------------------------------------------#
+                        EXIT_ON_PROCESS_CONFLICTS "syslogd" | cat
+
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "But, again, this is only pretend :)" | $teelog
+                      } # "_PCR_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>PRUNE_OLD_FILES()</b> # This function is here to provide an example of     #
+                                        # how to use eval for dynamic parameter assignment.  #
+                                        # Variables like $compress_days, $date_len, $opt_f,  #
+                                        # and $opt_t are expected to be assigned and/or used #
+                                        # outside this function.                             #
+                      #----------------------------------------------------------------------#
+                      {
+                        #----------------------------------------------------------------#
+                        # Run our list of special parameters and prune their associated  #
+                        # files back to $keep_days days.                                 #
+                        #----------------------------------------------------------------#
+                        echo '${sp}$pars     =|'$pars'|'
+
+                        for _POF_par in $pars
+                        do
+                           eval _POF_par="\${$_POF_par}" # Final 'eval'
+                        ## _POF_keep_days=`expr "$_POF_par" : '\([0-9]*\) *'`  # 1st word, ## T E S T ##
+                        ## _POF_pattern=`  expr "$_POF_par" : '.* \(.*\) .*'`  # 2nd word, ## T E S T ##
+                        ## echo '${sp}$_POF_keep_days=|'$_POF_keep_days'|'                 ## T E S T ##
+                        ## echo '${sp}$_POF_pattern  =|'$_POF_pattern'|'                   ## T E S T ##
+                           _POF_keep_days=`expr "$_POF_par" : '^\([0-9]*\) *'` # 1st word,
+                           _POF_pattern=`  expr "$_POF_par" : '^.* \(.*\) .*'` # 2nd word,
+                           _POF_path=`     expr "$_POF_par" :  '.* \(.*\)'`    # &amp; last word
+                        ## echo '${sp}$_POF_par      =|'$_POF_par'|'                       ## T E S T ##
+                        ## echo '${sp}$_POF_keep_days=|'$_POF_keep_days'|'                 ## T E S T ##
+                        ## echo '${sp}$_POF_pattern  =|'$_POF_pattern'|'                   ## T E S T ##
+                        ## echo '${sp}$_POF_path     =|'$_POF_path'|'                      ## T E S T ##
+
+                           VERIFY_NUM_VARS _POF_keep_days     #  Exits on error
+                           VERIFY_VARS _POF_pattern _POF_path #  Ditto
+
+                           #---------------------------------------------------#
+                           # Assign a pretty $_POF_patt (for print only).      #
+                           #---------------------------------------------------#
+                           [ $date_len -eq 6 ]            \
+                             &amp;&amp; _POF_patt='??????=yymmdd' \
+                             || _POF_patt='????????=yyyymmdd'
+
+                           #---------------------------------------------------#
+                           # Remove files older than $keep_days.               #
+                           #---------------------------------------------------#
+                           echo "`date '+%Y-%m-%d %T'`"                                     \
+                             "Deleting '$_POF_pattern' files ($_POF_patt) found in"         \
+                             "\n${sp}$_POF_path"                                            \
+                             "\n${sp}bearing date strings older than $_POF_keep_days days." \
+                               | $teelog
+                           REMOVE_BY_DATE -l 8 $opt_f $opt_t -v \
+                              $_POF_keep_days $_POF_path/$_POF_pattern
+
+                           #---------------------------------------------------#
+                           # Compress files older than $compress_days.         #
+                           #---------------------------------------------------#
+                           echo "`date '+%Y-%m-%d %T'`"                                    \
+                             "Compressing '$_POF_pattern' files ($_POF_patt) found in"     \
+                             "\n${sp}$_POF_path"                                           \
+                             "\n${sp}bearing date strings older than $compress_days days." \
+                               | $teelog
+                           COMPRESS_BY_DATE -l 8 $opt_f $opt_t \
+                             $compress_days $_POF_path/$_POF_pattern
+
+                        done
+                      } # " _POF_"  prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>PS_STRING_QUERY()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #--------------------------------------------------------------#
+                        # Running interactively?  Read a character to be echoed.       #
+                        #--------------------------------------------------------------#
+                        if [ ."$TERM" != . ]; then
+                           PAUSE_Y_OR_N "`date '+%Y-%m-%d %T'`" \
+                             "Demo PS_AUXWW function?  y|n [n] "
+                            if [ $? -eq $yes ]; then   # Default answer is "no."
+                              echo "${sp}Enter long string for 'ps -auxww'" \
+                                   "query and match:" | $teelog
+                              read _PSQ_string
+                              echo "${sp} PS_AUXWW -- $_PSQ_string"
+                                          PS_AUXWW -- $_PSQ_string
+                           fi
+                        fi
+                      } # "_PSQ_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>READ_SINGLE_KEY_INPUT()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #--------------------------------------------------------------#
+                        # Running interactively?  Read a character to be echoed.       #
+                        #--------------------------------------------------------------#
+                        if [ ."$TERM" != . ]; then
+                           echo "`date '+%Y-%m-%d %T'` Demonstrate READKEY()"      | $teelog
+                           echo "${sp}Enter a single character" \
+                             "(DO NOT press ENTER): \c"                            | $teelog
+                           _RSKI_str=`READKEY`
+                           if [ ."$_RSKI_str" = . ]; then
+                              echo "\n${sp}OK, so you don't want to play today.\n" | $teelog
+                           else
+                              echo "\n${sp}The character you entered" \
+                                 "was \"$_RSKI_str\" (but you knew that :-))."     | $teelog
+                           fi
+                        fi
+                      } # "_RSKI_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>READ_STDIN_WITH_NOECHO()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        #--------------------------------------------------------------#
+                        # Running interactively?  Read a character to be unechoed.     #
+                        #--------------------------------------------------------------#
+                        if [ ."$TERM" != . ]; then
+                           echo "`date '+%Y-%m-%d %T'` Demonstrate READKEY_NOECHO()" | $teelog
+                           echo "${sp}Enter a single character" \
+                             "(character will not echo--DO NOT hit ENTER): \c"       | $teelog
+                           _RSWN_noecho_str=`READKEY_NOECHO`
+                           if [ ."$_RSWN_noecho_str" = . ]; then
+                              echo "\n${sp}OK, so you don't want to play today.\n"   | $teelog
+                           else
+                              echo "\n${sp}The character you entered" \
+                                 "was \"$_RSWN_noecho_str\"."                        | $teelog
+                           fi
+
+                          #------------------------------------------------------------#
+                          # Now read a string to be echoed.                            #
+                          #------------------------------------------------------------#
+                           echo "`date '+%Y-%m-%d %T'` Demonstrate READ_NOECHO()"    | $teelog
+                           echo "${sp}Enter a 'secret' test string" \
+                             "(it will not display): \c"                             | $teelog
+                           _RSWN_noecho_str=`READ_NOECHO`
+
+                           if [ ."$_RSWN_noecho_str" = . ]; then
+                              echo "\n${sp}I hate secrets anyway.\n"                 | $teelog
+                           else
+                              echo "\n${sp}The string you entered" \
+                                 "was \"$_RSWN_noecho_str\"."                        | $teelog
+                           fi
+                        fi
+                      } # "_RSWN_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>REMOVE_FILES_BY_DATE()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        echo "`date '+%Y-%m-%d %T'` Creating test files to" \
+                          "delete by date (imbedded in the fileids):" | $teelog
+
+                        _RFBD_olde_file="$tmp/$name_root'_'????????*.yeOldeFile"
+                        for i in 34 33 32 31 30
+                        do
+                           _RFBD_yyyymmdd_back_i=`$<a href="dateplus_awk.html">dateplus</a> -$i`
+                           _RFBD_file=$tmp/$name_root"_"$_RFBD_yyyymmdd_back_i.yeOldeFile
+
+                                           touch -am -t 194410260530 $_RFBD_file 2&gt; /dev/null
+                           [ $? -ne 0 ] &amp;&amp; touch -am    194410260530 $_RFBD_file
+
+                           ls -al $_RFBD_file 2&gt;&1 | sed "s/^/$sp/" | $teelog
+                        done
+
+                        echo "`date '+%Y-%m-%d %T'` Compressing files whose names" \
+                          "contain yyyymmdd strings older than 30 days."           | $teelog
+                        COMPRESS_BY_DATE -l8 -t_ -v 30 $tmp/$name_root"_????????"
+                        echo "`date '+%Y-%m-%d %T'` List after compression:"       | $teelog
+                        eval ls -al $_RFBD_olde_file* 2&gt;&1 | sed "s/^/$sp/"        | $teelog
+
+                        echo "`date '+%Y-%m-%d %T'` Deleting files whose names"    \
+                          "contain yyyymmdd strings older than 30 days."           | $teelog
+                        REMOVE_BY_DATE -l8 -t_ -v 30 $tmp/$name_root"_????????"
+
+                        echo "`date '+%Y-%m-%d %T'` Here's what remains:"          | $teelog
+                        eval ls -al $_RFBD_olde_file 2&gt;&1 | sed "s/^/$sp/"         | $teelog
+
+                        echo "`date '+%Y-%m-%d %T'` Deleting remaining file."      | $teelog
+                        REMOVE_BY_DATE -l8 -t_ -v 29 $tmp/$name_root"_????????"
+
+                        echo "`date '+%Y-%m-%d %T'` See, all gone (hopefully :)"   | $teelog
+                        eval ls -al $_RFBD_olde_file 2&gt;&1 | sed "s/^/$sp/"         | $teelog
+
+                        return 0
+
+                       ##--------------------------------------------------------------------##
+                       ## RAO: The following was for development testing of REMOVE_BY_DATE   ##
+                       ##      and COMPRESS_BY_DATE library functions.                       ##
+                       ##--------------------------------------------------------------------##
+                      # eval rm -f "$tmp/RAO????????_*"
+                      # ls -al "$tmp/RAO*" 2&gt;&1 | sed "s/^/$sp/" | $teelog
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -49`_`$dateplus -149`.`$dateplus -249`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -48`_`$dateplus -148`.`$dateplus -248`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -47`_`$dateplus -147`.`$dateplus -247`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -46`_`$dateplus -146`.`$dateplus -246`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -45`_`$dateplus -145`.`$dateplus -245`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -44`_`$dateplus -144`.`$dateplus -244`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -43`_`$dateplus -143`.`$dateplus -243`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -42`_`$dateplus -142`.`$dateplus -242`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -41`_`$dateplus -141`.`$dateplus -241`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -40`_`$dateplus -140`.`$dateplus -240`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -39`_`$dateplus -139`.`$dateplus -239`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -38`_`$dateplus -138`.`$dateplus -238`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -37`_`$dateplus -137`.`$dateplus -237`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -36`_`$dateplus -136`.`$dateplus -236`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -35`_`$dateplus -135`.`$dateplus -235`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -34`_`$dateplus -134`.`$dateplus -234`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -33`_`$dateplus -133`.`$dateplus -233`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -32`_`$dateplus -132`.`$dateplus -232`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -31`_`$dateplus -131`.`$dateplus -231`" 2&gt; /dev/null
+                      # touch -am -t 194410260530 "$tmp/RAO`$dateplus -30`_`$dateplus -130`.`$dateplus -230`" 2&gt; /dev/null
+                      #
+                      # ls -al "$tmp/RAO*" 2&gt;&1 | sed "s/^/$sp/" | $teelog
+                      #
+                      # echo "`date '+%Y-%m-%d %T'` Compressing files whose names" \
+                      #   "contain yyyymmdd strings older than 147 days."          | $teelog
+                      # COMPRESS_BY_DATE -f1 -l8 -t. -v 147 "$tmp/RAO????????"
+                      # echo "`date '+%Y-%m-%d %T'` List after compression:"       | $teelog
+                      # eval ls -al "$tmp/RAO*" 2&gt;&1 | sed "s/^/$sp/"              | $teelog
+                      #
+                      # echo "`date '+%Y-%m-%d %T'` Deleting files whose names"    \
+                      #   "contain yyyymmdd strings older than 30 days."           | $teelog
+                      # REMOVE_BY_DATE -f1 -l8 -t. -v 30 "$tmp/RAO????????"
+                      #
+                      # echo "`date '+%Y-%m-%d %T'` Here's what remains:"          | $teelog
+                      # ls -al "$tmp/RAO*" 2&gt;&1 | sed "s/^/$sp/" | $teelog
+                      #
+                      # echo "`date '+%Y-%m-%d %T'` Deleting remaining file."      | $teelog
+                      # REMOVE_BY_DATE -f1 -l8 -t. -v 29 "$tmp/RAO????????"
+                      #
+                      # echo "`date '+%Y-%m-%d %T'` See, all gone (hopefully :)"   | $teelog
+                      # ls -al "$tmp/RAO*" 2&gt;&1 | sed "s/^/$sp/" | $teelog
+                      } # "_RFBD_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>SEPPUKU()</b> # Terminate all child processes and exit following CTL-C.    #
+                                # This only works if kill signals were successfully set.     #
+                      #----------------------------------------------------------------------#
+                      {
+                        if [ .$TERM != . ]; then
+                           #---------------------------------------------------#
+                           # Not run for Linux because it lacks ptree command. #
+                           #---------------------------------------------------#
+                           if [ ."$OZ" = ."sunos" ]; then # Not tested on Linux
+                              PAUSE_Y_OR_N "`date '+%Y-%m-%d %T'`" \
+                                "Demo self-termination (will kill this program)? y|n [n] "
+                              if [ $? -eq $yes ]; then   # Default answer is "no."
+                                 echo "`date '+%Y-%m-%d %T'`" \
+                                   "Starting three background sleepers." | $teelog
+                                 for _SEPP_n in 1 2 3
+                                 do
+                                    echo "${sp}sleep 60 &" | $teelog
+                                               sleep 60 &
+                                    echo "${sp}\$!=$!"     | $teelog
+                                 done
+                                 $ECHO "`date '+%Y-%m-%d %T'` Control-C now ..." \
+                                   "\n${sp}you will see the sleepers terminate"  \
+                                   "\n${sp}(be patient -- it takes a moment)." | $teelog
+                                 wait
+                              else
+                                 echo "\n${sp}OK, so you've seen this before." | $teelog
+                              fi # if [ $? -eq $yes ]; then
+                           fi # if [ ."$OZ" != ."linux" ]; then
+                        fi # if [ .$TERM != . ]; then
+                      } # "_SEPP_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>SHOW_STRING_FORMATTING()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        /bin/echo "`date '+%Y-%m-%d %T'`"        \
+                          "123 zero-filled to 5 characters .. |" \
+                          "\b`printf '%20s' \`printf '%05s' '123'\``|" | $teelog
+
+                        #------------------------------------------------------------------#
+                        # In this example, we use nested command substitution.  By that    #
+                        # I mean that the printf command is run within the echo command    #
+                        # (enclosed within back quotes.  Within the back quoted printf     #
+                        # command the date command is likewise back quoted.  However,      #
+                        # because it is nested within the other, it's back quotes must be  #
+                        # escaped (preceded with back slashes).  This may be a bit tricky  #
+                        # to some, but it's purpose is really to show the potential of     #
+                        # the function and how it can be nested like any other command.    #
+                        #------------------------------------------------------------------#
+                        /bin/echo "`date '+%Y-%m-%d %T'`"        \
+                          "Right justified date ............. |" \
+                          "\b`printf '%20s'  \"\`date '+%B %d, %Y'\`\"`|" | $teelog
+
+                        #------------------------------------------------------------------#
+                        # The following uses printf (which has to be a lot more efficient) #
+                        #------------------------------------------------------------------#
+                        /bin/echo "`date '+%Y-%m-%d %T'`"        \
+                          "Left justified date .............. |" \
+                          "\b`printf '%-20s' \"\`date '+%B %d, %Y'\`\"`|" | $teelog
+
+                        #----------------------------------------------------------#
+                        # Here, we're nesting a library function within a command  #
+                        # (just as we did above calling date from within printf    #
+                        # above) to output an aligned dollar value.                #
+                        #----------------------------------------------------------#
+                        /bin/echo "`date '+%Y-%m-%d %T'`"        \
+                          "What I wish my paycheck was ...... |" \
+                          "\b`printf '%20s' \$\`FORMAT_NUM_WITH_COMMAS 12345678.90\``|" | $teelog
+                      } # "_SSF_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>TIMEOUT_BG_PROCESSES()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        if [ .$TERM != . ]; then
+                           #---------------------------------------------------#
+                           # Not run for Linux because it lacks ptree command. #
+                           #---------------------------------------------------#
+                           if [ ."$OZ" = ."sunos" ]; then # Not tested on Linux
+                              #------------------------------------------------------------#
+                              # Demo TERMINATE library function (this one kills the PID).  #
+                              #------------------------------------------------------------#
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "Demo TERMINATE function (kills a dummy process)." | $teelog
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "Starting dummy process (background sleeper)." | $teelog
+                              echo "${sp}sleep 300 & (&lt;= We'll kill this process)" | $teelog
+                                         sleep 300 &
+                              echo "${sp}\$!=$! (&lt;= Here's the process ID)" | $teelog
+
+                              $ECHO "`date '+%Y-%m-%d %T'`"                 \
+                                "You should see PID $! (the sleep command)" \
+                                "\n${sp}terminate in about 10 seconds." | $teelog
+
+                              echo "${sp}TERMINATE -M $! '$pidfil' 10 '$ps_opts'" | $teelog
+                                         TERMINATE -M $! "$pidfil" 10 "$ps_opts"
+                              _TOBG_status=$?
+
+                              $ECHO "${sp}TERMINATE returned $_TOBG_status status\n" \
+                                "${sp}(1 = processed killed,"                       \
+                                "0 = process completed normally)" | $teelog
+
+                              #------------------------------------------------#
+                              # 2nd demo of TERMINATE (this time PID completes #
+                              # normally and the assassin is terminated).      #
+                              #------------------------------------------------#
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "Starting dummy process (background sleeper)." | $teelog
+                              echo "${sp}sleep 10 &" | $teelog
+                                         sleep 10 &
+                              echo "${sp}\$!=$!"      | $teelog
+
+                              $ECHO "`date '+%Y-%m-%d %T'`"                 \
+                                "You should see PID $! (the sleep command)" \
+                                "\n${sp}complete normally in about 10 seconds." | $teelog
+
+                              echo "${sp}TERMINATE -M $! '$pidfil' 60" | $teelog
+                                         TERMINATE -M $! "$pidfil" 60
+                              _TOBG_status=$?
+
+                              $ECHO "${sp}TERMINATE returned $_TOBG_status status\n" \
+                                "${sp}(1 = processed killed,"                       \
+                                "0 = process completed normally)" | $teelog
+                           fi # if [ ."$OZ" != ."linux" ]; then
+                        fi # if [ .$TERM != . ]; then
+                      } # "_TOBG_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>VALIDATE_HHMMSS_TIMES()</b> # Examples of time validation.                 #
+                      #----------------------------------------------------------------------#
+                      {
+                        _VHT_curr_hhmmss=`date +%T`
+                        echo "`date '+%Y-%m-%d %T'` Validating $_VHT_curr_hhmmss." | $teelog
+                        VALIDATE_TIME $_VHT_curr_hhmmss
+
+                        _VHT_curr_hhmmss="24:00:00"
+                        echo "`date '+%Y-%m-%d %T'` Validating $_VHT_curr_hhmmss." | $teelog
+                        VALIDATE_TIME $_VHT_curr_hhmmss
+                        #------------------------------------------------------------------#
+                        # If you wanted to exit on failure here, you can do the following: #
+                        #------------------------------------------------------------------#
+                        # VALIDATE_TIME $_VHT_curr_hhmmss || EXIT 1
+
+                      } # "_VHT_" prefix identifies this function's variables.
+
+                      #----------------------------------------------------------------------#
+                      <b>VALIDATE_VARIOUS_DATES()</b>
+                      #----------------------------------------------------------------------#
+                      {
+                        _VDD_date=19980229
+                        echo "`date '+%Y-%m-%d %T'`"                                        \
+                          "VALIDATE_DATE -l 1997 -h 2025 $_VDD_date yyyymmdd (should fail)" \
+                            | $teelog
+                           VALIDATE_DATE -l 1997 -h 2025 $_VDD_date yyyymmdd
+                        _VDD_status=$?
+                        if [ $_VDD_status -ne $success ]; then
+                           echo "${sp}As I suspected, $_VDD_date is invalid." | $teelog
+                        fi
+
+                        _VDD_date=19960229
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "VALIDATE_DATE -l 1996 -h 2025 $_VDD_date yyyymmdd"    | $teelog
+                           VALIDATE_DATE -l 1996 -h 2025 $_VDD_date yyyymmdd
+                        _VDD_status=$?
+                        if [ $_VDD_status -eq $success ]; then
+                           echo "${sp}$_VDD_date is valid." | $teelog # I know it is
+                        fi
+
+                        _VDD_date="02-29-2000"
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "VALIDATE_DATE -l 1996 -h 2025 $_VDD_date mm-dd-yyyy"  | $teelog
+                           VALIDATE_DATE -l 1996 -h 2025 $_VDD_date mm-dd-yyyy
+                        _VDD_status=$?
+                        if [ $_VDD_status -eq $success ]; then
+                           echo "${sp}See! Feb. 29, 2000 is valid." | $teelog # I know this
+                        fi
+
+                        #----------------------------------------------------------------#
+                        # Calling the following functions simply to have this program    #
+                        # show their usage and test them.                                #
+                        #                                                                #
+                        echo "`date '+%Y-%m-%d %T'` Calling LEAP_YEAR 1994."      | $teelog
+                        LEAP_YEAR 1994                                                   #
+                        if [ $? -eq 0 ]; then                                            #
+                           echo "`date '+%Y-%m-%d %T'` 1994 was not a leap year." | $teelog
+                        fi                                                               #
+                        #                                                                #
+                        echo "`date '+%Y-%m-%d %T'` Calling LEAP_YEAR 2000."      | $teelog
+                        LEAP_YEAR 2000                                                   #
+                        if [ $? -eq 1 ]; then                                            #
+                           echo "`date '+%Y-%m-%d %T'` 2000 was a leap year."     | $teelog
+                        fi                                                               #
+                        #                                                                #
+                        #----------------------------------------------------------------#
+                      } # "_VVD_" prefix identifies this function's variables.
+
+
+                      #======================================================================#
+                      #                     I N I T I A L I Z A T I O N                      #
+                      #======================================================================#
+
+                        #----------------------------------------------------------------#
+                        # Show'em basic command usage/syntax.                            #
+                        #----------------------------------------------------------------#
+                        if [ $help_wanted -eq $true -o $invalid_opt -eq $true ]; then
+                           EXIT_USAGE
+                        fi
+
+                        #--------------------------------------------------------------------#
+                        # The following is an attempt to extract the path to our $par_file.  #
+                        # Under interactive and cron execution (not "at" execution), this    #
+                        # works fine.  We want the path for those cases when this script is  #
+                        # run from a directory other than this one. This does not, however,  #
+                        # work during batch (at) execution, for there $0 is always /bin/sh.  #
+                        # I haven't figured a way around that problem yet.                   #
+                        #--------------------------------------------------------------------#
+                        [ $0 = "/bin/sh" -o `dirname $0` = "." ] \
+                          &amp;&amp; script_home=`pwd` || script_home=`dirname $0`
+
+                        parfile=$script_home/$name_root.par
+                        parfile_perms="0644"
+                        if [ ! -f $parfile ]; then
+                           echo "$prelims" 1&gt;&2
+                           EMAIL_MSG "FATAL ERROR: $script_name" \
+                             "Unable to locate '$parfile'!  $script_name terminated." 1&gt;&2
+                           exit 1
+                        fi
+
+                        #--------------------------------------------------------------------#
+                        # Reaching this point (not having exited because of a severe error   #
+                        # already) means that our parameter file exists and its permissions  #
+                        # are [now, at least] intact.  Read and parse parameter file         #
+                        # variables.                                                         #
+                        #--------------------------------------------------------------------#
+                        prelims="$prelims\n`date '+%Y-%m-%d %T'` Assign $parfile parameters."
+
+                        working_dir=`       PARSE_PARAMETERS WORKING_DIR   $parfile`; status=$?
+                        log_dir=`           PARSE_PARAMETERS LOG_DIR       $parfile`; status=`expr $status + $?`
+                        tmp=`               PARSE_PARAMETERS TMP           $parfile`; status=`expr $status + $?`
+                        support=`           PARSE_PARAMETERS SUPPORT       $parfile`; status=`expr $status + $?`
+                        notify=`            PARSE_PARAMETERS NOTIFY        $parfile`; status=`expr $status + $?`
+                        active_status_file=`PARSE_PARAMETERS STATUS_FILE   $parfile`; status=`expr $status + $?`
+                        keep_logs=`         PARSE_PARAMETERS KEEP_LOGS     $parfile`; status=`expr $status + $?`
+                        tape_dev=`          PARSE_PARAMETERS TAPE_DEV      $parfile`; status=`expr $status + $?`
+                        ftp_site=`          PARSE_PARAMETERS FTP_SITE      $parfile`; status=`expr $status + $?`
+                        self_destruct=`     PARSE_PARAMETERS SELF_DESTRUCT $parfile`; status=`expr $status + $?`
+                        test_param=`        PARSE_PARAMETERS TEST_PARAM    $parfile`; status=`expr $status + $?`
+
+                        #--------------------------------------------------------------------#
+                        # If anything fails to parse, fuss about it and exit.                #
+                        #--------------------------------------------------------------------#
+                        if [ $status -ne 0 ]; then
+                           syslog_msg1="Parameter parsing problem (status=$status)."
+                           syslog_msg2="$script_name '$args' ($$) terminated."
+                           echo "$prelims" 1&gt;&2
+
+                           subject="$HOST: FATAL ERROR: SHLIB PARSE Failure"
+                           msg="$syslog_msg1\n$syslog_msg2"
+                           MAIL_ERROR # ()
+                         # LOG_ERROR  # ()
+                           exit 1
+                        fi
+
+                        #----------------------------------------------------------------#
+                        # Extract specific (dynamic) parameters from parfile (parameter  #
+                        # is specified as a commandline argument).  If anything fails to #
+                        # parse, fuss about it and exit.                                 #
+                        #                                                                #
+                        # While the following for-loop, with its assignment of arguments #
+                        # to a list ($pars) and subsequent 'eval' are complicated, they  #
+                        # do provide considerable flexibility by handling new parameter  #
+                        # entries without the need for a corresponding program change.   #
+                        #                                                                #
+                        pars=""                                                          #
+                        status=0                                                         #
+                        n=0                                                              #
+                        for par in $*                                                    #
+                        do                                                               #
+                           pars="$pars $par"          # Add variable name to our list    #
+                           value="`PARSE_PARAMETERS \$par $parfile`" # Assign its value  #
+                           status=`expr $status + $?` # Accumulate the status.           #
+                           eval $par="\$value"        # Assign value to eval'd variable  #
+                        done                                                             #
+                        #                                                                #
+                        #   One more 'eval' is needed for this schema to be complete     #
+                        #   (look for "# Final 'eval'" somewhere else in this script).   #
+                        #----------------------------------------------------------------#
+
+                        if [ $status -ne 0 -o ."$value" = . ]; then
+                           syslog_msg1="Arg keyword parameter parsing problem (status=$status)."
+                           syslog_msg2="$script_name '$args' ($$) terminated."
+                           echo "$prelims" 1&gt;&2
+
+                           subject="$HOST: FATAL ERROR: ARGUMENT PARSE Failure"
+                           msg="$syslog_msg1\n$syslog_msg2"
+                         # MAIL_ERROR # ()
+                         # LOG_ERROR  # ()
+
+                           $ECHO "#-----------------------------------------------------#" \
+                             "\n# $script_name requires the argument, TEST_PARAM.  Try  #" \
+                             "\n# running this again with TEST_PARAM as a argument    #"   \
+                             "\n# (e.g. '$script_name TEST_PARAM').  This assumes, of   #" \
+                             "\n# course, 'TEST_PARAM' parameter exists in \$parfile.  #"  \
+                             "\n#-----------------------------------------------------#"   \
+                               | $teelog
+                           EXIT_USAGE
+                        fi
+
+                        prelims="$prelims\n`date '+%Y-%m-%d %T'` Assignment complete."
+
+                        #----------------------------------------------------------------#
+                        # The following assignment for $working_dir overcomes problems   #
+                        # arising when this script is run by root.                       #
+                        #----------------------------------------------------------------#
+                        [ ."$HOME" != ."/" ] &amp;&amp; working_dir=$HOME || working_dir=$tmp
+                        cleanup_files="$stdout_root $stderr_root $mailmsg_root"
+                        cleanup_files="$cleanup_files $tmpwrk_root $tmplog_root"
+
+                        log_dir=$tmp
+                        log_root=$log_dir/$name_root"_"$id_hex"_log"
+                        log=$log_root"."$yyyymmdd
+                        teelog="tee -ai $log"
+                        log_pointer=`expr \`[ -f $log ] &amp;&amp; wc -l&lt;$log || echo 0\` + 1`
+
+                        #----------------------------------------------------------------#
+                        # If our log already has something in it.  If it does, then      #
+                        # this is NOT our first run today.  (We'll use this indicator    #
+                        # later to see if we prune the logs or no.)                      #
+                        #----------------------------------------------------------------#
+                        [ -s $log ] &amp;&amp; first_run=$false || first_run=$true
+
+                        #----------------------------------------------------------------#
+                        # Print the stuff we were saving.  This way, if the user wanted  #
+                        # usage brief or documentation, he doesn't see see all this      #
+                        # preliminary stuff (and think he's started the program).        #
+                        #----------------------------------------------------------------#
+                        $ECHO "$prelims" | $teelog
+
+                        #----------------------------------------------------------------#
+                        # Ensure all the critical variables just taken from parfile are  #
+                        # assigned.  If any are unassigned, fuss at the user and exit.   #
+                        # ** Be sure there are NO dollar-signs ($) in front of them. **  #
+                        # **        Only '$variables' can have a dollar-sign.        **  #
+                        #----------------------------------------------------------------#
+                        variables="working_dir log_dir tmp support notify"
+                        variables="$variables active_status_file tape_dev ftp_site"
+                        variables="$variables test_param" # Should have =-sign and #-sign.
+                        echo "`date '+%Y-%m-%d %T'` Verifying critical variables." | $teelog
+                        VERIFY_VARS $variables # Exits on error
+                        echo "`date '+%Y-%m-%d %T'` Verification complete."        | $teelog
+
+                        #--------------------------------------------------------#
+                        # Change double slashes to single (in case run by root). #
+                        #--------------------------------------------------------#
+                        active_status_file=`echo "$active_status_file" | sed 's|//*|/|g'`
+
+                        neg_int=-12       #-------------------------------------------#
+                        pos_int=+12       # Additional numbers (negative and positive #
+                        float=12.34       # integers and floats) for VERIFY_NUM_VARS  #
+                        neg_float=-12.34  # tests.                                    #
+                        pos_float=+12.34  #-------------------------------------------#
+
+                        num_variables="log_pointer keep_logs self_destruct neg_int pos_int"
+                        num_variables="$num_variables float neg_float pos_float"
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Verifying critical numeric variables." | $teelog
+                        VERIFY_NUM_VARS $num_variables # Exits on error
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Verification (numerics) complete." | $teelog
+
+                        #------------------------------------------------------------------#
+                        # You can show'em their parameter file variables here (especially  #
+                        # good during development), but for this script I show'em further  #
+                        # down (where I can display more than just par file variables.     #
+                        #------------------------------------------------------------------#
+                        # PRINT_VARS $variables $num_variables
+
+                        #----------------------------------------------------------------#
+                        # You can even sort the variables if order is important.         #
+                        #----------------------------------------------------------------#
+                        # sorted_vars=`echo $variables $num_variables \
+                        #  | $AWK '{for (n=1;n&lt;=NF;n++) print $n}' | sort -u`
+                        # PRINT_VARS $sorted_vars
+
+                        #----------------------------------------------------------------#
+                        # While we're at it, verify parameter file's permissions.        #
+                        #----------------------------------------------------------------#
+                        echo "`date '+%Y-%m-%d %T'" \
+                          "Verifying $parfile file permissions." | $teelog
+                        pars_perms=`GET_FILE_PERMS $parfile`
+                        if [ $parfile_perms -ne $pars_perms ]; then
+                           chmod $parfile_perms $parfile
+                           notify_sav="$notify" # No need to alert everyone about this
+                           notify="$support"
+                           EMAIL_MSG "WARNING $script_name"                          \
+                             "${sp}Parameter file ($parfile) perms are $pars_perms!" \
+                             "${sp}They should have been $parfile_perms."            \
+                             "${sp}Resetting perms now (check the following 'ls')."  \
+                             "${sp}Processing continues."                            \
+                             "${sp}$dashes"                                          \
+                             "${sp}`ls -al $parfile | sed 's/  */ /g'`"              \
+                             "${sp}$dashes"
+                           notify="$notify_sav" # Back to broadcast distribution.
+                        fi
+
+                        echo "`date '+%Y-%m-%d %T'`" \
+                          "Verification (file permissions) complete." \
+                          "\n${sp}Assigning remaining variables." | $teelog
+
+                        pidfil_root=$tmp/$name_root"_"$id_hex"_PID"
+                        pidfil=${pidfil_root}$Xtimestamp
+                        #------------------------------------------------------------------#
+                        # If unique work file names belonging to simultaneous instances    #
+                        # is critical, you can use the following commented out work file   #
+                        # default variable assignment examples (stdout, stderr, tmpwrk,    #
+                        # etc.) to place the unique timestamp/PID portion of the filename  #
+                        # first.  This makes cleanup of these files more difficult because #
+                        # the current process cannot cleanup files left behind from        #
+                        # previous runs.                                                   #
+                        #                                                                  #
+                        # #                $uniqID assigned in defaults.sh                 #
+                        # pidfil_root=$tmp/$uniqID"_PID_"            # When UNIQUE fileid  #
+                        # pidfil=${pidfil_root}$name_root            # is critical, use ...#
+                        #------------------------------------------------------------------#
+                        cleanup_files="$cleanup_files $pidfil_root"
+
+                        testdir="$tmp/$LOGNAME"
+                        testfil_root=$testdir/$name_root"_test_file"
+                        testfil=$testfil_root"."$Xtimestamp
+                      # testfil_root=$testdir/$uniqID"_test_file_" # When UNIQUE fileid
+                      # testfil=${testfil_root}$name_root          # is critical, use these.
+                        cleanup_files="$cleanup_files $testfil_root $mailmsg_root"
+                        cleanup_files="$cleanup_files $stdout_root $stderr_root"
+                        cleanup_files="$cleanup_files $tmpwrk_root $tmplog_root"
+
+                        #------------------------------------------------------------#
+                        # Reassign $teetmp because our assignment of $tmplog         #
+                        # overrides the default assignment of both (in defaults.sh). #
+                        #------------------------------------------------------------#
+                        teetmp="tee -ai $tmplog"
+
+                        #----------------------------------------------------------------#
+                        # Assign other variables not assigned in shell library functions #
+                        #----------------------------------------------------------------#
+                        ftp_stdout_sp="         FTP STDOUT="
+                        ftp_stderr_sp="         FTP STDERR="
+
+                        #--------------------------------------------------------------------#
+                        # Must have either <a href="dateplus_c.html">dateplus</a> (compiled C executable) or <a href="dateplus_awk.html">dateplus.awk</a>. #
+                        #--------------------------------------------------------------------#
+                        if [ ".$<a href="dateplus_awk.html">dateplus</a>" = "." ]; then
+                           if [ -x $SHBIN/<a href="dateplus_awk.html">dateplus</a> ]; then
+                              dateplus=$SHBIN/<a href="dateplus_awk.html">dateplus</a>
+                           elif [ -f $SHLIB/<a href="dateplus_awk.html">dateplus.awk</a> ]; then
+                              dateplus="$AWK -f $SHLIB/<a href="dateplus_awk.html">dateplus.awk</a> -- "
+                           else
+                              EMAIL_MSG "ERROR: $script_name"                     \
+                                "Unable to locate $SHBIN/<a href="dateplus_c.html">dateplus</a> (C executable)" \
+                                "${sp}or $SHLIB/<a href="dateplus_awk.html">dateplus</a>(.awk)* !"                \
+                                "${sp}$script_name ($$) terminated."
+                              EXIT 1
+                           fi
+                        fi
+
+                        echo "`date '+%Y-%m-%d %T'` Variable assignment complete." | $teelog
+
+                        # yes=1 # FYI, these are assigned in defaults.sh
+                        # no=0
+
+
+                      #======================================================================#
+                      #                                M A I N                               #
+                      #======================================================================#
+
+                        #--------------------------------------------------------------#
+                        # If we receive a [kill] signal, run local function (SEPPUKU_) #
+                        # then library function, TRAP_EXIT.  This is important because #
+                        # by exiting gracefully, we report what signal we received and #
+                        # cleanup before leaving.   At this writing, Solaris signals   #
+                        # are as follows:                                              #
+                        #                                                              #
+                        #   Num   Name       Meaning and Typical Use                   #
+                        #   ---   --------   ----------------------------------------- #
+                        #     0 = EXIT     -                                           #
+                        #     1 = HUP      - Hangup                                    #
+                        #     2 = INT      - Interrupt (e.g., CTRL-c)                  #
+                        #     3 = QUIT                                                 #
+                        #     4 = ILL      - Illegal instruction                       #
+                        #     5 = TRAP     - Trace trap                                #
+                        #     6 = ABRT     - IOT instruction                           #
+                        #     7 = EMT      - EMT instruction                           #
+                        #     8 = FPE      - Floating point exception                  #
+                        #  *  9 = KILL     - (with extreme prejudice)                  #
+                        #    10 = BUS      - Bus error                                 #
+                        #  * 11 = SEGV     - Segmentation violation                    #
+                        #    12 = SYS      - Bad argument to system call               #
+                        #    13 = PIPE     - Write to a pipe W/O a process to read it  #
+                        #    14 = ALRM     - Alarm timeout                             #
+                        #    15 = TERM     - Kill (mercifully if possible))            #
+                        #    16 = USR1     - User-defined signal                       #
+                        #    17 = USR2                                                 #
+                        #    18 = C[H]LD   - Child process status change??             #
+                        #    19 = PWR                                                  #
+                        #    20 = WINCH                                                #
+                        #    21 = URG                                                  #
+                        #    22 = POLL                                                 #
+                        #    23 = STOP     - Unconditionally & immediately             #
+                        #    24 = TSTP     - Resume following STOP or TSTP             #
+                        #    25 = CONT                                                 #
+                        #    26 = TTIN                                                 #
+                        #    27 = TTOU                                                 #
+                        #    28 = VTALRM                                               #
+                        #    29 = PROF                                                 #
+                        #    30 = XCPU                                                 #
+                        #    31 = XFSZ                                                 #
+                        #    32 = WAITING                                              #
+                        #    33 = LWP                                                  #
+                        #    34 = FREEZE                                               #
+                        #    35 = THAW                                                 #
+                        #    36 = CANCEL                                               #
+                        #    37 = LOST                                                 #
+                        #    38 = RTMIN                                                #
+                        #    39 = RTMIN+1                                              #
+                        #    40 = RTMIN+2                                              #
+                        #    41 = RTMIN+3                                              #
+                        #    42 = RTMAX-3                                              #
+                        #    43 = RTMAX-2                                              #
+                        #    44 = RTMAX-1                                              #
+                        #    45 = RTMAX                                                #
+                        #                                                              #
+                        #  * Trapping  9 returns nothing, absolutely nothing.          #
+                        #  * Trapping 11 returns "example.sh: trap: bad trap"          #
+                        #                                                              #
+                        #--------------------------------------------------------------#
+                        n=0
+                        for sig in `kill -l`
+                        do
+                           n=`expr $n + 1`
+                              [ ".$sig" = ".EXIT" -o ".$sig" = ".SEGV" \
+                             -o ".$sig" = ".CHLD" -o ".$sig" = ".CLD"  \
+                             -o ".$sig" = ".TSTP" -o ".$sig" = ".CONT" ] &amp;&amp; continue
+                           trap "echo Exit $sig \($n\) 1&gt;&2; TERMINATE_SUBPROCESSES; TRAP_EXIT $n '$0 $@'" $n
+                        done
+
+                        #--------------------------------------------------------------#
+                        # If unable to touch or chmod the log file, then fuss at the   #
+                        # user (the function does this via stderr only) and exit.      #
+                        #--------------------------------------------------------------#
+                        TOUCH_EXIT_ERR_NOMAIL     $log
+                        CHMOD_EXIT_ERR_NOMAIL 640 $log
+
+                        #--------------------------------------------------------------#
+                        # If unable to clear or chmod the following files, then fuss   #
+                        # at the user (via EMAIL_MSG) and exit.                        #
+                        #--------------------------------------------------------------#
+                        CP_DEV_NULL_EXIT_ERR -v $stdout $stderr $tmplog
+                        CHMOD_EXIT_ERR   640    $stdout $stderr $tmplog
+
+                        #------------------------------------------------------------------#
+                        # If a this script is already running, then don't start a new one. #
+                        # However, if $active_status file is more than a day old, then     #
+                        # notify support and remove the dog.                               #
+                        #                                                                  #
+                        # Else, write our current process ID ($$) to $active_status_file   #
+                        # (the file is removed on exiting this process via EXIT function). #
+                        #------------------------------------------------------------------#
+                        if [ ."$active_status_file" != . ]; then
+                           active_filename=`basename $active_status_file`
+                           find="find $working_dir -name $active_filename -mtime +1 -print"
+                           echo "`date '+%Y-%m-%d %T'` $find" | $teelog
+                           old_active_file=`$find`
+                           if [ ."$old_active_file" != . ]; then
+                              EMAIL_MSG "Old Active Status File Found" \
+                                "${sp}Found old active status file!"   \
+                                "${sp}($old_active_file)"              \
+                                "${sp}Removing file and continuing."
+
+                              echo "`date '+%Y-%m-%d %T'`" \
+                                "rm -f $active_status_file"     | $teelog
+                                \rm -f $active_status_file 2&gt;&1 | $teelog
+                           fi
+                        fi
+
+                        EXIT_IF_ALREADY_RUNNING
+
+                        #--------------------------------------------------------------------#
+                        # OK, the log appears accessable.  Since this is an accumulating     #
+                        # log, we really only want to view its activity from this operation  #
+                        # (skipping all that came before), so we need the last line number.  #
+                        #--------------------------------------------------------------------#
+                        echo "\n`date '+%Y-%m-%d %T'`" \
+                          "Begin `uname -n`:'$script_name $args'" | $teelog
+
+                        #------------------------------------------------------------------#
+                        # Just to show you the usefulness of PRINT_VARS function, you can  #
+                        # use it to print practically any list of variables (wouldn't use  #
+                        # it to print $cleanup_files, generally, because it can grow to    #
+                        # be quite long).  Not a bad debugging tool.  (It was good that    #
+                        # I put this here for it revealed a bug I had in print_vars.sh.)   #
+                        #------------------------------------------------------------------#
+                        var_list="SHLIB SHBIN log teelog stdout stderr"
+                        var_list="$var_list mailmsg testfil tmpwrk tmplog teetmp"
+                        var_list="$var_list <a href="dateplus_awk.html">dateplus</a> first_run"
+
+                        echo "`date '+%Y-%m-%d %T'` Listing variables."      | $teelog
+                        PRINT_VARS -s $variables $num_variables $var_list
+                        echo "`date '+%Y-%m-%d %T'` Variable list complete." | $teelog
+
+                        ELAPSED_TIME start $program_start # Let's begin.
+
+                        #----------------------------------------------------------------#
+                        # Only on the first run of the day do we prune our process logs  #
+                        # ('-l 8' in PRUNE FILES call specifies date field length).      #
+                        #----------------------------------------------------------------#
+                        [ $first_run -eq $true ] &amp;&amp; PRUNE_FILES -l 8 $keep_logs $log_root
+
+                        SEPPUKU # Self-terminate this job.       # ()
+
+                        TIMEOUT_BG_PROCESSES                     # ()
+
+                        REMOVE_FILES_BY_DATE                     # ()
+
+                        PERFORM_FILE_OPERATIONS                  # ()
+
+                        PROCESS_CONTENTION_ROUTINES              # ()
+
+                        PRINT_RANGES_OF_CHARS_AND_NUMS           # ()
+
+                        VALIDATE_HHMMSS_TIMES                    # ()
+
+                        VALIDATE_VARIOUS_DATES                   # ()
+
+                        NUMERICAL_VALIDATIONS                    # ()
+
+                        PS_STRING_QUERY                          # ()
+
+                        CALC_ELAPSED_DAYS                        # ()
+
+                        READ_SINGLE_KEY_INPUT                    # ()
+
+                        READ_STDIN_WITH_NOECHO                   # ()
+
+                        #--------------------------------------------------------------------#
+                        # If running interactively, DEBUG_PAUSE_LOOP prompts the user to     #
+                        # enter a command or just press enter to exit the function and       #
+                        # continue. You can, for example, "cat $log" (without the quotation  #
+                        # marks) and the function will cat the file. It will then prompt you #
+                        # for your next command.  Run in batch mode and the function does    #
+                        # nothing.  No log indentation is performed because this is, after   #
+                        # all, only a debugging tool.                                        #
+                        #--------------------------------------------------------------------#
+                        if [ ."$TERM" != . ]; then
+                           echo "`date '+%Y-%m-%d %T'` Entering debug mode."        | $teelog
+                           echo "${sp}Enter, for example, 'tail -3 \$log' (without" | $teelog
+                           echo "${sp}the quotation marks and see what happens)"    | $teelog
+                           DEBUG_PAUSE_LOOP -e # Optional -e evaluates the command you enter.
+                        else
+                           echo "`date '+%Y-%m-%d %T'` Skipping debug mode example."| $teelog
+                        fi
+
+                        DISPLAY_FILESYSTEM_INFO # FS space, utilization, etc. # ()
+
+                        $ECHO "`date '+%Y-%m-%d %T'`" \
+                          "PING_HOST $host" | $teelog
+                           PING_HOST $host # Tries up to 10x.  Returns ping status.
+                        if [ $? -ne 0 ]; then
+                           $ECHO "`date '+%Y-%m-%d %T'` COMM ERROR! $script_name.\n" \
+                             "${sp}Unable to ping $HOST (failed 10 on attempts)!\n" | $teelog
+                        else
+                           echo "`date '+%Y-%m-%d %T'` $HOST's alive." | $teelog
+                        fi
+
+                        CONVERT_MONTH_MMM_AND_NN `date '+%b %m'` # ()
+
+                        FRAME_YESTERDAYS_DATE                    # ()
+
+                        HOLIDAYS                                 # ()
+
+                        CHECK_TAPE_DEVICE                        # ()
+
+                        [ ".$TERM" != "." ] &amp;&amp; ANONYMOUS_FTP     # ()
+
+                        #--------------------------------------------------------------------#
+                        # An example of how ECHO_EXEC() works.  If, for instance, root were, #
+                        # runnning this, the following "su" could be changed to start up or  #
+                        # shutdown Oracle or Sybase.                                         #
+                        #--------------------------------------------------------------------#
+                        msg="files in $USER's \$HOME"
+                        awk_scr='BEGIN {n=0} ! /^\.\.?$/ {n++} END {print n}'
+
+                        if [ ."$LOGNAME" = ."root" ]; then
+                           ECHO_EXEC su $LOGNAME -c \
+                             "echo `cd; ls -1a | $AWK \"$AWK_scr\"` $msg"
+                        else
+                           ECHO_EXEC \
+                             "echo `cd; ls -1a | $AWK \"$AWK_scr\"` $msg"
+                        fi
+                        [ -s $stdout ] &amp;&amp; sed "s/^/$stdout_sp/" $stdout | $teelog
+                        [ -s $stderr ] &amp;&amp; sed "s/^/$stderr_sp/" $stderr | $teelog
+
+                        SHOW_STRING_FORMATTING                   # ()
+
+                        DISPLAY_PREVIOUS_AND_NEXT_HOUR           # ()
+
+                        WRITE_ERR_TO_SYSLOGS -p "user.alert" -t "$LOGNAME[$$]" \
+                          "TEST TEST TEST -- THIS IS ONLY A LOGGER FACILITY TEST (#1)"
+
+                        #----------------------------------------------------------#
+                        # Do it again, but without mail (EMAIL_MSG call), and this #
+                        # time using $syslog_alert from defaults.sh ($syslog_alert #
+                        # = '-p "user.alert" -t "$LOGNAME[$$]_ALER"').             #
+                        #----------------------------------------------------------#
+                        WRITE_ERR_TO_SYSLOGS -n $syslog_alert \
+                          "TEST TEST TEST -- THIS IS ONLY A LOGGER FACILITY TEST (#2)"
+
+                        #--------------------------------------------------#
+                        elapsed_time=`ELAPSED_TIME stop`  # Quittin time!! #
+                        #--------------------------------------------------#
+
+                        #----------------------------------------------------------------#
+                        # If running via cron, make $log an addemdum to the note.  Else  #
+                        # we're running interactively, so they've seen all the activity  #
+                        # directed to the log; no need in showing it to them again.      #
+                        #----------------------------------------------------------------#
+                        sed -n "$log_pointer,$ p" $log &gt; $tmplog
+                        if [ ."$TERM" = . ]; then
+                           EMAIL_MSG "A-OK $script_name"                     \
+                             "${sp}$script_name completed in $elapsed_time." \
+                             "NO_LOG"                                        \
+                             "FILE=$tmplog"
+                        else
+                           $ECHO "`date '+%Y-%m-%d %T'` A-OK $script_name" \
+                             "\n${sp}$script_name completed in $elapsed_time."
+                        fi
+
+                        TERMINATE_SUBPROCESSES # In case we left anything running.
+
+                        CLEANUP_WORK_FILES $cleanup_files 2&gt;&1 | $teelog
+
+                        EXIT $success
+
+
+                      #======================================================================#
+                      #                      <b>D O C U M E N T A T I O N</b>                       #
+                      #======================================================================#
+                      #                                                                      #
+                      #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+                      #                                                                      #
+                      #        Date: December 17, 1996                                       #
+                      #                                                                      #
+                      #  Program ID: example.sh                                              #
+                      #                                                                      #
+                      #       Usage: example.sh [-Hh] TEST_PARAM                             #
+                      #                          -H = Displays detailed documentation.       #
+                      #                          -h = Provides usage brief.                  #
+                      #                          TEST_PARAM = Argument showing dynamic       #
+                      #                                       parameter key processing.      #
+                      #                                                                      #
+                      #     Purpose: Provide working example showing declaration and use     #
+                      #              of library functions, local user functions, et al.      #
+                      #                                                                      #
+                      # Description: To give it some functionality, this script runs all     #
+                      #              of the functions in the function library (we run some   #
+                      #              functions only when run interactively and with user     #
+                      #              participation/permission).  On completion, work and     #
+                      #              other temporary files are removed (no need keeping      #
+                      #              them around for just this example/demo script).         #
+                      #                                                                      #
+                      #              Many of the functions invoked here are deliberately     #
+                      #              called using two or more levels of nested command       #
+                      #              substitution.  This is done only to give you an idea    #
+                      #              of the functions' (and shell's) capabilities.           #
+                      #                                                                      #
+                      # Environment: Working directory is the current directory and /var/tmp #
+                      #              and $HOME are used for any temporary work files.        #
+                      #                                                                      #
+                      # Environment  Two environmental variables, SHLIB and SHBIN            #
+                      #   Variables: (for SHell LIBrary path and Shell BINary path), are     #
+                      #              assigned at the top of this script.  However this       #
+                      #              script, and the library's default.sh have default       #
+                      #              assignments coded in each are also in defaults.sh       #
+                      #              as a failsafe--they should not be relied on as a        #
+                      #              matter of practice.                                     #
+                      #                                                                      #
+                      #   Called by: None (this is only an example script).                  #
+                      #                                                                      #
+                      #       Calls: <a href="dateplus_c.html">dateplus</a> (C executable) and numerous library            #
+                      #              functions.  (More will be called as the library grows   #
+                      #              to give examples of how to use the functions.)          #
+                      #                                                                      #
+                      #              Shell library function declarations and defaults are    #
+                      #              listed in  "L I B R A R Y    F U N C T I O N S"  at     #
+                      #              the top of the script.                                  #
+                      #                                                                      #
+                      #       Files: $working_dir/example.par = Parameter file               #
+                      #                                                                      #
+                      #              Also creates a mail message file if it must report      #
+                      #              an error.  That file (and all other temp/work files     #
+                      #              in this sample script) are removed on completion.       #
+                      #                                                                      #
+                      #  EXIT Codes: 0 = Success                                             #
+                      #              1 = Failure                                             #
+                      #                                                                      #
+                      #       Notes: The various calls above are for library functions.      #
+                      #              Most of the functions use variables like $log, $true    #
+                      #              and $false, $success and $failure, $teelog, et al.      #
+                      #              Many of them also call other functions (e.g. EXIT is    #
+                      #              called by EMAIL_MSG).                                   #
+                      #                                                                      #
+                      #    Modified: 2004-09-18 Bob Orlando                                  #
+                      #                 v1.45 * Add demonstration of PS_AUXWW function.      #
+                      #                                                                      #
+                      #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 1 -->
+
+    <center><font face="Arial,Verdana" color="firebrick"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2012
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="firebrick">Last update:</font>
+<!-- Date --> Jan. 17, 2012<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 2 -->
+  </body>
+</html>

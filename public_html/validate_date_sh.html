@@ -1,0 +1,254 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, validate_date.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="validate_date.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, validate_date.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_validate_date_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>                                                                                                      \
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              VD_name="<b>VALIDATE_DATE</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$VD_name\(\)\{$'`" != . ] &amp;&amp; VD_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$VD_name'[=\(]?/'`" != . ] &amp;&amp; VD_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$VD_name'[=\(]?/'`" != . ] &amp;&amp; VD_loaded=1
+                 fi
+              fi
+              if [ 0${VD_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>VALIDATE_DATE</b>() # Function documentation located at bottom.            #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                VD_errmsg=`$AWK -v sp="$sp"                   \
+                                -v VD_name="$VD_name"         \
+                                -v script_name="$script_name" \
+                  'BEGIN \
+                   { # Parse options and args (options must come before args).
+                     if (ARGC &gt;= 3)
+                     {
+                        form_arg = tolower(ARGV[ARGC-1]) # Last arg
+                        date_arg = tolower(ARGV[ARGC-2]) # Next to last arg
+                        for (n = 1; n &lt; ARGC-2; n++)
+                          if (ARGV[n] == "-l")
+                            lo_yyyy = ARGV[n+1]
+                          else if (ARGV[n] == "-h")
+                            hi_yyyy = ARGV[n+1]
+                     }
+                     else
+                       exit_usage(2,"Insufficient args!")
+
+                     #-----------------------------------------------------#
+                     # Strip punctuation from date, keeping only digits.   #
+                     #-----------------------------------------------------#
+                     match(date_arg,/[0-9][0-9][\055\057]*[0-9][0-9][\055\057]*[0-9][0-9][\055\057]*[0-9][0-9]/)
+                     date_arg = substr(date_arg,RSTART,RLENGTH)
+                     gsub(/[\055\057]/,"",date_arg) # Remove slashes and dashes
+
+                     #-----------------------------------------------------#
+                     # date_arg is null if it has any invalid characters.  #
+                     #-----------------------------------------------------#
+                     if (date_arg == "")
+                       exit_usage(2,"Non-numeric characters in date ("date_arg")!")
+
+                     #-----------------------------------------------------#
+                     # Strip punctuation from form, keeping only a-z chars.#
+                     #-----------------------------------------------------#
+                     gsub(/[\001-\100\133-\140\173-\177]+/,"",form_arg)
+
+                     #-----------------------------------------------------#
+                     if      (form_arg == "yyyymmdd") # Validate date form:
+                     {                                # yyyymmdd or mmmmddyy
+                       yyyy = substr(date_arg,1,4)    # (form_arg tells us how
+                       mm   = substr(date_arg,5,2)    # to parse the date_arg).
+                       dd   = substr(date_arg,7,2)    # If it does not match
+                     }                                # yyyymmdd or mmddyyyy,
+                     else if (form_arg == "mmddyyyy") # we will fuss at the
+                     {                                # user and exit.  If it
+                       yyyy = substr(date_arg,5,4)    # matches one or the
+                       mm   = substr(date_arg,1,2)    # other, we will parse
+                       dd   = substr(date_arg,3,2)    # out mm, dd, and yyyy
+                     }                                # accordingly.
+                     else # Bad form--neither yyyymmdd nor mmddyyyy
+                       exit_usage(2,"Invalid date form ($2="ARGV[2]")!")
+                     #-----------------------------------------------------#
+
+                     #-----------------------------------------------------#
+                     # Default low is 10 years ago; high is 35 years hence.#
+                     #-----------------------------------------------------#
+                     "date +%Y" | getline curr_yyyy # Current year
+                     if (lo_yyyy == "") lo_yyyy = curr_yyyy-10
+                     if (hi_yyyy == "") hi_yyyy = curr_yyyy+30
+
+                     #-----------------------------------------------#
+                     # Low range year cannot exceed high range year. #
+                     #-----------------------------------------------#
+                     if (lo_yyyy &gt; hi_yyyy)
+                       exit_usage(2,"Low year ("lo_yyyy") exceeds high ("hi_yyyy")!")
+
+                     #-----------------------------------------------#
+                     # Year must fall within year range              #
+                     #-----------------------------------------------#
+                     if (yyyy &lt; lo_yyyy || yyyy &gt; hi_yyyy)
+                       exit_usage(1,yyyy" outside of range ("lo_yyyy"-"hi_yyyy")!")
+
+                     #-----------------------------------------------#
+                     # Set up month_table array for error reporting. #
+                     #-----------------------------------------------#
+                     split("January February March"     \
+                           "April   May      June "     \
+                           "July    August   September" \
+                           "October November December", month_table)
+
+                     #-----------------------------------------------#
+                     # Parse and validate the date.                  #
+                     #-----------------------------------------------#
+                     mm+=0
+                     if (mm==1||mm==3||mm==5||mm==7||mm==8||mm==10||mm==12)
+                       mm_days=31
+                     else if (mm==4||mm==6||mm==9||mm==11)
+                       mm_days=30;
+                     else if (mm==2)
+                       mm_days=((yyyy%4==0 &amp;&amp; yyyy%100!=0) || (yyyy%400==0)) ? 29 : 28
+                     else
+                       exit_usage(1,mm" is an invalid month number!")
+
+                     if (dd &gt; mm_days)
+                       exit_usage(1,"Day "dd" invalid for "month_table[mm]", "yyyy"!")
+
+                     exit 0
+                   } # End BEGIN (AWK initialization section)
+
+                   #---------------------------------------------------------#
+                   function exit_usage(STATUS,MSG)
+                   #---------------------------------------------------------#
+                   { print sp""MSG,"\n"                                       ,
+                      "\n"sp"Usage: "VD_name" [-l yyyy] [-h yyyy] date form\n",
+                      "\n"sp"    -l yyyy = lowest valid year.\n"              ,
+                      "\n"sp"    -h yyyy = highest valid year."               ,
+                      "\n"sp"    \047date\047  = the date to be formatted"    ,
+                      "\n"sp"    \047form\047  = one of the following:"       ,
+                      "\n"sp"                 mm[-/]dd[-/]yyyy"               ,
+                      "\n"sp"                 yyyy[-/]mm[-/]dd"               ,
+                      "\n"sp"                 yyyymmdd"                       ,
+                      "\n"sp"                 mmddyyyy\n"
+                     exit STATUS
+                   }' $*`
+                VD_status=$?
+
+                [ $VD_status -eq 0 ] &amp;&amp; return 0 # Ahh, the sweet smell of success
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Function dependency
+
+                VD_ID="$script_name($VD_name)"
+
+                EMAIL_MSG "ERROR: $VD_ID" \
+                  "$VD_errmsg"
+
+                return $VD_status
+              } # "VD_" prefix identifies this function's variables
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: January 14, 1997                                        #
+              #                                                                      #
+              #  Program ID: validate_date.sh                                        #
+              #                                                                      #
+              #       Usage: VALIDATE_DATE [-l yyyy [-h yyyy]] date form             #
+              #                   Where 'date' is the date to be formatted           #
+              #                     and 'form' is one of the following:              #
+              #                                   mm[-/]dd[-/]yyyy                   #
+              #                                   yyyy[-/]mm[-/]dd                   #
+              #                                   yyyymmdd                           #
+              #                                   mmddyyyy                           #
+              #                                                                      #
+              #     Options: -l represents the lowest  (yyyy) acceptable year        #
+              #                 (defaults to 10 years past)                          #
+              #              -h represents the highest (yyyy) acceptable year        #
+              #                 (defaults to 30 years future).                       #
+              #                                                                      #
+              #     Purpose: Validate the given date given according to the          #
+              #              template provided along with it.                        #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "VD_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Failure (1) for error (e.g. user supplies an invalid    #
+              #              argument or the date is invalid).  Otherwise returns    #
+              #              success indicating that the date is OK.                 #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              #       Notes: ....................................................    #
+              #              ....................................................    #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.9  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.8  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

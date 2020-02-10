@@ -1,0 +1,126 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"OR Kilap 1 (left)",
+          "starttime":"6:00"          
+        },
+	{
+          "name":"OR Kilap 1 (right)",
+          "starttime":"6:10"          
+        },
+	{
+          "name":"OR Kilap 1 (the switch)",
+          "starttime":"6:20"          
+        },
+	{
+          "name":"Patada Voltear",
+          "starttime":"6:30"          
+        },
+	{
+          "name":"OR Kilap 2 (right)",
+          "starttime":"6:45"          
+        },
+	{
+          "name":"OR Kilap 2+(right)",
+          "starttime":"6:55"          
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Langka 1C, 3C, 5C (KTS method) Rear smsh-n, Front shuffle 1C (Smsh-n'shuffle)",
+          "starttime":"6:00"          
+        },
+  	{
+          "name":"Application",
+          "starttime":"6:15"          
+        },
+	{
+          "name":"3C",
+          "starttime":"6:25"          
+        },
+	{
+          "name":"Application",
+          "starttime":"6:40"          
+        },
+	{
+          "name":"5C",
+          "starttime":"6:55"          
+        },	
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Langka 5C (Smsh-n'shuff)",
+          "starttime":"10:00"          
+        },
+	{
+          "name":"OR Kilap 1+ (Left)",
+          "starttime":"10:30"          
+        },
+	{
+          "name":"Patada Voltear",
+          "starttime":"10:40"          
+        },
+	{
+          "name":"OR Kilap 2+ (Right)",
+          "starttime":"10:50"          
+        },
+	{
+          "name":"Escaping the mount",
+          "starttime":"11:00"          
+        },
+	{
+          "name":"Knife Sombrada (rev)",
+          "starttime":"11:15"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

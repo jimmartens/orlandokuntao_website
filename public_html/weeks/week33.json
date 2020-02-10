@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Langka 2C, 4C, 6C (KTS method)",
+          "starttime":""          
+        },
+        {
+          "name":"2C (Smsh-n'step)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"Application",
+          "starttime":"6:15"          
+        },
+        {
+          "name":"4c",
+          "starttime":"6:25"          
+        },
+        {
+          "name":"Application",
+          "starttime":"6:40"
+        },
+        {
+          "name":"6C",
+          "starttime":"6:55"
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Rocky Drill",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"Rolling Elbows",
+          "starttime":"6:15"          
+        },
+        {
+          "name":"GR Sombrada Knife (R)",
+          "starttime":"6:40"          
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Garrote cuarto (1-2)",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Langka 2C, 4C, 6C (KTS Method)",
+          "starttime":""
+        },
+        {
+          "name":"2C (Smsch-n'step)",
+          "starttime":"10:30"
+        },
+        {
+          "name":"4C",
+          "starttime":"10:40"
+        },
+        {
+          "name":"6C",
+          "starttime":"10:50"
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"11:00"
+        },
+        {
+          "name":"BR Sombrada Knife (R)",
+          "starttime":"11:15"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

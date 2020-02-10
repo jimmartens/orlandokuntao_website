@@ -1,0 +1,130 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Tres estrellas",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Cochran back-knuckle",
+          "starttime":"6:0" 
+        },
+        {
+          "name":"Ki Toss",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"BB Folding Elbow",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"Bag vert punch-n'jams",
+          "starttime":"6:55" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Langka 2B, 4B, 6B (Kuntao method) Rear smsh-n Front shuffle",
+          "starttime":"" 
+        },
+        {
+          "name":"2B (Smsh-n'shuffle)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"2B Application",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"4B",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"4B Application",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"6B",
+          "starttime":"6:55" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"GR Kilap 8B",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Tres estrellas",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Cochran back-knuckle",
+          "starttime":"10:35" 
+        },
+        {
+          "name":"BB Folding Elbow",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"Langka 2-B (drill)",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Langka 6-B (drill)",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"Langka application",
+          "starttime":"11:20" 
+        }, 
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

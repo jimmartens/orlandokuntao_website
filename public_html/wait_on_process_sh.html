@@ -1,0 +1,287 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, wait_on_process.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="wait_on_process.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, wait_on_process.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_wait_on_process_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              WP_name="<b>WAIT_ON_PROCESS</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$WP_name\(\)\{$'`" != . ] &amp;&amp; WP_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$WP_name'[=\(]?/'`" != . ] &amp;&amp; WP_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$WP_name'[=\(]?/'`" != . ] &amp;&amp; WP_loaded=1
+                 fi
+              fi
+              if [ 0${WP_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>WAIT_ON_PROCESS</b>() # Function documentation located at bottom.          #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Function dependencies
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+                : ${true:=1}
+                : ${false:=0}
+                : ${yymmddhhmiss:=`date '+%y''%m%d%H''%M''%S'`}
+                : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`}
+                : ${tmp:=/var/tmp}
+
+                WP_ID="$script_name($WP_name)"
+
+                #----------------------------------------------#
+                # Build long $WP_usage_text string to avoid    #
+                # coding the same usage text in several places.#
+                #----------------------------------------------#
+                WP_usage=`$AWK -v sp="$sp"                     \
+                                 -v WP_name="$WP_name"         \
+                                 -v script_name="$script_name" \
+                  'BEGIN {
+                      print sp"Usage: "WP_name" -v [-s sss [-t sss]] proc-list\n"   ,
+                        "\n"sp"    -v      = Verbose (test) operation.\n"           ,
+                        "\n"sp"    -s sss  = Sleep option followed by the seconds"  ,
+                        "\n"sp"              we\047re to use between queries.\n"    ,
+                        "\n"sp"    -t ttt  = Sleep seconds.\n"                      ,
+                        "\n"sp"    \047proc_list\047 is a list of process(es)"      ,
+                        "\n"sp"              we\047re to wait on.\n"
+                          }' 2&gt;&1`
+
+                if [ $? -ne 0 ]; then
+                   EMAIL_MSG "ERROR: $WP_ID" \
+                     "${sp}Awk failure in assigning \$WP_usage.\n"
+                   return 1
+                fi
+
+                if [ $# -lt 1 ]; then
+                   EMAIL_MSG "ERROR (Function): $WP_ID" \
+                     "${sp}Insufficient args.\n"        \
+                     "$WP_usage"
+                   return 1
+                fi
+
+                #--------------------------------------------------------------#
+                # Options must come before any arguments that belong with them.#
+                #--------------------------------------------------------------#
+                WP_sss=300     # Defaults
+                WP_limit=86400 #
+                WP_verbose=0   #
+
+                WP_root=$tmp/$name_root"_WP_go_"$id_hex
+                WP_err=$WP_root"."$Xtimestamp
+                while getopts s:t:v WP_opt 2&gt;&gt; $WP_err
+                do
+                   case $WP_opt in
+                      s ) WP_sss="$OPTARG"
+                          ;;
+                      t ) WP_limit="$OPTARG"
+                          ;;
+                      v ) WP_verbose=1
+                          ;;
+                     \? ) EMAIL_MSG "FUNCTION ERR $WP_ID"                     \
+                            "${sp}Invalid option -`sed 's/^.*-- //' $WP_err`" \
+                            "$WP_usage"
+                          return 1
+                          ;;
+                      * ) ;;
+                   esac
+                done
+                shift `expr $OPTIND - 1` # Shift past options to remaining args
+
+                #--------------------------------------------------------------#
+                # Must reset this dog if getopts is apt to be called again     #
+                OPTIND=1 # (try finding that little gem documented elsewhere). #
+                #--------------------------------------------------------------#
+
+                [ ."$WP_root" != . ] &amp;&amp; \rm -f $WP_root* &gt; /dev/null 2&gt;&1
+
+                #----------------------------------------------------------#
+                # Use SunOS or Linux ps command with appropriate options.  #
+                #----------------------------------------------------------#
+                : ${OZ:=`uname -s 2&gt; /dev/null|tr '[A-Z]' '[a-z]' 2&gt; /dev/null`}
+
+                if [ ."$OZ" = ."sunos" ]; then
+                   WP_ps_opt="-eaf -o user,pid,ppid,time,args"
+                else # Linux
+                   WP_ps_opt="-auxwwwwwwwww"
+                fi
+
+                #----------------------------------------------------------#
+                # If $WP_limit &lt; $WP_sss, then make it the same as $WP_sss.#
+                #----------------------------------------------------------#
+                [ $WP_limit -lt $WP_sss ] &amp;&amp; WP_limit=$WP_sss
+
+                WP_proc_running=$true
+                WP_elapsed=0
+
+                for WP_proc # in $*
+                do
+                   while [ $WP_proc_running -eq $true ]
+                   do
+                      for WP_n in 1 2 3 4 5 6 7 8 9 10
+                      do
+                         [ $WP_verbose -eq 1 ] &amp;&amp; echo "${sp}ps $WP_ps_opt"
+                         WP_ps_line=`ps $WP_ps_opt        \
+                          | $AWK -v process="$WP_proc"    \
+                                 -v verbose="$WP_verbose" \
+                           'BEGIN { proc_running = 0 }
+                            {
+                              vi   = "vi "process
+                              self = "awk -v process="process
+                              if ($0 ~ process)
+                              {
+                                if (verbose) print $0 | "cat 1&gt;&2"
+                                gsub( /[\t ]+/," ",$0) # Squeeze whitespace
+                                gsub(/^[\t ]+/,"", $0) # Remove leading spaces
+                                if ($0 ~ vi || $0 ~ self)
+                                  next
+                                ps_line=$0
+                                proc_running=1 # true
+                              }
+                            }
+                            END { print ps_line
+                                  exit proc_running # true | false
+                                }' 2&gt;&1`
+                         WP_proc_running=$?
+
+                         if [ $WP_proc_running -eq $true ]; then
+                            if [ $WP_n -lt 10 ]; then
+                               echo "`date '+%Y-%m-%d %T'`" \
+                                 "Waiting for completion of $WP_proc"
+                               echo "${sp}($WP_ps_line)."
+                               echo "${sp}We'll check again in $WP_sss second(s)."
+                            else
+                               WP_elapsed=`expr $WP_elapsed + $WP_sss`
+                               EMAIL_MSG "NOTICE $WP_ID"                         \
+                                 "${sp}Still waiting for completion of $WP_proc" \
+                                 "${sp}($WP_ps_line)."                           \
+                                 "${sp}(Waiting for $WP_elapsed seconds now"     \
+                                 "${sp}--that's checking $WP_n times, \c"        \
+                                   "sleeping $WP_sss between checks)."           \
+                                 "${sp}$script_name continues."
+                            fi
+                            sleep $WP_sss
+                            WP_elapsed=`expr $WP_elapsed + $WP_sss`
+                            if [ $WP_elapsed -ge $WP_limit ]; then
+                               EMAIL_MSG "NOTICE $WP_ID"                         \
+                                 "${sp}Still waiting for completion of $WP_proc" \
+                                 "${sp}($WP_ps_line)."                           \
+                                 "${sp}(We waited for $WP_elapsed seconds.)"     \
+                                 "${sp}$WP_name returning to caller."
+                               return $true
+                            fi
+                         fi # if [ $WP_proc_running -eq $true ]; then
+                      done # for WP_n in 1 2 3 4 5 6 7 8 9 10
+                   done # while [ $WP_proc_running -eq $true ]
+                done # for WP_proc
+                return $false
+              } # "WP_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: wait_on_process.sh                                      #
+              #                                                                      #
+              #       Usage: WAIT_ON_PROCESS -v [-s sss [ -t sss]] process-list      #
+              #                                                                      #
+              #                -v = verbose (test) operation.                        #
+              #                -s 'sss' defaults to   300 seconds ( 5 minutes)       #
+              #                -t 'ttt' defaults to 86400 seconds (24 hours)         #
+              #                                                                      #
+              #     Purpose: Query current processes (ps -eaf), reporting (and       #
+              #              waiting on) those processes in our process list         #
+              #              that are currently running.  Wait only for maximum      #
+              #              of 'ttt' seconds (if specified) or default.  Edits      #
+              #              (vi) of unpathed processes are not counted as running;  #
+              #              however, edits of fully qualified (pathed) process      #
+              #              names are.                                              #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "WP_" prefix identifies local function variables.       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              # Exit_status: Success (0) if/when the process(es) we're waiting for   #
+              #              are no longer running.  If the process is running       #
+              #              and we have exceeded our time limit, then return        #
+              #              with failure (1) status.                                #
+              #                                                                      #
+              #              Return failure (1) on severe error (e.g. user supplies  #
+              #              insufficient arguments).                                #
+              #                                                                      #
+              #       Notes: Although error notification is via the EMAIL_MSG        #
+              #              library function, the reporting of active processes     #
+              #              is displayed via stdout only.  Every 10 iterations of   #
+              #              the wait loop, EMAIL_MSG is used to inform $notify      #
+              #              that we've been waiting a while.  If the user doesn't   #
+              #              specify a maximum wait timem 24 hours is assumed.       #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.14 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.13 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

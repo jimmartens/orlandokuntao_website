@@ -1,0 +1,325 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, ps_auxww.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="ps_auxww.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, ps_auxww.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2004-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_ps_auxww_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              PSW_name="<b>PS_AUXWW</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne? See if already loaded?
+                 [ ."`set | egrep '^$PSW_name\(\)\{$'`" != . ] &amp;&amp; PSW_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$PSW_name'[=\(]?/'`" != . ] &amp;&amp; PSW_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$PSW_name'[=\(]?/'`" != . ] &amp;&amp; PSW_loaded=1
+                 fi
+              fi
+              if [ 0${PSW_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>PS_AUXWW</b>() # Function documentation located at bottom.                 #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                PSW_ps="/usr/ucb/ps"            # Default UCB ps
+                [ -x "$PSW_ps" ] || PSW_ps="ps" # Pathed ps unless /usr/ucb/ps exists
+                PSW_ps="$PSW_ps -auxww"         # Add the options
+
+                #------------------------------#
+                # Parse any function options.  #
+                #------------------------------#
+                PSW_case="respect" # Respect case (the default) in pattern match.
+                PSW_rs="e"         # Record separator ('e' is the default)
+                while getopts ir: PSW_opt 2&gt; /dev/null
+                do
+                   case $PSW_opt in
+                      i ) PSW_case="ignore";;
+                      r ) PSW_rs="$OPTARG";;
+                      * ) ;;
+                   esac
+                done
+                shift `expr $OPTIND - 1` # Shift past options to remaining args
+
+                #--------------------------------------------------------------#
+                # Must reset this dog if getopts is apt to be called again     #
+                OPTIND=1 # (try finding that little gem documented elsewhere). #
+                #--------------------------------------------------------------#
+
+                if [ $# -gt 0 ]; then
+                   $PSW_ps | $AWK -v str="$*"         \
+                                  -v case="$PSW_case" \
+                                  -v rs="$PSW_rs"     \
+                     'BEGIN {
+                              RS       = rs     # Since "e" is the most common
+                              n        = 0      # letter in English, it is our
+                              proc     = ""     # default record separator (RS).
+                              pids     = ""
+                              lines[0] = 0
+                              if (case == "ignore") str = tolower(str)
+                            }
+                      { ##  M A I N  ##
+                        gsub(/[\t ]+\n/,"\n",$0)# Squeeze tabs and blanks
+                        if ($0 ~ /\n/)          # Any newlines in our ps chunk?
+                        {
+                          lines[0] = split($0,lines,"\n")
+                          for (i=1; i &lt;= lines[0]; i++)
+                          {
+                            if (i == 1)         # On the 1st line in lines[]:
+                            {                   # If proc variable
+                              if (proc == "")   # is empty, then
+                                proc = lines[1] #  assign lines[1] to it.
+                              else              # Else finish assembly of proc
+                                proc = proc""RS""lines[1] # (our reassembled ps line).
+                                                # If proc happens to be our
+                              print_if_match()  # target, print it.
+                              continue          # Regardless, iterate our for-loop.
+                            }
+                                                # All lines following the first are
+                            proc = lines[i]     # automagically assigned to proc.
+                                                # If it is not the last line (we
+                            if (i &lt; lines[0])   # already know it is not the first)
+                            {                   # and if it happens to be our target
+                              print_if_match()  # process, we print it and iterate
+                              continue          # our loop.  Otherwise, it must be
+                            }                   # the last line in the array, and
+                            next                # since it is already assigned to
+                          } # for (i=1; i ...   # proc, we just break out and get
+                        } # if ($0 ~ /\n/)      # our next chunk of "ps" output.
+
+                        proc = proc""RS""$0
+                      } ##  M A I N  ##
+
+                      #---------------------------------------------------------#
+                      function print_if_match()
+                      #---------------------------------------------------------#
+                      {
+                        psline = proc
+                        #-----------------------------------------------#
+                        # For lowercase, we must feed tolower() parsed  #
+                        # output so as to aviod its size limitation.    #
+                        #-----------------------------------------------#
+                        if (case == "ignore")
+                        {
+                          line_len = length(proc)
+                          if (line_len &gt; 2048)
+                          {
+                            proc = ""
+                            for (i=1; i&lt;=line_len; i+=2048)
+                              proc = proc""tolower(substr(psline,i,2048))
+
+                            sub(/ +$/,"",proc) # Squeeze tabs and blanks
+                          }
+                          else
+                          {
+                            proc = tolower(proc)
+                          }
+                        } # if (case == "ignore")
+
+                        if (match(proc,str) &amp;&amp; ! match(proc,/awk -v str=/))
+                        {
+                          print "PS="psline | "cat 1&gt;&2"     # Print real ps line to stderr
+                          pid = substr(proc,1,50)            # Isolate PID
+                          sub(/^[A-Za-z0-9_]+[\t ]+/,"",pid) # Drop 1st word and all
+                          sub(/[\t ].*/,"",pid)              # following 2nd (leaves PID)
+                          pids = pids" "pid                  # Add PID to list.
+                          n++                                # Num of procs found.
+                        }
+                        proc = ""
+                      } # function print_if_match()
+
+                      END {
+                            sub(/^ /,"",pids)
+                            print pids
+                            n = (n &lt; 254) ? n : 254
+                            exit n # Return the number of processes found.
+                          }'
+                   return $?
+                else # Caller provided no target ps string
+                   if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+                   #-------------------------------------------------------------#
+                   # If the following variables are not set, use these defaults. #
+                   #-------------------------------------------------------------#
+                   : ${script_name:=`basename $0`}
+                   : ${sp:="                    "}
+
+                   . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+                   if [ $# -lt 1 ]; then
+                      EMAIL_MSG "ERROR: $script_name($PSW_name)"           \
+                        "${sp}Insufficient args!"                          \
+                        "${sp}Usage: $PSW_name -i -r RS_char -- ps_string" \
+                        "${sp}Function terminated--processing continues."
+                   fi
+                   return 255
+                fi
+              } # "PSW_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: August 11, 2004                                         #
+              #                                                                      #
+              #  Program ID: ps_auxww.sh                                             #
+              #                                                                      #
+              #       Usage: PS_AUXWW -i -r RS_char -- ps_target                     #
+              #                                                                      #
+              #                       -i = Ignore case when matching pattern         #
+              #                       -r = Use the following character for the       #
+              #                            record separator (defaults to 'e').       #
+              #                       -- = Stops getopts processing should the       #
+              #                            ps_target begin with a hyphen.            #
+              #                ps_target = Process string we seek from ps output.    #
+              #                                                                      #
+              #     Purpose: Use UCB 'ps -auxww' to list processes in the process    #
+              #              queue, displaying those lines matching our ps target.   #
+              #                                                                      #
+              # Description: Devoid of options -i and -r, this program uses UCB's    #
+              #              ps with options -auxww to search the process queue and  #
+              #              display those ps lines (respecting case) that match our #
+              #              target string.  The return status indicates the number  #
+              #              of processes found (see "Exit Status:" below). A PID    #
+              #              list is displayed via stdout.  The matching ps lines    #
+              #              are displayed via stderr.  The caller is expected to    #
+              #              redirect/capture that output as needed.                 #
+              #                                                                      #
+              #              AWK is used as the pattern matching engine because      #
+              #              some Unix hosts lack Perl.  However, AWK's buffer       #
+              #              limitation made processing long ps lines problematic.   #
+              #              UCB 'ps -auxww' output can be VERY long (longer than    #
+              #              either sed or AWK can handle), so I use the letter 'e'  #
+              #              (the default) as the record separator (RS).  As the     #
+              #              most common letter in English, using it as the RS       #
+              #              allows the program to ingest all the data in smaller    #
+              #              chunks, before reassembling the data into a single      #
+              #              line when we encounter a newline.                       #
+              #                                                                      #
+              #    Examples: After sourcing the script to load the function (i.e.    #
+              #              ". ./ps_auxww.sh"), you can run PS_AUXWW as follows:    #
+              #                                                                      #
+              #              1. Find jsm-ruleseng in process queue.  PIDs are        #
+              #                 displayed in stdout, while the actual ps strings     #
+              #                 are displayed via stderr.                            #
+              #                                                                      #
+              #                   PS_AUXWW jsm-ruleseng                              #
+              #                                                                      #
+              #              2. Find jsm-ruleseng, printing PIDs, discarding         #
+              #                 any ps line output by redirecting stderr to          #
+              #                 to /dev/null.                                        #
+              #                                                                      #
+              #                   PS_AUXWW jsm-ruleseng 2&gt; /dev/null                 #
+              #                                                                      #
+              #              3. Find jsm-ruleseng assigning ps output (stderr)       #
+              #                 to $pss and redirecting PIDs (stdout) to /dev/null.  #
+              #                                                                      #
+              #                   pss=`PS_AUXWW "jsm-ruleseng" 2&gt;&1 &gt; /dev/null`     #
+              #                                                                      #
+              #              4. Find jsm-ruleseng assigning PID list to $pids        #
+              #                 and redirecting any ps line output to a file.        #
+              #                                                                      #
+              #                   pids=`PS_AUXWW "jsm-ruleseng" 2&gt; /tmp/stderr`      #
+              #                                                                      #
+              #              5. Return only the number of processes found            #
+              #                 (see "Exit Status:" below).                          #
+              #                                                                      #
+              #                   PS_AUXWW jsm-ruleseng &gt; /dev/null 2&gt;&1             #
+              #                   status=$?                                          #
+              #                                                                      #
+              #              6. Find "-bg black -fg Green" (Note the "--"            #
+              #                 to end option processing before the string.)         #
+              #                                                                      #
+              #                   PS_AUXWW -- -bg black -fg Green                    #
+              #                                                                      #
+              #              7. Find "-bg black -fg Green" ignoring case.            #
+              #                                                                      #
+              #                   PS_AUXWW -i -- -bg black -fg Green                 #
+              #                                                                      #
+              #              8. Find "-bg black -fg Green" using the second most     #
+              #                 frequently found letter in the English language.     #
+              #                                                                      #
+              #                   PS_AUXWW -r "t" -- -bg black -fg Green             #
+              #                   PS_AUXWW -r t -- -bg black -fg Green # Ditto       #
+              #                                                                      #
+              #              9. Alias PS_AUXWW function as "pswa" so we can          #
+              #                 search the process queue, ignoring case.             #
+              #                                                                      #
+              #                   . ./ps_auxww.sh # Source the PSWA function.        #
+              #                   pswa () {PS_AUXWW '-i' "$@" 2&gt;&1 1&gt; /dev/null ; }  #
+              #                                                                      #
+              #                 Calling PS_AUXWW in this fashion (as a function      #
+              #                 instead of an alias) makes alias functionality       #
+              #                 available regardless of shell.                       #
+              #                                                                      #
+              #     Globals: "PSW_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit Status: Returns the number of matching process lines in our     #
+              #              status as follows:                                      #
+              #                                                                      #
+              #                0-253 = Actual number of processes found.             #
+              #                  254 = Indicates more than 253 processes found.      #
+              #                  255 = ERROR: Caller provided no target ps string.   #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              #       Notes: ....................................................    #
+              #              ....................................................    #
+              #                                                                      #
+              #    Modified: 20yy-mm-dd Bob Orlando                                  #
+              #                 v1.2  * Move display of stdout (pid list) to END     #
+              #                         section (instead of displaying them as we    #
+              #                         get them).                                   #
+              #                       * Expand documentation to include an           #
+              #                         aliasing example.                            #
+              #                                                                      #
+              #              2004-09-18 Bob Orlando                                  #
+              #                 v1.1  * Initial release.                             #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 2004-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

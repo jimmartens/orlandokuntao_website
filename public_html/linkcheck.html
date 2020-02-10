@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Finding Broken Symbolic/Soft Links with linkcheck.pl by Bob Orlando</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Finding Broken Symbolic/Soft Links with linkcheck.pl by Bob Orlando">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="keywords"       lang="en" content="Broken Links Unix Filesystem Perl program">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2002-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="#800080" alink="firebrick" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_linkcheck.html';">
+    <div align="justify" style="font-family:Arial,Verdana; font-size: 12pt">
+      <table align="center" border="0" width="725" cellspacing="0" cellpadding="3"> <!-- Table 1 -->
+        <tr>
+          <td align="center">
+            &nbsp;<hr size="-1" noshade>
+            <small>Linkcheck featured online in UnixReview.com, <i>Shell Corner</i>, August 2002.</small>
+            <hr size="-1" noshade>
+          </td>
+        </tr>
+        <tr>
+          <td align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a>
+              <br>&nbsp;
+            </font>
+          </td>
+        </tr>
+        <tr bgcolor="silver">
+          <td align="left">
+            <big><b>Finding Broken Symbolic/Soft Links with linkcheck.pl</b><sub>&nbsp;</sub>
+            <br>by Bob Orlando</big>
+          </td>
+        </tr>
+        <tr>
+          <td colSpan="2" align="justify">
+            &nbsp;<br>
+            <br>This Perl script, <a href="linkcheck_pl.html">linkcheck.pl</a>, locates and optionally
+              removes broken links.  We are not talking about web site links, but filesystem links.  This
+              kind of link is a file that refers or points to an object, either in the same directory or in a different
+              directory.  Unix has two kinds of links: hard links and symbolic or soft links.
+            <p>According to the Unix Power Tools (Article 19.04), hard links <i>point to the same inode and the same
+              set of data blocks</i>.  Hard links are good, but they are limited for they can point only to files
+              (no directories) and the files pointed to must reside in the same file system.
+            <p>A symbolic or <i>soft </i>link is actually a file -- a special file, but a file nevertheless.
+              As such, it has its own inode -- different from the object to which it points.  A soft link can also
+              point to other objects such as directories.  Further, a soft link can cross file systems.
+              To create a symbolic link you use the <font face="courier" size="+1"><b>ln</b></font> command.  For example,
+              to create a "perl" soft link in /usr/bin that points to the "/usr/local/bin/perl" you simply enter the
+              following:
+            <p>
+            <font face="courier" size="+1">
+              &nbsp; &nbsp; &nbsp;<b>ln -s /usr/proc/bin/ptree myptree</b>
+            </font>
+            <p>The command syntax seems somehow backward, so I always have to say to myself, <i>link to an-actual-file
+              by this-name</i>, or in this case, <i>link to /usr/proc/bin/ptree by myptree</i>.  Assuming
+              /usr/proc/bin is not in my path, but my home directory (where I created the link) is, I can now call
+              the ptree program just by typing "myptree".  Granted this is a weak example for you can just as
+              easily use an alias to accomplish the same thing in your interactive shell, but it does illustrate the
+              point.)
+            <p>A broken link occurs when the /usr/proc/bin directiory is deleted, or the ptree command there is removed.
+            <p>Finally, according to the &nbsp;<font face="courier" size="+1"><b>ln</b></font>&nbsp; description in
+              <u>Unix in a Nutshell</u>, you can see a soft link with &nbsp;<font face="courier" size="+1"><b>ls&nbsp;-l</b></font>.
+              To find hard links use &nbsp;"<font face="courier" size="+1"><b>find -inum</b></font>"&nbsp; to find a hard link.
+            <p><a href="linkcheck_pl.html"><b>linkcheck.pl</b></a> looks for all links on the local file system
+              and tests each link's integrity -- to determine whether the link still valid, or if it points to an object
+              that no longer exists.  Only local filesystems are searched and this is ensured by testing each
+              filesystem argument via &nbsp;"<font face="courier" size="+1"><b>df&nbsp;-l</b></font>"&nbsp; command.
+            <p>Listing broken links is helpful, and you can certainly write a much shorter Perl program to do that,
+              but linkcheck.pl comes with other useful options:
+            <p>
+            <blockquote>
+                  <font face="courier" size="+1"><b>-a</b> &nbsp; </font> Display All links
+              <br><font face="courier" size="+1"><b>-H</b> &nbsp; </font> Detailed documentation
+              <br><font face="courier" size="+1"><b>-h</b> &nbsp; </font> Usage brief
+              <br><font face="courier" size="+1"><b>-l</b> &nbsp; </font> Long list (e.g., <font face="courier"><b>ls -al</b></font>)
+              <br><font face="courier" size="+1"><b>-r</b> &nbsp; </font> Remove broken links (use with caution)
+              <br><font face="courier" size="+1"><b>-v</b> &nbsp; </font> Verbose output
+              <br><font face="courier" size="+1"><b>fs</b> &nbsp; </font> Required filesystem for search (multiple filesystems may be specified)
+            </blockquote>
+            <p>Usage and program documentation are provided via <font face="courier" size="+1"><b>-h</b></font> and
+              <font face="courier" size="+1"><b>-H</b></font> option, respectively.  Verbosity is provided via
+              <font face="courier" size="+1"><b>-v</b></font> option, and while it only turns on diagnostics and prints out a
+              "Removed" message in this program, I code it as a matter of routine.  Having a verbose option has
+              proven indispensable in both Perl development and debugging.
+            <p>The <font face="courier" size="+1"><b>fs</b></font> argument checks a specific filesystem, but linkcheck.pl
+              doesn't waste time chasing down broken links on remotely mounted file systems.
+              Options <font face="courier" size="+1"><b>a</b></font>, <font face="courier" size="+1"><b>l</b></font>, and
+              <font face="courier" size="+1"><b>r</b></font> are production options.  These provide a display of all links
+              (including broken links), a long list display (e.g., <font face="courier" size="+1"><b>ls -al</b></font>), and
+              broken link removal.
+            <p>By default, linkcheck.pl displays links in short format (e.g., <font face="courier" size="+1"><b>ftpusers&nbsp;-&gt;&nbsp;/etc/ftpusers</b></font>),
+              but using the <font face="courier" size="+1"><b>-l</b></font> option, gives you something like this:
+            <p>
+<pre>
+   Linked file: lrwxrwxrwx 1 root other 13 Nov 12 2001 ftpusers -&gt; /etc/ftpusers
+</pre>
+            <p>Since the preceding file link is not broken, the only way to see it is to specify the <i>all</i>
+              (<font face="courier" size="+1"><b>-a</b></font>) option.
+            <p>The linked&nbsp;file: preceding the long list quickly identifiesthe linked object.
+              A <font face="courier" size="+1"><b>linkcheck.pl&nbsp;-al&nbsp;/</b></font> might yield something like the following:
+            <p>
+<pre>
+   Linked dir:  lrwxrwxrwx 1 root root   9 Nov 12 2001 /bin -&gt; ./usr/bin
+   Linked char: lrwxrwxrwx 1 root other 25 Nov 12 2001 /AppsSrvr/dev/zero \
+     -&gt; devices/pseudo/mm@0:zero <br>
+   Broken link: lrwxrwxrwx 1 root root  17 Nov 12 2001 \
+     /usr/lib/locale/fr_CA.ISO8859-1/LC_MESSAGES       \
+       -&gt; ../fr/LC_MESSAGES
+</pre>
+            <p>The list of link objects identified are as follows:
+            <blockquote>
+                file
+              <br>dir
+              <br>link
+              <br>pipe
+              <br>sock
+              <br>dev
+              <br>char
+              <br>tty
+              <br>??? (possibly a SunOS door)
+            </blockquote>
+            <p>In conclusion, a recent run on some 50 Unix (SunOS and Linux) hosts uncovered nearly 3000 broken links.
+              With the <font face="courier" size="+1"><b>-r</b></font>&nbsp;&nbsp;option, removing the broken links was as easy as finding
+              them.  However, this option should be used with care.
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              <a href="copyright.html">&copy;Copyright</a> Bob Orlando, 2002-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

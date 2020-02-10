@@ -1,0 +1,118 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Defensive back kick",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"PU Potter's wheel",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"30-Second",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Round-kick bag",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Langka 6B (Smsh-n'shuff)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"BL Stiff wrist - Left",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"Sinawali (Rev-6 LLH)",
+          "starttime":"6:50" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"OR Kilap 2 (both)",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Defensive back-kick",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"PU Rolling Elbows",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"PU Potter's wheel",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"BL Stiff wrist - Left",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Sinawali: (Rev-6 LLH)",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

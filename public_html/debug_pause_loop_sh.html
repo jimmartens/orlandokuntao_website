@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, debug_pause_loop.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="debug_pause_loop, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, debug_pause_loop.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_debug_pause_loop_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              DPL_name="<b>DEBUG_PAUSE_LOOP</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$DPL_name\(\)\{$'`" != . ] &amp;&amp; DPL_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$DPL_name'[=\(]?/'`" != . ] &amp;&amp; DPL_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$DPL_name'[=\(]?/'`" != . ] &amp;&amp; DPL_loaded=1
+                 fi
+              fi
+              if [ 0${DPL_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>DEBUG_PAUSE_LOOP</b>() # Function documentation located at bottom.         #
+              #----------------------------------------------------------------------#
+              {
+                #-----------------------------------------------------------------#
+                # If running interactively, prompt user for a command and process #
+                # it.  Else return with failure status.                           #
+                #-----------------------------------------------------------------#
+                if [ .$TERM != . ]; then
+                   DPL_pause="." # Just to give it something.
+                   while [ ".$DPL_pause" != "." ]
+                   do
+                      /bin/echo "Enter command | press ENTER to QUIT debug: \c"
+                      read DPL_pause
+                      #--------------------------------------------------------#
+                      # If -e (eval) flag was passed when we were called, then #
+                      # evaluate the user's command, else, just execute it.    #
+                      #--------------------------------------------------------#
+                      [ .${1} = ."-e" ] &amp;&amp; eval $DPL_pause || $DPL_pause
+                   done
+                   echo "Quitting debug."
+                   return 0 # Success
+                else
+                   return 1 # failure
+                fi
+              } # "DPL_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: November 13, 1997                                       #
+              #                                                                      #
+              #  Program ID: debug_pause_loop.sh                                     #
+              #                                                                      #
+              #       Usage: DEBUG_PAUSE_LOOP [-e]                                   #
+              #                          where -e signals 'eval' operation is to be  #
+              #                                   performed on the commands entered. #
+              #                                                                      #
+              #     Purpose: Provide a loop for debugging that executes commands     #
+              #              passed to it.  The function terminates when no command  #
+              #              is received (the ENTER key pressed with nothing on the  #
+              #              command-line).                                          #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #             "DPL_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Nothing (debug function).                               #
+              #                                                                      #
+              #       Calls: Nothing (debug function).                               #
+              #                                                                      #
+              #       Notes: This function operates ONLY when the calling script     #
+              #              is run interactively.  Run via batch or cron, and the   #
+              #              function does nothing, returning failure status (1).    #
+              #                                                                      #
+              #    Modified: 2004-03-03 Bob Orlando                                  #
+              #                 v1.6  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

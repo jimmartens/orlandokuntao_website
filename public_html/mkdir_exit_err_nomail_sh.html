@@ -1,0 +1,278 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, mkdir_exit_err_nomail.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="mkdir_exit_err_nomail.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, mkdir_exit_err_nomail.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1999-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_mkdir_exit_err_nomail_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              <b>MEN_name="MKDIR_EXIT_ERR_NOMAIL</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$MEN_name\(\)\{$'`" != . ] &amp;&amp; MEN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$MEN_name'[=\(]?/'`" != . ] &amp;&amp; MEN_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$MEN_name'[=\(]?/'`" != . ] &amp;&amp; MEN_loaded=1
+                 fi
+              fi
+              if [ 0${MEN_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>MKDIR_EXIT_ERR_NOMAIL</b>() # Function documentation located at bottom.    #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                MEN_ID="$script_name($MEN_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                MEN_options="lptm"
+                MEN_opt_l=0
+                MEN_opt_p=0
+                MEN_opt_t=0
+                MEN_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                MEN_tag="$logger_t" # within library defaults.sh.
+                MEN_opts=""
+                MEN_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   MEN_n=`expr "$1". : '-.*'`
+                   if [ $MEN_n -gt 0 ]; then
+                      if [ $MEN_n -eq 2 ]; then
+                         MEN_optargs="$1"
+                      else
+                         MEN_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for MEN_optarg in $MEN_optargs
+                      do
+                         case $MEN_optarg in
+                           -l ) MEN_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $MEN_opt_l -eq 1 -a $MEN_opt_p -eq 0 ]; then
+                                   MEN_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$MEN_options']'` != "--" ]; then
+                                      MEN_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   MEN_opts="$MEN_opts $MEN_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $MEN_opt_l -eq 1 -a $MEN_opt_t -eq 0 ]; then
+                                   MEN_opt_t=1
+                                   MEN_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$MEN_options']'` != "--" ]; then
+                                      MEN_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   MEN_opts="$MEN_opts $MEN_optarg"
+                                fi
+                                ;;
+                           -m ) # This is mkdir's "mode" option, so just pass it along.
+                                MEN_opts="$MEN_opts $MEN_optarg $2"
+                                shift
+                                ;;
+                         esac
+                      done # for MEN_optarg in $MEN_optargs
+                   else
+                      [ ."$MEN_args" != . ]        \
+                        &amp;&amp; MEN_args="$MEN_args|$1" \
+                        || MEN_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                MEN_opts=`expr "$MEN_opts" : ' *\(.*\)'` # Strip leading blanks
+                MEN_args=`expr "$MEN_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #--------------------------------------------------------------#
+                # If we have sufficient arguments, then attempt mkdir command. #
+                #--------------------------------------------------------------#
+                MEN_status=0
+                MEN_cmd="mkdir $MEN_opts"
+
+                if [ ."$MEN_args" != . ]; then
+                   echo "$MEN_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read MEN_dir
+                      do
+                         echo "`date '+%Y-%m-%d %T'` $MEN_cmd \"$MEN_dir\"" | $teelog
+                         MEN_stderr=`$MEN_cmd "$MEN_dir" 2&gt;&1`
+                         MEN_status=$?
+                         if [ $MEN_status -ne 0 ]; then
+                            MEN_m1="'$MEN_cmd \"$MEN_dir\"'"
+                            MEN_m2="ERROR=$MEN_stderr."
+                            MEN_m3="$script_name terminated."
+                            echo "`date '+%Y-%m-%d %T'` FATAL ERROR: $MEN_ID" 1&gt;&2
+                            echo "${sp}$MEN_m1"                               1&gt;&2
+                            echo "${sp}$MEN_m2"                               1&gt;&2
+                            echo "${sp}$MEN_m3"                               1&gt;&2
+
+                            if [ $MEN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                               WRITE_ERR_TO_SYSLOGS -p "$MEN_pri" -t "$MEN_tag" \
+                                 "ABORT: $MEN_ID $MEN_m1 $MEN_m2 $MEN_m3"
+                            fi
+                            EXIT 1
+                         fi # if [ $MEN_status -ne 0 ]; then
+                      done # while read MEN_dir
+                   return 0
+                fi # if [ ."$MEN_args" != . ]; then
+
+                #----------------------------------------------------------------#
+                # Reaching this point means we have an insufficient args error.  #
+                #----------------------------------------------------------------#
+                MEN_m1="Insufficient args."
+                MEN_m2="$script_name terminated."
+                echo "`date '+%Y-%m-%d %T'` FATAL ERROR (Function): $MEN_ID"     1&gt;&2
+                echo "${sp}$MEN_m1\n"                                            1&gt;&2
+                echo "${sp}Usage: $MEN_name [-l [-p priority] [-t tag]]"         1&gt;&2
+                echo "${sp}                       mkdir_options dir [...]\n"     1&gt;&2
+                echo "${sp}                  -l = Notify via logger command"     1&gt;&2
+                echo "${sp}                       (default is false)"            1&gt;&2
+                echo "${sp}                  -p = Logger priority string"        1&gt;&2
+                echo "${sp}                       (default is 'user.err')"       1&gt;&2
+                echo "${sp}                  -t = Logger tag string"             1&gt;&2
+                echo "${sp}                       (default is '$LOGNAME[$$]')\n" 1&gt;&2
+                echo "${sp}Option notes: Option (-l) MUST precede -p and -t."    1&gt;&2
+                echo "${sp}$MEN_m2"                                              1&gt;&2
+                if [ $MEN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$MEN_pri" -t "$MEN_tag" \
+                     "ABORT: $MEN_ID $MEN_m1 $MEN_m2"
+                fi
+
+                EXIT 1
+              } # "MEN_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: October 19, 1999                                        #
+              #                                                                      #
+              #  Program ID: mkdir_exit_err_nomail.sh                                #
+              #                                                                      #
+              #       Usage: MKDIR_EXIT_ERR_NOMAIL [-l [-p priority] [-t tag]] \     #
+              #                                        mkdir_options dir [...]       #
+              #                                                                      #
+              #                          -l = Notify via logger command              #
+              #                               (default is false)                     #
+              #                          -p = Logger priority string                 #
+              #                               (default is "user.err")                #
+              #                          -t = Logger tag string                      #
+              #                               (default is "$LOGNAME[$$]")            #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede -p and -t.       #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Make directories with error checking and reporting      #
+              #              via stderr and logger, and exiting on error.            #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              mkdir command beyond automatic notification/logging     #
+              #              before exiting on error.  Notification is provided      #
+              #              via echoes thru stderr.  Optionally (-l), the user may  #
+              #              have the error logged in syslogs (/var/adm/messages)    #
+              #              via logger command.  Logger -p and -t options and       #
+              #              option arguments also may be passed (both have defaults #
+              #              if omitted).                                            #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "MEN_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EXIT library function and, optionally,                  #
+              #              WRITE_ERR_TO_SYSLOGS as directed.                       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error, else returns 0.        #
+              #                                                                      #
+              #     Notes:   .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.15 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.14 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1999-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

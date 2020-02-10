@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- ----------------------------------------------------------------------------------------- -->
+<!--  classes.html before June 18, 2016  had specific weekly classes displayed by date.  This  -->
+<!--  non-specific class schedule was put together because of Bob's unknown time remaining.    -->
+<!-- ----------------------------------------------------------------------------------------- -->
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Class Schedule at Bob Orlando's Je du-too School of Martial Arts &ndash; Lakewood, Colorado</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta http-equiv="Pragma"             content="no_cache">
+    <meta name="description"    lang="en" content="Class Schedule at Bob Orlando's Je du-too School of Martial Arts">
+    <meta name="classification" lang="en" content="Martial Arts Training">
+    <meta name="keywords"       lang="en" content="Bob Orlando, Adult Martial Arts, Chinese kuntao, kuntao-silat, kuntao silat, kun tao, kuntau, kuntaw, pukulan pentjak silat, pentjak-silat, pencak, pencak-silat, silat, Martial Arts America, martial arts, Indonesian Fighting Fundamentals, Fighting Arts of Indonesia, Dutch-Indonesian, fighting arts, pukulan, Chinese martial arts, de Thouars, deThouars, Thouars, Chinese fighting arts, fighting art, Fighting Footwork, Filipino fighting arts, Filipino, Indo-Chinese, Indochinese, Lakewood, Denver, Littleton, Golden, Morrison, Colorado, Orlando, Reflex Action video, self-defense, author">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1999-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine='A warrior may choose pacifism.  Others are condemned to it.';var msg=statusLine;window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="blue" alink="blue" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_classes.html';">
+    <div align="center" style="font-family:Arial,Verdana; font-size: 12pt">
+      <center>
+        <br><img src="images/class_schedule.gif" alt="Class Schedule" width="220" height="27">
+        <br>&nbsp;<br><font color="firebrick"><b><i>Private instruction available by appointment.</i></b></font>
+        <br>&nbsp;<br>(Click <a href="location.html">here</a> for directions to the school.)
+        <br>&nbsp;<br>
+      </center>
+
+    <!------------------------------------------------------------------------------------>
+    <!-- Holidays                                                                       -->
+    <!------------------------------------------------------------------------------------>
+      <table align="center" border="4" width="700" cellspacing="0" cellpadding="10">
+        <tr>
+          <td align="left" style="font-family:Verdana,Arial; font-size:12 pt">
+            <center>
+              <big><b>Holiday &nbsp; Observance</b></big>
+              <p>No classes taught on the following holidays:
+              <img src="images/b.gif" alt="" align="top" width="0" height="5" border="0">
+              <br><hr width="80%" align="center" noshade>
+            </center>
+	    <table>
+		    <tr>
+			    <td>
+                <img src="images/b.gif" alt="" align="top" width="150" height="0" border="0">New Year's Day
+            <br><img src="images/b.gif" alt="" align="top" width="150" height="0" border="0">Memorial Day
+            <br><img src="images/b.gif" alt="" align="top" width="150" height="0" border="0">Independence Day
+			    </td><td>
+            <img src="images/b.gif" alt="" align="top" width="150" height="0" border="0">Labor Day
+            <br><img src="images/b.gif" alt="" align="top" width="150" height="0" border="0">Thanksgiving Day
+            <br><img src="images/b.gif" alt="" align="top" width="150" height="0" border="0">Christmas Day
+	    </td></tr></table>				  
+          </td>
+        </tr>
+      </table>
+    <!---------------------------->
+    <!--  E.O. Holidays Table   -->
+    <!---------------------------->
+
+    <!-------------------------------------------------------------------------------->
+    <!--     Main Classes Table (contains Monday through Saturday Class Tables)     -->
+    <!-------------------------------------------------------------------------------->
+  <table>
+    <tr>
+      <td><button type="button" id="prevButton">Prev</button></td>
+      <td><div id="counter"></div></td>
+      <td><button type="button" id="nextButton">Next</button></td>
+    </tr>  
+  </table>
+      
+    <br>&nbsp;<br>
+      <table align="center" border="0" width="725"> <!-- Main Classes Table -->
+        <tr>
+          <td align="center">
+          <!-- INSERT HERE -->
+          <table align="center" border="0" width="725"> <!-- Main Classes Table -->
+            <tr>
+              <td align="center">
+        	      <div id="dailytitles"></div>
+              </td>
+            </tr>
+          </table>
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.0/mustache.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script id="days-template" type="text/template">
+		{{#days}}
+      <big><b>{{datedesc}}</b></big><br>
+            &nbsp;<br>
+      <table align="center" width="600" bgcolor="gainsboro" border="1" cellpadding="3">
+      <tr>
+        <td width="90%" align="left"><b>Activity</b></td>
+        <td width="10%" align="right"><b>Start</b></td>
+      </tr>
+      {{#form}}
+        <tr><td colspan="2"><center><b>Forms Training *</b></center></td></tr>
+        <tr>
+          <td width="90%" align="left">Current form changes over the course of the year. </td>
+          <td width="10%" align="right"> {{starttime}} </td>
+        </tr>      
+      {{/form}}
+      
+      {{#events}}  
+        <tr>
+          <td width="90%" align="left"> {{name}} </td>
+          <td width="10%" align="right"> {{starttime}} </td>
+        </tr>
+      {{/events}}
+      </table><br/>      
+		{{/days}}
+	</script>
+	
+        <script>
+	var startDate = new Date('6/18/2017');
+        var currDate = new Date();
+
+        var timeDiff = Math.abs(currDate.getTime() - startDate.getTime());
+        var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+      	var diffWeeks = Math.ceil(diffDays/7);
+	var weeksInCycle = 34;
+	var schedWeek = diffWeeks % weeksInCycle;
+
+	var rendered_day_html = "";
+	
+	$('#counter').html("Sched Week: " + schedWeek);
+	
+        $(function() {
+		$.getJSON('./week'+ schedWeek +'.json', function(data) {
+			var template = $('#days-template').html();
+			var info = Mustache.to_html(template, data);
+			$('#dailytitles').html(info);
+		});
+	});
+
+$('#prevButton').click(function () {  
+  schedWeek = schedWeek - 1;
+  if (schedWeek < 1) {schedWeek = weeksInCycle;}
+  $('#counter').html("Sched Week: " + schedWeek);
+  $(function() {
+		$.getJSON('./week'+ schedWeek +'.json', function(data) {
+			var template = $('#days-template').html();
+			var info = Mustache.to_html(template, data);
+			$('#dailytitles').html(info);
+		});
+	});
+});
+$('#nextButton').click(function () { 
+  schedWeek = schedWeek + 1;
+  if (schedWeek > weeksInCycle) {schedWeek = 1;}
+  $('#counter').html("Sched Week: " + schedWeek);
+  $(function() {
+		$.getJSON('./week'+ schedWeek +'.json', function(data) {
+			var template = $('#days-template').html();
+			var info = Mustache.to_html(template, data);
+			$('#dailytitles').html(info);
+		});
+	});
+});
+	</script>
+
+          </td>
+        </tr>
+      </table> <!-- E.O. Main Classes Table -->
+    <!------------------------------------------------------------------------------------>
+    <!--     E.O. Main Classes Table (contains Monday through Saturday Class Tables)    -->
+    <!------------------------------------------------------------------------------------>
+
+      <br>&nbsp;<br>
+    <!------------------------------------------------------------------------------------>
+    <!-- Endnote Table                                                                  -->
+    <!------------------------------------------------------------------------------------>
+      <table align="center" border="0" width="725" cellspacing="0" cellpadding="10"> <!-- Footnotes Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial; font-size:small">
+            &nbsp;<br><hr size="-1" width="25%" align="left" noshade>
+            <ul>
+              <li>
+                <font size="-1">
+                  Saturday Morning class is the only one in which we usually teach forms.&nbsp;
+                  Why do we even study forms?&nbsp; If&nbsp;that is a question you might ask, then check out our&nbsp;
+                  <a href="why_study_forms.html">Why&nbsp;Study&nbsp;Forms?</a>&nbsp; web page for an answer.&nbsp;
+                </font>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    <!---------------------------->
+    <!--  E.O. Endnote Table    -->
+    <!---------------------------->
+
+      &nbsp;<br>&nbsp;<br><center><font color="firebrick"><i><b>Our&nbsp; emphasis&nbsp; is&nbsp; on&nbsp; the&nbsp; practical.</b></i></font></center>
+
+    <!------------------------>
+    <!--  Copyrights Table  -->
+    <!------------------------>
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              <a href="copyright.html">&copy;Copyright</a> Bob Orlando, 1999-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a>
+              <br>&nbsp;<br>E-mail: <a href="mailto:ron@orlandokuntao.com">Ron@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> June 18, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-1">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

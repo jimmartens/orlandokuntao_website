@@ -1,0 +1,298 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, chdir_exit_err_nomail.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="chdir_exit_err_nomail, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, chdir_exit_err_nomail.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_chdir_exit_err_nomail_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CDN_name="<b>CHDIR_EXIT_ERR_NOMAIL</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CDN_name\(\)\{$'`" != . ] &amp;&amp; CDN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CDN_name'[=\(]?/'`" != . ] &amp;&amp; CDN_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CDN_name'[=\(]?/'`" != . ] &amp;&amp; CDN_loaded=1
+                 fi
+              fi
+              if [ 0${CDN_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CHDIR_EXIT_ERR_NOMAIL</b>() # Function documentation located at bottom.    #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                CDN_ID="$script_name($CDN_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                CDN_options="lptv"
+                CDN_opt_l=0
+                CDN_opt_p=0
+                CDN_opt_t=0
+                CDN_opt_v=0
+                CDN_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                CDN_tag="$logger_t" # within library defaults.sh.
+                CDN_opts=""
+                CDN_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   CDN_n=`expr "$1". : '-.*'`
+                   if [ $CDN_n -gt 0 ]; then
+                      if [ $CDN_n -eq 2 ]; then
+                         CDN_optargs="$1"
+                      else
+                         CDN_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for CDN_optarg in $CDN_optargs
+                      do
+                         case $CDN_optarg in
+                           -l ) CDN_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $CDN_opt_l -eq 1 -a $CDN_opt_p -eq 0 ]; then
+                                   CDN_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$CDN_options']'` != "--" ]; then
+                                      CDN_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   CDN_opts="$CDN_opts $CDN_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $CDN_opt_l -eq 1 -a $CDN_opt_t -eq 0 ]; then
+                                   CDN_opt_t=1
+                                   CDN_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$CDN_options']'` != "--" ]; then
+                                      CDN_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   CDN_opts="$CDN_opts $CDN_optarg"
+                                fi
+                                ;;
+                           -v ) CDN_opt_v=1
+                                ;;
+                         esac
+                      done # for CDN_optarg in $CDN_optargs
+                   else
+                      [ ."$CDN_args" != . ]        \
+                        &amp;&amp; CDN_args="$CDN_args $1" \
+                        || CDN_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                CDN_opts=`expr "$CDN_opts" : ' *\(.*\)'` # Strip leading blanks
+
+                #----------------------------------------------------------------#
+                # If we have sufficient arguments, then attempt our cd command.  #
+                #----------------------------------------------------------------#
+                CDN_status=0
+                CDN_cmd="cd $CDN_opts"
+
+                if [ ."$CDN_args" != . ]; then
+                   #-----------------------------------------------------------#
+                   # If the directory exists, make it our currenr working dir. #
+                   #-----------------------------------------------------------#
+                   if [ -d "$CDN_args" ]; then # If the directory exists, ...
+                      [ $verbose -eq 1 -o $CDN_opt_v -eq 1 ] \
+                        &amp;&amp; echo "`date '+%Y-%m-%d %T'` cd \"$CDN_args\"" | $teelog
+                      CDN_stderr=`$CDN_cmd "$CDN_args" 2&gt;&1`
+                      CDN_status=$?
+                      if [ $CDN_status -eq 0 ]; then
+                         $CDN_cmd "$CDN_args" 2&gt;&1
+                         return 0
+                      fi
+                   else # Oops. Got a problem here.
+                      CDN_stderr="'$CDN_args' directory does not exist!"
+                      CDN_status=1
+                   fi
+                fi # if [ ."$CDN_args" != . ]; then
+
+                #-----------------------------------------------------------------#
+                # Reaching this point means that something is amiss.              #
+                #-----------------------------------------------------------------#
+                if [ $CDN_status -ne 0 ]; then
+                   CDN_m1="Problems cd'ng to \"$CDN_args\""
+                   CDN_m2="ERROR=$CDN_stderr."
+                   CDN_m3="$script_name terminated."
+                   echo "`date '+%Y-%m-%d %T'` FATAL ERROR: $CDN_ID" 1&gt;&2
+                   echo "${sp}CDN_m1"                                1&gt;&2
+                   echo "${sp}CDN_m2"                                1&gt;&2
+                   echo "${sp}CDN_m3"                                1&gt;&2
+
+                   if [ $CDN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$CDN_pri" -t "$CDN_tag" \
+                        "ABORT: $script_name:$CDN_name(cd $CDN_dir)"   \
+                        "$CDN_m1 $CDN_m2 $CDN_m3"
+                   fi
+                   EXIT 1
+                fi # if [ $CDN_status -ne 0 ]; then
+
+                #--------------------------------------------------------------------#
+                # Reaching this point with zero status means insufficient args error.#
+                #--------------------------------------------------------------------#
+                CDN_m1="Insufficient args."
+                CDN_m2="$script_name terminated."
+                echo "`date '+%Y-%m-%d %T'` FATAL ERROR (Function): $CDN_ID"  1&gt;&2
+                echo "${sp}$CDN_m1.\n"                                        1&gt;&2
+                echo "${sp}Usage: $CDN_name -l -p priority -t tag -v"         1&gt;&2
+                echo "${sp}                      directory\n"                 1&gt;&2
+                echo "${sp}                 -l = Notify via logger command"   1&gt;&2
+                echo "${sp}                      (default is false)"          1&gt;&2
+                echo "${sp}                 -p = Logger priority string"      1&gt;&2
+                echo "${sp}                      (default is 'user.err')"     1&gt;&2
+                echo "${sp}                 -t = Logger tag string"           1&gt;&2
+                echo "${sp}                      (default is '$LOGNAME[$$]')" 1&gt;&2
+                echo "${sp}                 -v = Verbose\n"                   1&gt;&2
+                echo "${sp}Option notes: Option (-l) MUST precede -p and -t." 1&gt;&2
+                echo "${sp}$CDN_m2"                                           1&gt;&2
+                if [ $CDN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$CDN_pri" -t "$CDN_tag" \
+                     "ABORT: $CDN_ID $CDN_m1 $CDN_m2"
+                fi
+
+                EXIT 1
+              } # "CDN_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: January 31, 1997                                        #
+              #                                                                      #
+              #  Program ID: chdir_exit_err.sh                                       #
+              #                                                                      #
+              #       Usage: CHDIR_EXIT_ERR_NOMAIL -l -p priority -t tag -v \        #
+              #                                         directory                    #
+              #                                                                      #
+              #                                    -l = Notify via logger command    #
+              #                                         (default is false)           #
+              #                                    -p = Logger priority string       #
+              #                                         (default is "user.err")      #
+              #                                    -t = Logger tag string            #
+              #                                         (default is "$LOGNAME[$$]")  #
+              #                                    -v = Verbose                      #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede other options.   #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Change working directory to specified directory,        #
+              #              reporting errors via stderr and logger, and exiting     #
+              #              on error.                                               #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              cd command beyond automatic notification/logging        #
+              #              before exiting on error.  Unlike CHDIR_EXIT_ERR,        #
+              #              notification here is via echo to stderr (not via        #
+              #              EMAIL_MSG library function).  Optionally (-l),          #
+              #              the user may have the error logged in syslogs           #
+              #              (/var/adm/messages) via logger command.  Logger -p      #
+              #              and -t options and option arguments also may be         #
+              #              passed (both have defaults if omitted).                 #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CDN_" prefix identifies local function variables.      #
+              #              However, unlike CHDIR_EXIT_ERR, notification here is    #
+              #              via echo to stderr only.                                #
+              #                                                                      #
+              #       Calls: EXIT library function.                                  #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while changing directory is potentially       #
+              #              a show stopper.                                         #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.17 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.16 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

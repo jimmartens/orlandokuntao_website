@@ -1,0 +1,289 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, cp_exit_err.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="cp_exit_err, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, cp_exit_err.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_cp_exit_err_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CP_name="<b>CP_EXIT_ERR</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CP_name\(\)\{$'`" != . ] &amp;&amp; CP_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CP_name'[=\(]?/'`" != . ] &amp;&amp; CP_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CP_name'[=\(]?/'`" != . ] &amp;&amp; CP_loaded=1
+                 fi
+              fi
+              if [ 0${CP_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CP_EXIT_ERR</b>() # Function documentation located at bottom.              #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                CP_ID="$script_name($CP_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                CP_options="lpt"
+                CP_opt_l=0
+                CP_opt_p=0
+                CP_opt_t=0
+                CP_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                CP_tag="$logger_t" # within library defaults.sh.
+                CP_opts=""
+                CP_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   CP_n=`expr "$1". : '-.*'`
+                   if [ $CP_n -gt 0 ]; then
+                      if [ $CP_n -eq 2 ]; then
+                         CP_optargs="$1"
+                      else
+                         CP_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for CP_optarg in $CP_optargs
+                      do
+                         case $CP_optarg in
+                           -l ) CP_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $CP_opt_l -eq 1 -a $CP_opt_p -eq 0 ]; then
+                                   CP_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$CP_options']'` != "--" ]; then
+                                      CP_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   CP_opts="$CP_opts $CP_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $CP_opt_l -eq 1 -a $CP_opt_t -eq 0 ]; then
+                                   CP_opt_t=1
+                                   CP_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$CP_options']'` != "--" ]; then
+                                      CP_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   CP_opts="$CP_opts $CP_optarg"
+                                fi
+                                ;;
+                            * ) # Must be cp option; just pass it along.
+                                CP_opts="$CP_opts $CP_optarg"
+                                shift
+                                ;;
+                         esac
+                      done # CP_optarg in $CP_optargs
+                   else
+                      [ ."$CP_args" != . ]       \
+                        &amp;&amp; CP_args="$CP_args|$1" \
+                        || CP_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                CP_opts=`expr "$CP_opts" : ' *\(.*\)'` # Strip leading blanks
+                CP_args=`expr "$CP_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #------------------------------------------------------------#
+                # If we have sufficient args, then attempt our copy command. #
+                #------------------------------------------------------------#
+                CP_status=0
+                CP_cmd="cp $CP_opts"
+
+                CP_from=`expr "$CP_args" : '\(.*\)\|.*`
+                CP_to=`  expr "$CP_args" : '.*\|\(.*\)`
+                CP_args="$CP_from"
+
+                if [ ."$CP_args" != . ]; then
+                   echo "$CP_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read CP_from
+                      do
+                         echo "`date '+%Y-%m-%d %T'`" \
+                                   "$CP_cmd \"$CP_from\" \"$CP_to\"" | $teelog
+                         CP_stderr=`$CP_cmd  "$CP_from"   "$CP_to" 2&gt;&1`
+                         CP_status=$?
+                         if [ $CP_status -ne 0 ]; then
+                            CP_m1="'$CP_cmd \"$CP_from\" \"$CP_to\"'"
+                            CP_m2="ERROR=$CP_stderr"
+                            CP_m3="$script_name terminated."
+                            EMAIL_MSG "FATAL ERROR: $CP_ID" \
+                              "${sp}$CP_m1"                 \
+                              "${sp}$CP_m2"                 \
+                              "${sp}$CP_m3"
+
+                            if [ $CP_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                               WRITE_ERR_TO_SYSLOGS -p "$CP_pri" -t "$CP_tag" \
+                                 "ABORT: $CP_ID $CP_m1 $CP_m2 $CP_m3"
+                            fi
+                            EXIT 1
+                         fi # if [ $CP_status -ne 0 ]; then
+                      done # while read CP_from
+                   return 0
+                fi
+
+                #----------------------------------------------------------------#
+                # Reaching this point means we have an insufficient args error.  #
+                #----------------------------------------------------------------#
+                CP_m1="Insufficient args."
+                CP_m2="$script_name terminated."
+                EMAIL_MSG "FATAL ERROR (Function): $CP_ID"                       \
+                  "${sp}$CP_m1\n"                                                \
+                  "${sp}Usage: $CP_name -l -p priority -t tag"                   \
+                  "${sp}                     [cp-options] target destination\n"  \
+                  "${sp}                -l = Notify via logger command"          \
+                  "${sp}                     (default is false)"                 \
+                  "${sp}                -p = Logger priority string"             \
+                  "${sp}                     (default is 'user.err')"            \
+                  "${sp}                -t = Logger tag string"                  \
+                  "${sp}                     (default is '$LOGNAME[$$]')\n"      \
+                  "${sp}Option notes: Option (-l) MUST precede -p and -t."       \
+                  "${sp}              'cp-options' MUST follow function"         \
+                  "${sp}               options."                                 \
+                  "${sp}$CP_m2"
+                if [ $CP_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$CP_pri" -t "$CP_tag" \
+                     "ABORT: $CP_ID $CP_m1 $CP_m2"
+                fi
+
+                EXIT 1
+              } # "CP_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: January 29, 1997                                        #
+              #                                                                      #
+              #  Program ID: cp_exit_err.sh                                          #
+              #                                                                      #
+              #       Usage: CP_EXIT_ERR -l -p priority -t tag \                     #
+              #                               [cp-options] source destination        #
+              #                                                                      #
+              #                          -l = Notify via logger command              #
+              #                               (default is false)                     #
+              #                          -p = Logger priority string                 #
+              #                               (default is "user.err")                #
+              #                          -t = Logger tag string                      #
+              #                               (default is "$LOGNAME[$$]")            #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede -p and -t.       #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Copy files/directories with error checking and          #
+              #              reporting and errors via email and logger, and          #
+              #              exiting on error.                                       #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              cp command beyond automatic notification/logging        #
+              #              before exiting on error.  Notification is provided      #
+              #              via the EMAIL_MSG library function.  Optionally         #
+              #              (-l), the user may have the error logged in syslogs     #
+              #              (/var/adm/messages) via logger command.  Logger -p      #
+              #              and -t options and option arguments also may be         #
+              #              passed (both have defaults if omitted).                 #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CP_" prefix identifies local function variables.       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while copying a file is potentially a         #
+              #              show stopper.  Else returns 0.                          #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.15 * Expand $AWK testing and assignment.          #
+              #                       * Bug fix: Add code to pass along other (cp)   #
+              #                         options and while-do loop to process each    #
+              #                         directory (should there be multiple source   #
+              #                         directories) separately.                     #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

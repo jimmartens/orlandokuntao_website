@@ -1,0 +1,169 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, pause_y_or_n.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="pause_y_or_n.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, pause_y_or_n.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_pause_y_or_n_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              PYN_name="<b>PAUSE_Y_OR_N</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$PYN_name\(\)\{$'`" != . ] &amp;&amp; PYN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$PYN_name'[=\(]?/'`" != . ] &amp;&amp; PYN_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$PYN_name'[=\(]?/'`" != . ] &amp;&amp; PYN_loaded=1
+                 fi
+              fi
+              if [ 0${PYN_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>PAUSE_Y_OR_N</b>() # Function documentation located at bottom.             #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/readkey.sh # Function dependencies
+
+                #--------------------------------------------------------------#
+                # User give us "-1" option?  This option means that the user   #
+                # doesn't want to have to press "enter"--he wants to enter one #
+                # (and only one) key--so we use the library function READKEY   #
+                # (it uses stty and dd).  Otherwise we use "read" command.     #
+                #--------------------------------------------------------------#
+                if [ ."$1" = ."-1" ]; then
+                   PYN_1_char=1; shift
+                else
+                   PYN_1_char=0
+                fi
+
+                if [ .$TERM != . ]; then # If running interactively, prompt user.
+                   PYN_1_prompt="$*\c"
+
+                   #---------------------------------------------#
+                   # If we have text string, then use the string.#
+                   # Else, prompt user with default string.      #
+                   #---------------------------------------------#
+                   if [ $# -gt 0 ]; then
+                      PYN_prompt="$*"
+                   else
+                      PYN_prompt="Continue? y or n [n]:"
+                   fi
+                   /bin/echo "$PYN_prompt\c"
+
+                   if [ $PYN_1_char -eq 0 ]; then
+                      read PYN_read          # Read response using normal "read".
+                   else
+                      PYN_read="`READKEY`"   # Read response (READKEY lib function).
+                      echo "" # Ensures newline to stdout before subsequent output.
+                   fi
+
+                   PYN_read=`$AWK -v s="$PYN_read" \
+                     'BEGIN {
+                              print s
+                              s = substr(tolower(s),1,1)
+                              if (s == "y") exit 1
+                              else          exit 0
+                            }'`
+                   PYN_status=$?
+
+                   [ "$teelog" != "cat" ] &amp;&amp; echo "$PYN_prompt $PYN_read" &gt;&gt; $log
+
+                   return $PYN_status
+                else
+                   return 0 # If not running interactively, return 0 for "no."
+                fi
+              } # "PYN_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: pause_y_or_n.sh                                         #
+              #                                                                      #
+              #       Usage: PAUSE_Y_OR_N [-1] "text string"                         #
+              #                            -1  Read one and only one character       #
+              #                                (ignores CR).                         #
+              #                                                                      #
+              #     Purpose: Prompt the user with "text string" and pause until      #
+              #              we receive an answer.                                   #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "PYN_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Returns true or false.  True (1) means the user         #
+              #              answered "yes," false (0) means "no" (the default).     #
+              #                                                                      #
+              #       Calls: READKEY library function.                               #
+              #                                                                      #
+              #       Notes: If running in batch mode (e.g. from cron), then the     #
+              #              function simply returns a "no."                         #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.10 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.9  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

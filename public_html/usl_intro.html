@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>Introduction to User Shell Library Developed by Bob Orlando</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Introduction to User Shell Library Developed by Bob Orlando">
+    <meta name="keywords"       lang="en" content="Unix, User Shell Library, Bob Orlando">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1995-2014, Bob Orlando">
+    <script language="JavaScript">var statusLine='Artificial Intelligence is no match for natural stupidity.';var msg='      ' + statusLine + '     .  .  .  .';window.defaultStatus=statusLine;</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_usl_intro.html';">
+    &nbsp;<a name="top">
+    <font face="Arial,Verdana">
+      <center>
+        <img src="images/user_shell_library.gif" width="290" height="76" alt="User Shell Library" border="0">
+        <p><font size="+1"></b>by Bob Orlando</b></font>
+      </center>
+      <table cellspacing="0" cellpadding="3" width="725" border="0" align="center"> <!-- Table 1 -->
+        <tr>
+          <td align="left">
+            <font face="Arial,Verdana">
+              <br>The User Shell Library (USL) is a collection of some 69 shell functions intended for use primarily in Unix application development.<small><sup><a href="#fn1">1</a></sup></small>&nbsp; These functions are intended to handle the tedious, mundane, and often overlooked details when scripting &mdash; things like ensuring that a given command actually works!&nbsp; And if not, that it notifies those responsible upon failure.&nbsp;
+              <p>The library contains basic functions like those that change directory, file ownership and permissions; copy, touch, move, and remove files, etcetera, all with built in logging ability and optional error notification via email.&nbsp; But that kind of functionality only involves 18 of the 69 functions in the USL.
+              <p>In addition to the short list of "basic" functions listed above, the USL also contains some 49 other functions that go well beyond the mundane.&nbsp; For example, such things as returning a given file's octal file permissions (for easy comparison), the running process' elapsed time, termination of jobs exceeding a specified run time limit, even exiting on process conflicts or if another process bearing the running process' name is already running.&nbsp; Further, an additional file (not a true function), <i>defaults.sh</i>, serves as a template that the user can use to create his own 'defaults' script providing default assignments to critical shell library variables that are often unassigned by the user.
+              <p>There are also routines for converting month numbers to names and vice versa, prompting an interactive yes or no reply, and even accepting standard input without it being echoed.&nbsp; Date, time, numeric and integer validation, integer and character range generators, as well as file compression and removal for automagically maintaining files (including the running process' logged output) are also integral to the USL.&nbsp; Further, there are some purely "cosmetic" functions that simply provide more readable output like formatting numbers with commas or framing a line of text within in a box to make it stand out in a log.&nbsp; These are all included the USL suite.
+              <p>Beyond the USL's robust functionality, the wide range of capabilities within the USL makes the individual functions themselves excellent teaching tools and code repositories providing well-documented "how to" examples of many Unix shell and Awk functions, as well as readable coding methods.&nbsp; To assist the user with just how to use or call these functions, as well as how they work, a sample script (<a href="example_sh.html">example.sh</a>) is provided that calls each function.
+              <p>USL functions are written in Bourne shell, meaning every function works equally well in Korn shell.&nbsp; Developed over 10+ years, the USL was first used on the Sun Solaris platform, and while commands like Sun's ptree are not available on Linux (at least it wasn't when I developed them), the functions are still smart enough to know on what platform and under OS they are running, making most functions operational in both environments.&nbsp; (Doubtless, with minor modification these functions will likely work on most any Unix-based, Command-line environment.)
+              <p>A quick grasp of every function's role is as important as ease of use, so the following list of self-describing function names are really all that is needed to provide a fair overview of the USL's purpose or objective.
+              <p>
+
+              <table cellspacing="5" cellpadding="5" width="655" border="1" align="center"> <!-- Table 1a -->
+                <tr>
+                  <td align="left" valign="top">
+                    <font face="Arial,Verdana">
+                          &nbsp;<a href="chdir_exit_err_sh.html">chdir_exit_err</a>
+                      <br>&nbsp;<a href="chdir_exit_err_nomail_sh.html">chdir_exit_err_nomail</a>
+                      <br>&nbsp;<a href="check_tape_status_sh.html">check_tape_status</a>
+                      <br>&nbsp;<a href="chgrp_exit_err_sh.html">chgrp_exit_err</a>
+                      <br>&nbsp;<a href="chgrp_exit_err_nomail_sh.html">chgrp_exit_err_nomail</a>
+                      <br>&nbsp;<a href="chmod_exit_err_sh.html">chmod_exit_err</a>
+                      <br>&nbsp;<a href="chmod_exit_err_nomail_sh.html">chmod_exit_err_nomail</a>
+                      <br>&nbsp;<a href="chown_exit_err_sh.html">chown_exit_err</a>
+                      <br>&nbsp;<a href="chown_exit_err_nomail_sh.html">chown_exit_err_nomail</a>
+                      <br>&nbsp;<a href="cleanup_work_files_sh.html">cleanup_work_files</a>
+                      <br>&nbsp;<a href="compress_by_date_sh.html">compress_by_date</a>
+                      <br>&nbsp;<a href="cp_dev_null_exit_err_sh.html">cp_dev_null_exit_err</a>
+                      <br>&nbsp;<a href="cp_dev_null_exit_err_nomail_sh.html">cp_dev_null_exit_err_nomail</a>
+                      <br>&nbsp;<a href="cp_exit_err_sh.html">cp_exit_err</a>
+                      <br>&nbsp;<a href="cp_exit_err_nomail_sh.html">cp_exit_err_nomail</a>
+                      <br>&nbsp;<a href="debug_pause_loop_sh.html">debug_pause_loop</a>
+                      <br>&nbsp;<a href="defaults_sh.html">defaults</a>
+                      <br>&nbsp;<a href="display_fs_size_sh.html">display_fs_size </a>
+                      <br>&nbsp;<a href="display_fs_space_sh.html">display_fs_space</a>
+                      <br>&nbsp;<a href="echo_exec_sh.html">echo_exec</a>
+                      <br>&nbsp;<a href="elapsed_time_sh.html">elapsed_time</a>
+                      <br>&nbsp;<a href="email_msg_sh.html">email_msg</a>
+                      <br>&nbsp;<a href="exit_sh.html">exit</a>
+                    </font>
+                  </td>
+                  <td align="left" valign="top">
+                    <font face="Arial,Verdana">
+                          &nbsp;<a href="exit_if_already_running_sh.html">exit_if_already_running</a>
+                      <br>&nbsp;<a href="exit_on_process_conflicts_sh.html">exit_on_process_conflicts</a>
+                      <br>&nbsp;<a href="format_num_with_commas_sh.html">format_num_with_commas</a>
+                      <br>&nbsp;<a href="frame_text_sh.html">frame_text</a>
+                      <br>&nbsp;<a href="ftp_host_sh.html">ftp_host</a>
+                      <br>&nbsp;<a href="get_file_perms_sh.html">get_file_perms</a>
+                      <br>&nbsp;<a href="get_file_yymmddhhmi_sh.html">get_file_yymmddhhmi</a>
+                      <br>&nbsp;<a href="get_next_yyyymmddhh_sh.html">get_next_yyyymmddhh</a>
+                      <br>&nbsp;<a href="get_prev_yyyymmddhh_sh.html">get_prev_yyyymmddhh</a>
+                      <br>&nbsp;<a href="get_options_sh.html">get_options</a>
+                      <br>&nbsp;<a href="isint_sh.html">isint</a>
+                      <br>&nbsp;<a href="isnum_sh.html">isnum</a>
+                      <br>&nbsp;<a href="kill_pid_sh.html">kill_pid</a>
+                      <br>&nbsp;<a href="leap_year_sh.html">leap_year</a>
+                      <br>&nbsp;<a href="mkdir_exit_err_sh.html">mkdir_exit_err</a>
+                      <br>&nbsp;<a href="mkdir_exit_err_nomail_sh.html">mkdir_exit_err_nomail</a>
+                      <br>&nbsp;<a href="month_mmm_to_nn_sh.html">month_mmm_to_nn</a>
+                      <br>&nbsp;<a href="month_nn_to_mmm_sh.html">month_nn_to_mmm</a>
+                      <br>&nbsp;<a href="mv_exit_err_sh.html">mv_exit_err</a>
+                      <br>&nbsp;<a href="mv_exit_err_nomail_sh.html">mv_exit_err_nomail</a>
+                      <br>&nbsp;<a href="parse_parameters_sh.html">parse_parameters</a>
+                      <br>&nbsp;<a href="pause_y_or_n_sh.html">pause_y_or_n</a>
+                      <br>&nbsp;<a href="ping_host_sh.html">ping_host</a>
+                    </font>
+                  </td>
+                  <td align="left" valign="top">
+                    <font face="Arial,Verdana">
+                          &nbsp;<a href="print_vars_sh.html">print_vars</a>
+                      <br>&nbsp;<a href="prune_files_sh.html">prune_files</a>
+                      <br>&nbsp;<a href="ps_auxww_sh.html">ps_auxww</a>
+                      <br>&nbsp;<a href="range_nums_sh.html">range_nums</a>
+                      <br>&nbsp;<a href="range_values_sh.html">range_values</a>
+                      <br>&nbsp;<a href="read_noecho_sh.html">read_noecho</a>
+                      <br>&nbsp;<a href="readkey_sh.html">readkey</a>
+                      <br>&nbsp;<a href="readkey_noecho_sh.html">readkey_noecho</a>
+                      <br>&nbsp;<a href="remove_by_date_sh.html">remove_by_date</a>
+                      <br>&nbsp;<a href="rm_exit_err_sh.html">rm_exit_err</a>
+                      <br>&nbsp;<a href="rm_exit_err_nomail_sh.html">rm_exit_err_nomail</a>
+                      <br>&nbsp;<a href="show_documentation_sh.html">show_documentation</a>
+                      <br>&nbsp;<a href="terminate_sh.html">terminate</a>
+                      <br>&nbsp;<a href="terminate_subprocesses_sh.html">terminate_subprocesses</a>
+                      <br>&nbsp;<a href="touch_exit_err_sh.html">touch_exit_err</a>
+                      <br>&nbsp;<a href="touch_exit_err_nomail_sh.html">touch_exit_err_nomail</a>
+                      <br>&nbsp;<a href="trap_exit_sh.html">trap_exit</a>
+                      <br>&nbsp;<a href="validate_date_sh.html">validate_date</a>
+                      <br>&nbsp;<a href="validate_time_sh.html">validate_time</a>
+                      <br>&nbsp;<a href="verify_vars_sh.html">verify_vars</a>
+                      <br>&nbsp;<a href="verify_num_vars_sh.html">verify_num_vars</a>
+                      <br>&nbsp;<a href="wait_on_process_sh.html">wait_on_process</a>
+                      <br>&nbsp;<a href="write_err_to_syslogs_sh.html">write_err_to_syslogs</a>
+                    </font>
+                  </td>
+                </tr>
+              </table> <!-- E.O. Table 1a -->
+              <p>The Bourne shell functions in this library have been used/called by numerous scripts.&nbsp; They are   used because their code has been tested repeatedly.&nbsp; While no code is bullet-proof, these functions come as close to bullet-resistant as possible.&nbsp;
+              <p>Each function has its own documentation section (located at the end of the function), and each checks to see if it has already been loaded into memory before loading itself again.&nbsp; The design method assumes process logging is a requirement and everything works toward that end.
+              <p>Functions are installed/declared/prototyped using their lowercased fileids (e.g.&nbsp; "<font face="courier"><b>pause_y_or_n.sh</b></font>"),&nbsp; yet they are called or executed using their internal uppercased function names (e.g.&nbsp; "<font face="courier"><b>PAUSE_Y_OR_N 'Continue? y|n [n]'</b></font>").
+              <p>Some functions return a status indicating success or failure.&nbsp; Those, like the above&nbsp; <font face="courier"><b>PAUSE_Y_OR_N</b></font>,&nbsp; are to be tested on completion.&nbsp; In&nbsp; <font face="courier"><b>PAUSE_Y_OR_N</b></font>,&nbsp; for example, returning "1" (one) means "yes," and "0" (zero), "no".&nbsp; Other functions return string values.&nbsp; For example, the command&nbsp; <font face="courier"><b>mon=`MONTH_NN_TO_MMM 02`</b></font>&nbsp; assigns the string, "Feb", to the variable,&nbsp; <font face="courier"><b>$mon</b></font>.&nbsp; All functions with the word "exit" in their names, exit on failure.&nbsp; (What a concept, descriptive names!)
+              <p>Functions that expect certain global variables will default those variables if unassigned.&nbsp; Function dependencies are likewise handled.&nbsp; For example, the&nbsp; <font face="courier"><b>EMAIL_MSG</b></font>&nbsp; function will notify (echo or send mail) to the user if the variable&nbsp; <font face="courier"><b>$notify</b></font>&nbsp; is appropriately assigned.&nbsp; If the&nbsp; <font face="courier"><b>EXIT</b></font>&nbsp; function has not already been declared,&nbsp; <font face="courier"><b>EMAIL_MSG</b></font>&nbsp; will automagically declare it.&nbsp; You may also use the&nbsp; <font face="courier"><b>defaults.sh</b></font>&nbsp; to assign all defaults, then reassign any you wish (for example,&nbsp; <font face="courier"><b>$log_root</b></font>&nbsp; and&nbsp; <font face="courier"><b>$log</b></font>&nbsp; variables).
+              <p>Internal Function variable names are scoped by prefixing a unique string to any of their internal variable names so no critical variable names are clobbered by other library functions.&nbsp; For example, the prefix,&nbsp; "<font face="courier"><b>CME_</b></font>" identifies variables local to&nbsp; <font face="courier"><b>CHMOD_EXIT_ERR</b></font>&nbsp; function.&nbsp; A complete list of function prefixes followed by <a href="function_varname_prefix_lst.html#usage_briefs">function usage briefs</a> for each of the 69 functions presented here are found in&nbsp; <a href="function_varname_prefix_lst.html">function_varname_prefix.lst</a>.
+              <br>&nbsp;
+            <!--
+              <p>Assuming USL functions are located in, for example, /usr/local/scripts, one may test the library without disrupting
+                the library in /usr/local/scripts simply put the following in a test script and run.
+              <p>
+              <font face="courier" size="+1">
+                <pre>
+                  #!/bin/sh
+                  SHLIB=$HOME/usr/local/scripts; export SHLIB
+                  SHBIN=$HOME/usr/local/bin;     export SHBIN
+                  $SHLIB/test_fn_load.sh sh
+                  $SHLIB/<a href="example_sh.html">example.sh</a> TEST_PARAM
+                </pre>
+              </font>
+            -->
+              <center><hr size="1" noshade width="90%"></center>
+              <br>Lastly, every Unix nerd knows that in UNIX there is never just one way to do anything.&nbsp; These functions, therefore, are not cut in stone.&nbsp; If anything, the concrete remains forever wet.&nbsp; However, since I compiled and designed them, it remains my intent to maintain the functionality of those in this library.&nbsp; That is, I will not change the essence of how a function works (returns output, expects input, or the like).&nbsp; Replacement (and hopefully, improved) functions will be given new names thereby preserving the old routines for legacy/portability purposes.
+
+              <!-- Footnotes -->
+              &nbsp;<p><font face="Verdana,Arial" size="-1">
+                <b>Footnotes:</b>
+                <hr size="1" width="82" align="left" noshade>
+                <ol>
+                  <li><a name="fn1"></a>Of the 69 User Shell Library functions, 30 are actually called by a system administration application developed by <i>yours truly</i> called, <a href="janitor_sh.html">janitor.sh</a>.&nbsp; &nbsp;<small><a href="#top" >[Return&nbsp;to&nbsp;reference&nbsp;point]</a></small><p></li>
+                </ol>
+              </font>
+              <!-- E.O. Footnotes -->
+            </font>
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+    </font>
+
+    <p><center><font face="Arial,Verdana" color="firebrick"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="725" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1995-2014
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="firebrick">Last update:</font>
+<!-- Date --> Mar.  3, 2014<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 5 -->
+  </body>
+</html>

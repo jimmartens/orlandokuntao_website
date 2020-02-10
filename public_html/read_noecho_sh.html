@@ -1,0 +1,168 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, read_noecho.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="read_noecho.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, read_noecho.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_read_noecho_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              RDN_name="<b>READ_NOECHO</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$RDN_name\(\)\{$'`" != . ] &amp;&amp; RDN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$RDN_name'[=\(]?/'`" != . ] &amp;&amp; return 0
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$RDN_name'[=\(]?/'`" != . ] &amp;&amp; return 0
+                 fi
+              fi
+
+              #----------------------------------------------------------------------#
+              <b>READ_NOECHO</b>()
+              #----------------------------------------------------------------------#
+              {
+                if [ .$TERM != . ]; then # If running interactively, prompt user.
+                   #------------------------------------------------------------#
+                   # If the following variables are not set, use these defaults.#
+                   #------------------------------------------------------------#
+                   : ${OZ:=`uname -s 2&gt; /dev/null|tr '[A-Z]' '[a-z]' 2&gt; /dev/null`}
+                   : ${script_name:=`basename $0`}
+
+                   RDN_ID="$script_name($RDN_name)"
+
+                   RDN_oldstty=`/bin/stty -g`
+                   RDN_stty_status=$?
+                   if [ $RDN_stty_status -ne 0 ]; then
+                      echo "$RDN_ID" \
+                        "Problems saving original terminal settings." 1&gt;&2
+                      return $RDN_stty_status
+                   fi
+
+                   #---------------------------------------------------------------#
+                   # Just in case the user ^C's out of this, we'll restore their   #
+                   # stty settings before exiting.  (TRAP_EXIT is a shell library  #
+                   # function that may or may not be set.  To ensure a gracious    #
+                   # exit, we follow the trap call to it with the "exit 1".  This  #
+                   # way, one way or the other, we exit cleanly.                   #
+                   #---------------------------------------------------------------#
+                   trap "/bin/stty $RDN_oldstty; TRAP_EXIT; exit 1" 1 2 3 9 15
+
+                   if [ ."$OZ" = ."sunos" -o ."$OZ" = ."linux" ]; then
+                      /bin/stty -icanon -isig -echo min 1 time 0
+                   else
+                      /bin/stty -icanon       -echo min 1 time 0
+                   fi
+                   RDN_stty_status=$?
+
+                   if [ $RDN_stty_status -ne 0 ]; then
+                      echo "$RDN_ID"                              \
+                         "Problems setting stty to terminal mode" \
+                         "and turning off echoing." 1&gt;&2
+                      return $RDN_stty_status
+                   fi
+
+                   read RDN_string # OK, get the dog, but shhhhhhhhhhhhh.
+                   RDN_read_status=$?
+
+                   /bin/stty $RDN_oldstty
+                   RDN_stty_status=$?
+                   if [ $RDN_stty_status -ne 0 ]; then
+                      echo "$RDN_ID" \
+                         "Problems resetting original stty to '$RDN_oldstty'" 1&gt;&2
+                      return $RDN_stty_status
+                   fi
+
+                   #---------------------------------------------------#
+                   # Restore traps to something a bit more civilized.  #
+                   #---------------------------------------------------#
+                   trap "TRAP_EXIT: exit 1" 1 2 3 9 15
+
+                   if [ $RDN_read_status -ne 0 ]; then
+                      echo "$RDN_ID" \
+                         "Problems reading the unechoed string." 1&gt;&2
+                      return $RDN_read_status
+                   fi
+
+                   echo "$RDN_string"|tr -d "\015"
+                   return 0 # Ah, the sweet smell of success.
+                else
+                   return 1
+                fi
+              } # "RDN_" prefix identifies this function's variables
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: April 23, 1997                                          #
+              #                                                                      #
+              #  Program ID: read_noecho.sh                                          #
+              #                                                                      #
+              #       Usage: READ_NOECHO &lt;no arguments&gt;                              #
+              #     Example: string=`READ_NOECHO`                                    #
+              #                                                                      #
+              #     Purpose: Read an unechoed string from the keyboard.              #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "RDN_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Returns success or non-zero for failure.                #
+              #                                                                      #
+              #       Calls: None.                                                   #
+              #                                                                      #
+              #       Notes: If running in batch mode (e.g. from cron), then the     #
+              #              function simply returns a null and exit status of 1.    #
+              #                                                                      #
+              #     Origins: The code for this function based on Ed Schaefer's       #
+              #              "Returning a Single Character in a UNIX Shell Script"   #
+              #              (Sys Admin magazine, April, 1997, pp. 53-55).           #
+              #                                                                      #
+              #    Modified: 2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

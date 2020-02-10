@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Principle: Adhesion",
+          "starttime":"" 
+        },
+        {
+          "name":"Strategic",
+          "starttime":"" 
+        },
+        {
+          "name":"BL Inside Elbow",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Tactical (+ Strategic)",
+          "starttime":"" 
+        },
+        {
+          "name":"GR Ragdoll Left",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"Patada voltear",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Kicking Practice",
+          "starttime":"6:00"
+        },
+        {
+          "name":"OR KTS 5-count",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Sombrada Knife v. Baton",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"OR R/grabs lapel A (push)",
+          "starttime":"6:50" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"GR Kilap 9",
+          "starttime":"10:00"
+        },
+        {
+          "name":"GR Ragdoll Left",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Patada voltear",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"Kicking Practice",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"Sombrada Knife-v-Baton",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"OR R/grabs lapel A(push)",
+          "starttime":"11:15" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Bob Orlando's Holiday Determination Perl Module's Holidays file</title>
+    <meta http-equiv="Content-Type"   content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"    lang="en" content="Perl module holiday dates business day holidays program script">
+    <meta name="description" lang="en" content="Bob Orlando's Holiday Determination Perl Module's Holidays file">
+    <meta name="author"      lang="en" content="Bob Orlando">
+    <meta name="copyright"   lang="en" content="(c) Copyright 2003-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="#800080" alink="firebrick" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_holidays_file.html';">
+    <div align="center" style="font-family:Arial,Verdana; font-size: 12pt">
+      <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+        <tr>
+          <td width="650">
+            <center><b><a href="holidays.html">Holidays</a> Perl and AWK programs use this file.</b></center>
+            <pre>
+              <code>
+         #--------------------------------------------------------------------#
+         #   DO NOT REMOVE * DO NOT REMOVE * DO NOT REMOVE * DO NOT REMOVE    #
+         #--------------------------------------------------------------------#
+         # This file is available to all programs.  It contains values that   #
+         # allow the program to calculate holidays either by given (fixed)    #
+         # month and day, or by day of a given week.  Adjustments may also be #
+         # provided for when fixed date holidays fall on weekends, but are    #
+         # observed either the day before or after, as well as days like the  #
+         # day after Thanksgiving (USA).                                      #
+         #                                                                    #
+         # Leading white space is ignored, as is everything following and     #
+         # including the octothorpe (#-sign).                                 #
+         #                                                                    #
+         # Mm N.D.OnOrA Adj Holiday name                # Comments            #
+         # -- --------- --- --------------------------- --------------------- #
+           01  1            New Year's Day              # M-F
+           01  1        6-1 New Year's Day (pre-obs)    # Sat? Use Fri
+         # 01  1        6+2 New Year's Day (post-obs)   # Sat? Some use Mon
+           01  1        0+1 New Year's Day (post-obs)   # Sun? Use Mon
+           01  3.1          M.L.King Day                # 3rd Mon in Jan
+           02  3.1          President's Day             # 3rd Mon in Feb
+           05  last.1       Memorial Day                # Last Mon in May
+           07  4            Independence Day            # M-F
+           07  4        6-1 Independence Day (pre-obs)  # Sat? Use Fri
+           07  4        0+1 Independence Day (post-obs) # Sun? Use Mon
+           09  1.1          Labor Day                   # 1st Mon in Sep
+           10  2.1          Columbus Day (US)           # 2nd Mon in Oct
+           11 11            Veteran's Day (US)          # November 11th
+           11 11        6-1 Veteran's Day (USPS pre-obs)  # Sat? Use Fri
+           11 11        0+1 Veteran's Day (USPS post-obs) # Sat? Use Mon
+           11  4.4          Thanksgiving Day (US)       # 4th Thu in Nov
+           11  4.4       +1 Day After Thanksgiving (US)
+           12 25            Christmas Day               # M-F
+           12 25        6-1 Christmas (pre-obs)         # Sat? Use Fri
+           12 25        0+1 Christmas (post-obs)        # Sun? Use Mon
+
+         #--------------------------------------------------------------------#
+         # Other noteworthy dates.                                            #
+         #--------------------------------------------------------------------#
+         # 01 last.0        Superbowl Sunday            # Last Sun in Jan
+         # 03 2.0           Daylight Savings Time       # 2nd Sun in Mar
+         # 04 6             Army Day
+         # 05 2.0           Mother's Day                # 2nd Sun in May
+         # 05 3.6           Armed Forces Day            # 3rd Sat in May
+         # 05 30            Memorial Day (Traditional)
+         # 06 14            Flag Day
+         # 06 3.0           Father's Day                # 3rd Sun in Jun
+         # 06 4.0           Parent's Day                # 4th Sun in Jun
+         # 08 1             Air Force Day
+         # 08 4             Coast Guard Day
+         # 09 11            Patriot's Day
+         # 09 17            Constitution Day
+         # 09 1.1        +6 Grandparent's Day           # 1st Sun after Labor Day
+         # 10 27            Navy Day
+         # 11 1.0           Standard Time               # 1st Sun in Nov
+         # 11 1.1        +1 Election Day                # 1st Tue after 1st Mon
+         # 11 10            Marine Corps Birthday       # 1775
+         # 11 11            Veteran's Day
+
+         #--------------------------------------------------------------------#
+         # Unique dates.                                                      #
+         #--------------------------------------------------------------------#
+         # 04  1.0.26       Falklands ST                # 1st Sun on/after Apr 6
+         # 09  1.0.8        Falklands DST               # 1st Sun on/after Sep 8
+              </code>
+            </pre>
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              <a href="copyright.html">&copy;Copyright</a> Bob Orlando, 2003-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

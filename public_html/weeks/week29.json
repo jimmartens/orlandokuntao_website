@@ -1,0 +1,130 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Rocky",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"BL Kick Combo #4",
+          "starttime":"6:15"          
+        },
+        {
+          "name":"Hokkien Tiger (Hokkien Tiger, 3C series)",
+          "starttime":"6:30"          
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"6:50"          
+        },
+        {
+          "name":"L/rev-punches (power) (air shild)",
+          "starttime":"7:00"          
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Sinawali (single HLH)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"Tres estrellas",
+          "starttime":"6:10"          
+        },
+        {
+          "name":"Sinawali (single LHL)",
+          "starttime":"6:20"          
+        },
+        {
+          "name":"Sinawali (Rev-6 LHL)",
+          "starttime":"6:30"          
+        },
+        {
+          "name":"Sombrada Baton",
+          "starttime":"6:40"          
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"7:00"          
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"GR Kilap 9",
+          "starttime":"10:00"          
+        },
+        {
+          "name":"Rocky",
+          "starttime":"10:30"          
+        },
+        {
+          "name":"Hokkien Tiger - 360",
+          "starttime":"10:35"          
+        },
+        {
+          "name":"L/rev-punches (form)",
+          "starttime":"10:45"          
+        },
+        {
+          "name":"Sinawali (Rev-6 LHL)",
+          "starttime":"10:55"          
+        },
+        {
+          "name":"Sombrada Baton",
+          "starttime":"11:05"          
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"11:20"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

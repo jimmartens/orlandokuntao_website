@@ -1,0 +1,131 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, trap_exit.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="trap_exit.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, trap_exit.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_trap_exit_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              TRX_name="<b>TRAP_EXIT</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$TRX_name\(\)\{$'`" != . ] &amp;&amp; TRX_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$TRX_name'[=\(]?/'`" != . ] &amp;&amp; TRX_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$TRX_name'[=\(]?/'`" != . ] &amp;&amp; TRX_loaded=1
+                 fi
+              fi
+              if [ 0${TRX_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>TRAP_EXIT</b>() # Function documentation located at bottom.                #
+              #----------------------------------------------------------------------#
+              {
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh            # Function dependencies
+                . $SHLIB/write_err_to_syslogs.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                TRX_ID="$script_name($TRX_name)"
+
+                #------------------------------------------------------------------#
+                # An argument is assumed to be the interrupt that sprang the trap. #
+                #------------------------------------------------------------------#
+                if [ $# -gt 0 ]; then
+                   TRX_intr="(intr=$1)"
+                   shift
+                else
+                   TRX_intr="(intr=?)"
+                fi
+
+                TRX_m1="ABEND $TRX_ID $TRX_intr"
+                TRX_m3="'$@' terminated"
+                EMAIL_MSG "$TRX_m1" \
+                  "${sp}$TRX_m2"
+                if [ ."$TERM" = . ]; then # Not running interactively.
+                   WRITE_ERR_TO_SYSLOGS $syslog_emergency "ABEND: $TRX_m1 $TRX_m2 $TRX_m2"
+                fi
+                EXIT 1
+              } # "TRX_" prefix identifies this function's variables
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: trap_exit.sh                                            #
+              #                                                                      #
+              #       Usage: TRAP_EXIT &lt;no options|arguments&gt;                        #
+              #                                                                      #
+              #     Purpose: Gracefully exit on trapped signal.                      #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "TRX_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Exits with failure (1).                                 #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.9  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.8  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

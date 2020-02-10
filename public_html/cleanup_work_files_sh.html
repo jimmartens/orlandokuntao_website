@@ -1,0 +1,284 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, cleanup_work_files.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="cleanup_work_files, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, cleanup_work_files.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_cleanup_work_files_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CWF_name="<b>CLEANUP_WORK_FILES</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CWF_name\(\)\{$'`" != . ] &amp;&amp; CWF_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CWF_name'[=\(]?/'`" != . ] &amp;&amp; CWF_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CWF_name'[=\(]?/'`" != . ] &amp;&amp; CWF_loaded=1
+                 fi
+              fi
+              if [ 0${CWF_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CLEANUP_WORK_FILES</b>() # Function documentation located at bottom.       #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/chdir_exit_err.sh
+                . $SHLIB/email_msg.sh       # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                CWF_ID="$script_name($CWF_name)"
+
+                #-----------------------------#
+                # Assign quiet option.        #
+                #-----------------------------#
+                CWF_opt_q=0
+                if [ ."$1" = .'-q' ]; then
+                   CWF_opt_q=1
+                   shift
+                fi
+
+                CWF_exit_status=0
+                if [ $# -lt 1 ]; then
+                   #---------------------------------------------------------------#
+                   # Normally, this kind of error is tagged as a FATAL ERROR,      #
+                   # however, the inability to remove files is not earth shaking,  #
+                   # so, we only describe it as an ERROR, and "return" failure (1).#
+                   # (We do this throughout this function.)                        #
+                   #---------------------------------------------------------------#
+                   EMAIL_MSG "ERROR: $CWF_ID"              \
+                     "${sp}Insufficient args."             \
+                     "${sp}Usage: $CWF_name fileid [...]." \
+                     "${sp}$script_name continues."
+                   return 1
+                fi
+
+                CWF_cwd=`/bin/pwd`
+                for CWF_file
+                do
+                   CWF_files=`ls ${CWF_file}* 2&gt; /dev/null|grep -vi 'No such file'`
+                   if [ ."$CWF_files" != . ]; then
+                      if [ $CWF_opt_q -eq 0 ]; then
+                         echo "`date '+%Y-%m-%d %T'` Cleaning up $CWF_file* files."
+                      fi
+
+                      CWF_dir=`dirname $CWF_file`
+                      CWF_status=$?
+                      if [ $CWF_dir = "." ]; then
+                         #-------------------------------------------------------#
+                         # Because we specify $CWF_dir in the find command       #
+                         # below, fully qualified fileids (with real paythnames) #
+                         # are a requirement.                                    #
+                         #-------------------------------------------------------#
+                         CWF_exit_status=1
+                         EMAIL_MSG "ERROR: $CWF_ID"                           \
+                           "${sp}$CWF_file missing fully qualified pathname." \
+                           "${sp}Missing or relative pathnames (e.g ../) \c"  \
+                              "are unacceptable."                             \
+                           "${sp}Skipping $CWF_file, \c"                      \
+                              "but continuing $script_name."
+                         continue # Iterate for-loop
+                      elif [ $CWF_status -ne 0 ]; then
+                         CWF_exit_status=1
+                         EMAIL_MSG "ERROR: $CWF_ID"                         \
+                           "${sp}'dirname' failed with $CWF_status status!" \
+                           "${sp}Skipping $CWF_file, \c"                    \
+                              "but continuing $script_name."
+                         continue # Iterate for-loop
+                      fi
+
+                      CWF_fil=`basename $CWF_file`
+                      CWF_status=$?
+                      if [ $CWF_status -ne 0 ]; then
+                         CWF_exit_status=1
+                         EMAIL_MSG "ERROR: $CWF_ID"                         \
+                           "${sp}'basename' fails with $CWF_status status!" \
+                           "${sp}Skipping $CWF_file, \c"                    \
+                              "but continuing $script_name."
+                         continue # Iterate for-loop
+                      fi
+
+                      #------------------------------------------------------------#
+                      # Delete zero-length files first (noting that they are such).#
+                      # (We use find because it doesn't have the lmitations of ls.)#
+                      #------------------------------------------------------------#
+                      CWF_zero_length_files=`find $CWF_dir -name "$CWF_fil*" \
+                         -size 0c -print 2&gt; /dev/null|grep -vi "find: cannot read dir"`
+                      CWF_zero_length_n=`echo $CWF_zero_length_files|wc -w`
+                      if [ $CWF_zero_length_n -gt 0 ]; then
+                         for CWF_zfile in $CWF_zero_length_files
+                         do
+                            #------------------------------------------------------#
+                            # If "quiet" option is given, skip "(zero length)" msg.#
+                            #------------------------------------------------------#
+                            if [ $CWF_opt_q -eq 0 ]; then
+                               echo "${sp}Deleting    $CWF_zfile (zero length)"
+                            fi
+                            \rm -f $CWF_zfile 2&gt;&1
+                            CWF_status=$?
+                            if [ $CWF_status -ne 0 ]; then
+                               CWF_exit_status=1
+                               EMAIL_MSG "WARNING: $CWF_ID"                \
+                                 "${sp}$CWF_name 'rm $CWF_zfile' error."   \
+                                 "${sp}completed with $CWF_status status!" \
+                                 "${sp}$script_name continues."
+                               continue # Iterate for-loop
+                            fi
+                         done
+                      fi
+
+                      #------------------------------------#
+                      # Delete the non-zero-length files.  #
+                      #------------------------------------#
+                      CWF_nzero_length_files=`find $CWF_dir -name "$CWF_fil*" \
+                         -print 2&gt; /dev/null|grep -vi "find: cannot read dir"`
+                      CWF_nzero_length_n=`echo $CWF_nzero_length_files|wc -w`
+                      if [ $CWF_nzero_length_n -gt 0 ]; then
+                         for CWF_nzfile in $CWF_nzero_length_files
+                         do
+                            if [ $CWF_opt_q -eq 0 ]; then
+                               echo "${sp}Deleting    $CWF_nzfile"
+                            fi
+                            \rm -f $CWF_nzfile 2&gt;&1
+                            CWF_status=$?
+                            if [ $CWF_status -ne 0 ]; then
+                               CWF_exit_status=1
+                               EMAIL_MSG "WARNING: $CWF_ID"                   \
+                                 "${sp}$CWF_name 'rm $CWF_nzfile' error."     \
+                                 "${sp}completed with $CWF_status status!"    \
+                                 "${sp}$script_name continues."
+                               continue # Iterate for-loop
+                            fi
+                         done
+                      fi
+                   fi # if [ -f $CWF_file* ]; then
+                done # for CWF_file
+
+                cd $CWF_cwd
+                return $CWF_exit_status
+              } # "CWF_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: cleanup_work_files.sh                                   #
+              #                                                                      #
+              #       Usage: CLEANUP_WORK_FILES [-q] fileid ...                      #
+              #                                  -q = Delete quietly--without echo.  #
+              #                                       Errors encountered during file #
+              #                                       removal are still reported.    #
+              #                                                                      #
+              #     Purpose: Clean up process work files with error checking,        #
+              #              reporting any problems via email.                       #
+              #                                                                      #
+              # Description: Fileids are the file_roots of the files we're to clean  #
+              #              up (the following is an example of how we're used):     #
+              #                                                                      #
+              #                 +----------------------------------------------+     #
+              #                 | #!/bin/sh                                    |     #
+              #                 | ...                                          |     #
+              #                 | ..                                           |     #
+              #                 | cleanup_files=""                             |     #
+              #                 |                                              |     #
+              #                 | stdout_root=/tmp/$name_root"_stdout"         |     #
+              #                 | stdout=$stdout_root"."$Xtimestamp            |     #
+              #                 | cleanup_files="$cleanup"files $stdout_root"  |     #
+              #                 |                                              |     #
+              #                 | stderr_root=/tmp/$name_root"_stderr"         |     #
+              #                 | stderr=$stderr_root"."$Xtimestamp            |     #
+              #                 | cleanup_files="$cleanup"files $stderr_root"  |     #
+              #                 | ...                                          |     #
+              #                 | ..                                           |     #
+              #                 | CLEANUP_WORK_FILES $cleanup_files            |     #
+              #                 | -- or --                                     |     #
+              #                 | CLEANUP_WORK_FILES -q $cleanup_files         |     #
+              #                 +----------------------------------------------+     #
+              #                                                                      #
+              #              Because we specify $CWF_dir in the find command we use, #
+              #              fully qualified fileids (with real paythnames) are an   #
+              #              absolute requirement.                                   #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CWF_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Returns with failure (1) on error (e.g. the user        #
+              #              supplies an invalid argument).  Normally, this kind     #
+              #              of error is tagged as a FATAL ERROR, however, the       #
+              #              inability to remove files (even if it is the user's     #
+              #              fault) is not earth shaking, so we only describe it     #
+              #              as an ERROR and "return" failure (1).  Otherwise we     #
+              #              return an exit status of success or failure (0 or 1).   #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and CHDIR_EXIT_ERR library functions.         #
+              #                                                                      #
+              #       Notes: Instead of exiting on error (like insufficient args)    #
+              #              this script returns failure (1).  This is done          #
+              #              because this routine is most often called at the end    #
+              #              of a a process where failing to erase old files is      #
+              #              noteworthy (notification is sent), but hardly           #
+              #              terminal.                                               #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.10 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.9  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

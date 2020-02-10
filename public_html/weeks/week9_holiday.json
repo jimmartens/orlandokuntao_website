@@ -1,0 +1,92 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Langka 2A, 4A, 6A (Silat method)",
+          "starttime":"" 
+        },
+        {
+          "name":"2A (Grnd-n'step)",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Application",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"4A",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"Application",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"6A",
+          "starttime":"6:55" 
+        },  
+        
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [         
+        {
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Jab front-kick left",
+          "starttime":"6:00"
+        },
+        {
+          "name":"PU Kilap 4 (block-up)",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"GR Kick combo #6",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"Footsweeps",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"BL Wrist grab (A)",
+          "starttime":"6:50" 
+        },              
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      
+      "events" :
+      [{
+          "name":"NO CLASS DUE TO THE HOLIDAYS",
+          "starttime":""          
+        }]      
+    }
+  ]
+}

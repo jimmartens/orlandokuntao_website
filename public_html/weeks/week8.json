@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Garrote cuarto (1-2)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"BR Numerado (1-6)",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"Hubud",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"Sinawali (single HLH)",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"OR 2-hand grab (A-push)",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Round-kick bag",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Numerado (1-12)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"Sinawali (double HLH)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"PU L/grabs lapel (C)",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"Obverse front-kick groin (Kickee in R/lead)",
+          "starttime":"7:00" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"PU Kilap 3+ (SHBWC)",
+          "starttime":"10:00"
+        },
+        {
+          "name":"BR Numerado (1-12)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Hubud",
+          "starttime":"10:45" 
+        },
+        {
+          "name":"Sinawali (single)",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"Sinawali (double)",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"OR Two-hand grab",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Rocky (R,L,R, L,R,L)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"OR KTS 5-cnt",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"PU Lock Set Right",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"OR K-punch",
+          "starttime":"6:55" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Jab front-kick right (opt.5 mins kickng pipe)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"OR Kilap 2 (left)",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"OR KTS (Up-blk-n-ride)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"PU Chicken-wrist",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"7:00" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Garrote cuarto (1-2)",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Rocky",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"PU Lock Set Right",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"OR K-punch",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"Jab front-kick right",
+          "starttime":"11:05" 
+        }, 
+        {
+          "name":"OR Kilap 2 (left)",
+          "starttime":"11:15" 
+        },
+        {
+          "name":"30-Second drill",
+          "starttime":"11:25" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

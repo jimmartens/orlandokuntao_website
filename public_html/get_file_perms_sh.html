@@ -1,0 +1,276 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, get_file_perms.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="get_file_perms.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, get_file_perms.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_get_file_perms_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              GFP_name="<b>GET_FILE_PERMS</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$GFP_name\(\)\{$'`" != . ] &amp;&amp; GFP_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$GFP_name'[=\(]?/'`" != . ] &amp;&amp; GFP_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$GFP_name'[=\(]?/'`" != . ] &amp;&amp; GFP_loaded=1
+                 fi
+              fi
+              if [ 0${GFP_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>GET_FILE_PERMS</b>() # Function documentation located at bottom.           #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -gt 0 ]; then
+                   if [ -f $1 ]; then
+                      #------------------------------------------------------------#
+                      # The file exists, but does it have the desired permissions? #
+                      # -----------------------------------------------------------#
+                      # Translate string permissions (e.g. "-rw-r--r--") to blank  #
+                      # delimited numeric string (e.g. "0 420 400 400"--actually   #
+                      # it's in reverse order, "400 400 420 0").  Then convert     #
+                      # that reversed order string to an octal representation      #
+                      # (e.g. 0644).                                               #
+                      #------------------------------------------------------------#
+                      GFP_perm_bits=`ls -al "$1" \
+                       | sed -e 'y/-rwx/0421/'   \
+                             -e 's/\(.\)\(...\)\(...\)\(...\)\( .*\)/\4 \3 \2 \1/'`
+                      # "y/-rwx/0421" translates "-rwx" to            |  |  |  |   #
+                      # "0421", respectively.                         |  |  |  |   #
+                      #                                               |  |  |  |   #
+                      # "\4 \3 \2 \1" is how we reverse the           |  |  |  |   #
+                      # order of these values so that we can          |  |  |  |   #
+                      # process the high order bit last (the          |  |  |  |   #
+                      # 5th pattern, "\( .*\)" is effectively         |  |  |  |   #
+                      # dropped because "\5" is not used).            |  |  |  |   #
+                      #                                               |  |  |  |   #
+                      # World rwx bits -------------------------------+  |  |  |   #
+                      #  (sticky bit [T or t] is found                   |  |  |   #
+                      #   in world's low order position).                |  |  |   #
+                      # Group rwx bits ----------------------------------+  |  |   #
+                      #  (setgid bit [[Ll] or s] is found                   |  |   #
+                      #   in group's low order position).                   |  |   #
+                      # Owner rwx bits -------------------------------------+  |   #
+                      #  (setuid bit [S or s] is found                         |   #
+                      #   in owner's low order position).                      |   #
+                      # High order bits ---------------------------------------+   #
+                      #------------------------------------------------------------#
+
+                      #------------------------------------------------------#
+                      # Use expr to separate world, group, and owner values  #
+                      # (GFP_wgo) from the high-order value (GFP_ho).        #
+                      #------------------------------------------------------#
+                      GFP_wgo=`expr "$GFP_perm_bits" : '\(.*\) .*'`
+                      GFP_ho=` expr "$GFP_perm_bits" : '.* \(.*\)'`
+                      #----------------------------------------------------#
+                      # Translate our high order bits from chars to digits.#
+                      # The "lpd-" (in the following sed) is for link,     #
+                      # pipe, directory, and file.                         #
+                      #----------------------------------------------------#
+                      GFP_ho=`echo $GFP_ho|sed "y/lpd-/0000/"`
+                      #------------------------------------------------------------#
+                      # Recombine the high-order bits with world, group, and owner.#
+                      #------------------------------------------------------------#
+                      GFP_perm_bits="$GFP_wgo $GFP_ho"
+
+                      #----------------------------------------------------#
+                      # Now, translate world, group, owner, and high-order #
+                      # permission bits from characters to octal values.   #
+                      #----------------------------------------------------#
+                      $AWK     \
+                        'BEGIN \
+                         {
+                           oct_perms = ""
+                           grp       = 1 # 1=world, 2=group, 4=owner
+                           ho_bits   = ARGV[4]
+                           for (n=1; n&lt;4; n++)
+                           {
+                             sum   = 0
+                             arg_n = length(ARGV[n])
+                             for (i=1; i&lt;=arg_n; i++)
+                             {
+                               bit = substr(ARGV[n],i,1)
+
+                               if (bit == "t")
+                               {                # Sticky bit and execute sets
+                                 bit = 1        #   low order executable (1)
+                                 ho_bits++      #  high order sticky bit (1)
+                               }
+                               else if (bit == "T")
+                               {                # Sticky bit w/o execute sets
+                                 bit = 0        #   low order executable (0)
+                                 ho_bits++      #  high order sticky bit (1)
+                               }
+                               else if (bit == "l")
+                               {                # File locking
+                                 bit = 0
+                                 ho_bits += grp
+                               }
+                               else if (bit == "L")
+                               {                # File locking
+                                 bit = 0
+                                 ho_bits += grp
+                               }
+                               else if (bit == "s")
+                               {                # Set[gu]id w/o execute sets
+                                 bit = 1        #   low ord executable (1)
+                                 ho_bits += grp #  high ord setuid bit (4)
+                               }
+                               else if (bit == "S")
+                               {                # Setuid w/o execute sets
+                                 bit = 0        #   low ord executable (0)
+                                 ho_bits += grp #  high orr setuid bit (4)
+                               }
+
+                               sum += bit
+                             } # for (i = 1; i &lt; arg_n; i++)
+                             #------------------------------------------------#
+                             # Since we reversed the order (world to group to #
+                             # owner), reverse them again (by prepending) to  #
+                             # get owner, group, and world.                   #
+                             #------------------------------------------------#
+                             oct_perms = sum""oct_perms
+                             #------------------------------------------------#
+                             # Doubling group value each time (from 1 to 2 to #
+                             # 4), gives appropriate high order bit value.    #
+                             #------------------------------------------------#
+                             grp *= 2
+                           } # for (n = 1; n &lt; 4; n++)
+                           print ho_bits""oct_perms
+                         }' $GFP_perm_bits
+                      return 0
+                   fi
+                fi
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh      # Function dependencies
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #-------------------------------------------------------------#
+                # If the following variables are not set, use these defaults. #
+                #-------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                GFP_ID="$script_name($GFP_name)"
+
+                #------------------------------------------------------------#
+                # The following errors are serious and terminate the calling #
+                # program (by exiting): Insufficient args                    #
+                #                       File not found                       #
+                #------------------------------------------------------------#
+                if [ $# -lt 1 ]; then
+                   EMAIL_MSG "FATAL ERROR (Function): $GFP_ID"           \
+                     "${sp}Insufficient args."                           \
+                     "${sp}Usage: $GFP_name fileid."                     \
+                     "${sp}        where fileid is the file whose octal" \
+                     "${sp}        file permissions we're to get."       \
+                     "${sp}$script_name terminated."
+                else
+                   #-------------------------------------------#
+                   # Must be that the file cannot be located.  #
+                   #-------------------------------------------#
+                   EMAIL_MSG "FATAL ERROR: $GFP_ID" \
+                     "${sp}File $1 NOT FOUND!"      \
+                     "${sp}$script_name terminated."
+                fi
+
+                EXIT 1
+              } # "GFP_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: November 6, 1997                                        #
+              #                                                                      #
+              #  Program ID: get_file_perms.sh                                       #
+              #                                                                      #
+              #       Usage: GET_FILE_PERMS fileid                                   #
+              #                       where fileid is the file whose octal           #
+              #                             file permissions we're to get.           #
+              #                                                                      #
+              #     Purpose: Return the given file's octal (nnnn) permissions.       #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "GFP_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: On failure, EXIT 1 for function error (e.g. user        #
+              #              supplies invalid arguments).  Otherwise returns         #
+              #              success (0), echoing back the file's permissions.       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              #       Notes: This function returns FILE permissions only.  Other     #
+              #              files like block, character, directory, link, pipe,     #
+              #              or device files are not even considered.                #
+              #                                                                      #
+              #     Example: perms=0600                                              #
+              #              fileid=any.fil                                          #
+              #              fil_perms=`GET_FILE_PERMS $fileid`                      #
+              #              if [ $fil_perms -eq 0640 ]; then                        #
+              #                 echo "$fileid's permissions are not $perms."         #
+              #                 echo "Permissions are $fil_perms."                   #
+              #                 ...                                                  #
+              #              fi                                                      #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.10 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.9  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

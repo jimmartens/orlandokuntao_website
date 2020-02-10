@@ -1,0 +1,186 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, ping_host.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="ping_host.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, ping_host.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_ping_host_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              PH_name="<b>PING_HOST</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$PH_name\(\)\{$'`" != . ] &amp;&amp; PH_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$PH_name'[=\(]?/'`" != . ] &amp;&amp; PH_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$PH_name'[=\(]?/'`" != . ] &amp;&amp; PH_loaded=1
+                 fi
+              fi
+              if [ 0${PH_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>PING_HOST</b>() # Function documentation located at bottom.                #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+                : ${OZ:=`uname -s 2&gt; /dev/null|tr '[A-Z]' '[a-z]' 2&gt; /dev/null`}
+
+                PH_ID="$script_name($PH_name)"
+
+                if [ $# -gt 0 ]; then # We have IP-addr/hostname [sleep-secs]
+                   #-------------------------------------------------------------#
+                   # If user gave no sleep time (seconds), use the default (five #
+                   # seconds). Else validate the seconds the user supplied.  If  #
+                   # the value is not numeric, then fuss at the user and exit.   #
+                   #-------------------------------------------------------------#
+                   if [ $# -eq 1 ]; then
+                      PH_secs=5
+                   else # Nawk returns success if sleep-secs OK
+                      $AWK 'BEGIN {exit (ARGV[1] ~ /^[0-9]+$/) ? 0 : 1}' $2
+                      [ $? -eq 0 ] &amp;&amp; PH_secs=$2 || PH_secs=0
+                   fi # if [ $# -eq 1 ]; then
+
+                   if [ $PH_secs -gt 0 ]; then
+                      PH_trys="1 2 3 4 5 6 7 8 9 10"
+                      for PH_attempt in $PH_trys
+                      do
+                         #-------------------------------------------------------#
+                         # If our ping fails 10 times (sleeping $PH_secs seconds #
+                         # after each try), then return ping's exit status       #
+                         # (non-zero on failure).                                #
+                         #-------------------------------------------------------#
+                         if [ -f /usr/sbin/ping ]; then
+                            PH_ping="ping $1 $PH_secs"    # SunOS version.
+                         elif [ ."$OZ" = ."linux" ]; then
+                            PH_ping="ping -c $PH_secs $1" # Linux version.
+                         fi
+
+                         $PH_ping &gt; /dev/null
+                         PH_status=$?
+
+                         if [ $PH_status -eq 0 ]; then
+                            return $PH_status
+                         else
+                            $PH_ping 2&gt;&1|sed "s/^/$sp/"
+                            if [ $PH_attempt -lt `echo $PH_trys|wc -w` ]; then
+                               #-----------------------------#
+                               # Only 9 warnings are issued. #
+                               #-----------------------------#
+                               echo "`date '+%Y-%m-%d %T'` WARNING $PH_ID"
+                               echo "${sp}Failed ping to $1!"
+                               echo "${sp}We'll try again in $PH_secs seconds"
+                               sleep $PH_secs
+                            else
+                               return $PH_status
+                            fi
+                         fi
+                      done
+                      return 1 # Hopefully we returned $success before now.
+                   fi # if [ $PH_secs -gt 0 ]; then
+                fi # if [ $# -gt 0 ]; then
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                if [ $# -gt 1 ]; then # Gave two args, but 2nd arg not numeric.
+                   EMAIL_MSG "ERROR: $PH_ID"            \
+                     "${sp}Invalid sleep seconds ($2)." \
+                     "${sp}$script_name terminated."
+                   return 1
+                fi
+
+                EMAIL_MSG "ERROR (Function): $PH_ID"                       \
+                  "${sp}Insufficient args."                                \
+                  "${sp}Usage: $PH_name hostid | IP-addr [sleep seconds]."
+                return 1
+              } # "PH_" prefix identifies this function's variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: ping_host.sh                                            #
+              #                                                                      #
+              #       Usage: PING_HOST hostname|IP-addr [sleep-seconds]              #
+              #                                                                      #
+              #     Purpose: Ping host up to 10 times using specified "seconds"      #
+              #              between ping (5 seconds is default if "seconds" is      #
+              #              not specified).                                         #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "PH_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) for severe error (e.g. user      #
+              #              supplies an invalid argument).  Otherwise returns       #
+              #              ping status (success or failure).                       #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.8  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

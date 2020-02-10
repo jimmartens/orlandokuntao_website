@@ -1,0 +1,654 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Bob Orlando's today_is.pl with Holiday Determination Perl Examples</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="today_is Perl program holiday dates business day holidays program script">
+    <meta name="description"    lang="en" content="Bob Orlando's today_is.pl with Holiday Determination Perl Examples">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2003-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine='A warrior may choose pacifism. Others are condemned to it.';var msg=statusLine;window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="blue" alink="red" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_today_is.html';">
+    <div align="center" style="font-family:Arial,Verdana; font-size: 11pt">
+      <center><b>A Holidays&nbsp; <a href="holidays_awk.html" target="_blank">AWK program</a>&nbsp; is also available.</b></center>
+      <table border="0" width="725" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+        <tr>
+          <td>
+            <pre>
+              <code>
+                                  #!/usr/local/bin/perl -w
+                                  #
+                                  # SccsId[] = "@(#)today_is.pl 1.9 12-07-11 (Today is &lt;what day&gt; Perl program)"
+                                  #
+                                  #----------------------------------------------------------------------#
+                                  #                             <b>today_is.pl</b>                              #
+                                  # -------------------------------------------------------------------- #
+                                  #        Program documentation and notes located at the bottom.        #
+                                  #----------------------------------------------------------------------#
+
+                                  # BEGIN { $diagnostics::PRETTY = 1; }
+
+                                    $SIG{'INT'}=sub {print "\nExiting on $SIG{'INT'}\n";exit $SIG{'INT'}};
+
+                                  #======================================================================#
+                                  #                       <b>I N I T I A L I Z A T I O N</b>                    #
+                                  # -------------------------------------------------------------------- #
+                                  # Declared and initialized here primarily for documentation purposes.  #
+                                  #======================================================================#
+                                    use strict;   # Compels declaration of all variables.
+                                  # use diagnostics;
+
+                                    use lib "/home/perl"; ## Host's function library
+                                    use Holiday_dates;
+                                    use <a href="print_hash.html" target="_blank">Print_hash</a>   ;
+
+                                    #------------------------------------------------------------------#
+                                    # Getopts assignments and asides.                                  #
+                                    #------------------------------------------------------------------#
+                                    use Getopt::Std;
+                                    use vars qw($opt_H $opt_h $opt_T $opt_v);
+                                    my $options = 'HhTv';
+                                    exit_usage("Invalid option!\n") unless (getopts($options));
+                                    $opt_H ||= 0;
+                                    $opt_h ||= 0;
+                                    $opt_T ||= 0;
+                                    $opt_v ||= 0;
+                                    exit_usage()         if ($opt_h); # Usage brief or
+                                    show_documentation() if ($opt_H); # full documentation?
+
+                                    #------------------------------------------------------------------#
+                                    # Build month name (hash) and weekday arrays.                      #
+                                    #------------------------------------------------------------------#
+                                    my @months =
+                                    (
+                                      "", # Empty first (0th) element allows one-based dereferencing.
+                                      "January",  "February",  "March",
+                                      "April",    "May",       "June",
+                                      "July",     "August",    "September",
+                                      "October",  "November",  "December"
+                                    );
+
+                                    my %weekdays =
+                                    (
+                                      "0" =&gt; "Sunday"   ,
+                                      "1" =&gt; "Monday"   ,
+                                      "2" =&gt; "Tuesday"  ,
+                                      "3" =&gt; "Wednesday",
+                                      "4" =&gt; "Thursday" ,
+                                      "5" =&gt; "Friday"   ,
+                                      "6" =&gt; "Saturday"
+                                    );
+
+                                    #--------------------------------------------------------------#
+                                    # Create variables from $0.                                    #
+                                    #--------------------------------------------------------------#
+                                    use vars qw($progID  $progpath  $progname); # User functions require.
+                                               ($progID, $progpath, $progname) = parse_program_ID();
+                                    if ($opt_v)
+                                    {
+                                      print "\$progID  =|$progID|",
+                                          "\n\$progpath=|$progpath|",
+                                          "\n\$progname=|$progname|\n";
+                                    }
+
+                                    unless (defined($progID) &amp;&amp; defined($progpath) &amp;&amp; defined($progname))
+                                    {
+                                      die "$0 parse_program_ID failure (something !defined)! $!";
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # Assign locations for holiday file depending on OS--in this case  #
+                                    # Unix ($holidayUfile) and Windows ($holidayWfile).  Then assign   #
+                                    # $holiday_file to the applicable one.                             #
+                                    #------------------------------------------------------------------#
+                                    my $holidayUfile = "/usr/local/bin/holidays"; # Unix location
+                                    my $holidayWfile = "c:/home/perl/holidays";   # My Windows test local
+                                    my $holiday_file = (-f $holidayUfile) ? $holidayUfile : $holidayWfile;
+                                    my $holidays_href;
+                                    my @holiday_array;
+                                    my @sorted_holidays;
+                                    my $holiday      ;
+                                    my %notable_dates;
+
+                                    #------------------------------------------------------------------#
+                                    # Datetime variables (really interested in today's month/year).    #
+                                    #------------------------------------------------------------------#
+                                    my ($ss,$mi,$hh,$dd,$mm,$yy,$wdayn,$jjj,$dst);
+                                       ($ss,$mi,$hh,$dd,$mm,$yy,$wdayn,$jjj,$dst) = localtime(time);
+                                    my $yyyy = $yy + 1900;
+                                       $mm   = sprintf("%02d", $mm+1); # Convert to 2-digit 1-based $mm.
+                                       $dd   = sprintf("%02d", $dd);   # Convert to 2-digit $dd.
+                                    my $n    = 0;
+                                    my $bizday;
+                                    my $day_is;
+                                    my $ptr;
+
+                                    #------------------------------------------------------------------#
+                                    # Validate and parse optional yyyymmdd test date.                  #
+                                    #------------------------------------------------------------------#
+                                    if (defined($ARGV[0]) and $ARGV[0] ne "")
+                                    {
+                                      if ($ARGV[0] =~ /^(\d{4})(\d{2})(\d{2})$/)
+                                      {
+                                        $yyyy = $1;
+                                        $mm   = $2;
+                                        $dd   = $3;
+                                      }
+                                      else
+                                      {
+                                        exit_usage("'$ARGV[0]' invalid as a yyyymmdd date!\n");
+                                      }
+                                    }
+
+
+                                  #======================================================================#
+                                  #                                <b>M A I N</b>                               #
+                                  #======================================================================#
+
+                                    if ($opt_T) # If test operation (to see all capabilities)
+                                    {
+                                      #----------------------------------------------------------------#
+                                      print "Using a pointer to access holidays hash\n";
+                                      #----------------------------------------------------------------#
+                                      $holidays_href = holiday_dates($yyyy, $holiday_file);
+                                      print_hash("-s", $holidays_href);
+                                      print "\n";
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # This time we begin by extracting holiday directives from our     #
+                                    # "holidays" file (which we specify), then assign the dates        #
+                                    # generated from those directives to holiday a holiday hash array. #
+                                    #------------------------------------------------------------------#
+                                    exit 1 unless($holidays_href = holiday_dates($holiday_file, $yyyy));
+
+                                    #------------------------------------------------------------------#
+                                    # If you find dereferenced hashes (${$holidays}{$holidays_href} a  #
+                                    # bit clunky, you can simply assign the referenced holidays hash   #
+                                    # to a local (my) hash and play with it directly (generally that's #
+                                    # pretty inefficient, but a holidays hash should be pretty small). #
+                                    #------------------------------------------------------------------#
+                                    if ($opt_T)
+                                    {
+                                      my %holidays = %{$holidays_href};
+                                      print "\n\%holidays follow:\n";
+                                      print_hash("-s", $holidays_href);
+                                    }
+
+                                  # #------------------------------------------------------------------#
+                                  # # The preceding holiday_dates() hash array load eliminates the     #
+                                  # # need to hard code holiday date assignments like the following.   #
+                                  # # Also, it handles holidays falling on weekends when a pre- or     #
+                                  # # post holiday observence is permitted.                            #
+                                  # #------------------------------------------------------------------#
+                                  # my $new_year      =                  "${yyyy}0101"          ;
+                                  # my $MLK_day       = holiday_yyyymmdd("${yyyy}01" ,"3","1")  ; # 3rd Mon.
+                                  # my $memorial_obs  = holiday_yyyymmdd("${yyyy}05","last","1"); # Last Mon.
+                                  # my $independence  =                  "${yyyy}0704"          ;
+                                  # my $labor_day     = holiday_yyyymmdd("${yyyy}09", "1","1")  ; # 1st Mon.
+                                  # my $thanksgiving1 = holiday_yyyymmdd("${yyyy}11", "4","4")  ; # 4th Thu.
+                                  # my $thanksgiving2 = $thanksgiving1 + 1                      ; # 4th Fri.
+                                  # my $christmas     =                  "${yyyy}1225"          ;
+                                  # %holidays =
+                                  # (
+                                  #   "$new_year"     =&gt; "New Year's Day"       ,
+                                  #   "$MLK_day"      =&gt; "M.L.King Jr. Birthday",
+                                  #   "$memorial_obs" =&gt; "Memorial Day"         ,
+                                  #   "$independence" =&gt; "Independence Day"     ,
+                                  #   "$labor_day"    =&gt; "Labor Day"            ,
+                                  #   "$thanksgiving1"=&gt; "Thanksgiving (US)"    ,
+                                  #   "$thanksgiving2"=&gt; "Thanksgiving Day II"  ,
+                                  #   "$christmas"    =&gt; "Christmas Day"        ,
+                                  # );
+
+                                    #------------------------------------------------------------------#
+                                    # Assign other dates to holiday or notable date variables.         #
+                                    # ---------------------------------------------------------------- #
+                                    # Note: Because we are demonstrating so many dates, and because    #
+                                    #       some of them may very likely fall on the same date (i.e.   #
+                                    #       like when standard time change and Navy Day both fell on   #
+                                    #       the same date in 2002--October 27), we append a sequence   #
+                                    #       number (sprintf("%03d",$n++)) to each variable assignment. #
+                                    #------------------------------------------------------------------#
+                                    my $superbowl1    = holiday_yyyymmdd("${yyyy}01","last",0) . sprintf("%03d",$n++); # Last Sun.
+                                    my $superbowl2    = holiday_yyyymmdd("${yyyy}02",     1,0) . sprintf("%03d",$n++); # First Sun.
+                                    my $valentines    =                  "${yyyy}0214"         . sprintf("%03d",$n++); # Last Sun.
+                                    if ($opt_T)
+                                    {
+                                      my $bogus_holiday = holiday_yyyymmdd("${yyyy}02", 6,0)   . sprintf("%03d",$n++); # 6th Sun.
+                                    }
+                                    my $savings_time  = holiday_yyyymmdd("${yyyy}03", 2,0)     . sprintf("%03d",$n++); # 2nd Sun. (begins 2007)
+                                    my $army_day      =                  "${yyyy}0406"         . sprintf("%03d",$n++);
+                                    my $mothers_day   = holiday_yyyymmdd("${yyyy}05", 2,0)     . sprintf("%03d",$n++); # 2nd Sun.
+                                    my $armed_forces  = holiday_yyyymmdd("${yyyy}05", 3,6)     . sprintf("%03d",$n++); # 3rd Sat.
+                                    my $memorial_trad =                  "${yyyy}0530"         . sprintf("%03d",$n++);
+                                    my $flag_day      =                  "${yyyy}0614"         . sprintf("%03d",$n++);
+                                    my $fathers_day   = holiday_yyyymmdd("${yyyy}06", 3,0)     . sprintf("%03d",$n++); # 3rd Sun.
+                                    my $parents_day   = holiday_yyyymmdd("${yyyy}06", 4,0)     . sprintf("%03d",$n++); # 4th Sun.
+                                    my $USAF_day      =                  "${yyyy}0801"         . sprintf("%03d",$n++);
+                                    my $USCG_day      =                  "${yyyy}0804"         . sprintf("%03d",$n++);
+                                    my $patriots_day  =                  "${yyyy}0911"         . sprintf("%03d",$n++);
+                                    my $constitution  =                  "${yyyy}0917"         . sprintf("%03d",$n++);
+                                    my $grandparents  = holiday_yyyymmdd("${yyyy}09", 1,1)+6   . sprintf("%03d",$n++); # 1st Sunday after Labor Day
+                                    my $Columbus_day  = holiday_yyyymmdd("${yyyy}10", 2,1)     . sprintf("%03d",$n++); # 2nd Mon.
+                                    my $navy_day      =                  "${yyyy}1027"         . sprintf("%03d",$n++);
+                                    my $standard_time = holiday_yyyymmdd("${yyyy}11", 1,0)     . sprintf("%03d",$n++); # 1st Sun. (begins 2007)
+                                    my $election_day  = holiday_yyyymmdd("${yyyy}11", 1,1)+1   . sprintf("%03d",$n++); # 1st Tue after 1st Mon.
+                                    my $USMC_day      =                  "${yyyy}1110"         . sprintf("%03d",$n++); # 1775
+                                    my $vets_day      =                  "${yyyy}1111"         . sprintf("%03d",$n++);
+
+                                    #------------------------------------------------------------------#
+                                    # Just so this isn't lost, you can also get the nth weekday of any #
+                                    # month.                                                           #
+                                    #------------------------------------------------------------------#
+                                    my $fst_monday    = holiday_yyyymmdd("${yyyy}$mm",1,1)     . sprintf("%03d",$n++);
+                                    my $last_sunday   = holiday_yyyymmdd("${yyyy}$mm","last",0). sprintf("%03d",$n++);
+
+                                    #------------------------------------------------------------------#
+                                    # Build hash array using holiday variable values as keys.          #
+                                    #------------------------------------------------------------------#
+                                    %notable_dates =
+                                    (
+                                      "$superbowl1"   =&gt; "Super Bowl (January date)"                     ,
+                                      "$superbowl2"   =&gt; "Super Bowl (February date)"                    ,
+                                      "$valentines"   =&gt; "At. Valentine's Day (don't forget this!)"      ,
+                                      "$savings_time" =&gt; "Daylight Savings Time Begins"                  ,
+                                      "$army_day"     =&gt; "Army Day"                                      ,
+                                      "$mothers_day"  =&gt; "Mother's Day"                                  ,
+                                      "$armed_forces" =&gt; "Armed Forces Day"                              ,
+                                      "$memorial_trad"=&gt; "Memorial day (traditional)"                    ,
+                                      "$flag_day"     =&gt; "Flag Day"                                      ,
+                                      "$fathers_day"  =&gt; "Fathers Day"                                   ,
+                                      "$parents_day"  =&gt; "Parents Day"                                   ,
+                                      "$USAF_day"     =&gt; "Air Force Day"                                 ,
+                                      "$USCG_day"     =&gt; "Coast Guard Day"                               ,
+                                      "$patriots_day" =&gt; "Patriots Day: ". nth($yyyy - 2001) ." Memorial of 911",
+                                      "$constitution" =&gt; "Constitution Day"                              ,
+                                      "$grandparents" =&gt; "Grandparent's Day"                             ,
+                                      "$Columbus_day" =&gt; "Columbus Day"                                  ,
+                                      "$navy_day"     =&gt; "Navy Day"                                      ,
+                                      "$standard_time"=&gt; "Standard Time Begins"                          ,
+                                      "$election_day" =&gt; "Election Day"                                  ,
+                                      "$USMC_day"     =&gt; "Marine Corps ". nth($yyyy - 1775) ." birthday" ,
+                                      "$vets_day"     =&gt; "Veterans Day"                                  ,
+                                      "$fst_monday"   =&gt; "First Monday in $months[$mm]"                  ,
+                                      "$last_sunday"  =&gt; "Last Sunday in $months[$mm]"                   ,
+                                    );
+
+                                    #------------------------------------------------------------------#
+                                    # If a given date is a holiday, ...                                #
+                                    #------------------------------------------------------------------#
+                                    if (is_holiday("2004", "01", "19"))
+                                    {
+                                      if ($opt_T)
+                                      {
+                                        print "\n$months[01] " . (19-0) . ", 2004 is "
+                                              . ${$holidays_href}{"20040119"}."\n";
+                                      }
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # If today is a holiday, take a rest -- you deserve it.            #
+                                    #------------------------------------------------------------------#
+                                    if (is_holiday("$yyyy", "$mm", "$dd"))
+                                    {
+                                      print "\nToday, $months[$mm] " . ($dd-0) . ", $yyyy, is ",
+                                        ${$holidays_href}{"${yyyy}${mm}${dd}"} . ".\nHave a good day.\n";
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # We're using a loop to search our hash keys here instead of, say, #
+                                    #    'if (is_holiday("$yyyy", "$mm", "$dd", \%notable_dates))'     #
+                                    # because we can easily have two notable days falling on the same  #
+                                    # date as we did in 2003 when Army Day & Daylight Savings Time     #
+                                    # fell on April 6.  Also, because we added that 3-digit suffix to  #
+                                    # the keys in %notable_dates to handle just this issue.            #
+                                    #------------------------------------------------------------------#
+                                    foreach my $key (keys(%{notable_dates}))
+                                    {
+                                      if ($key =~ /^${yyyy}${mm}${dd}/)
+                                      {
+                                        print "\nToday, $months[$mm] " . ($dd-0) . ", $yyyy, is ",
+                                          $notable_dates{"$key"} . ".\a\n";
+                                      }
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # Add first, last, and next-to-last business days to notable_dates #
+                                    # hash (we print out the full list below).                         #
+                                    #------------------------------------------------------------------#
+                                    $day_is = "First business day in $months[$mm]";
+                                    $bizday = business_day(     1, "${yyyy}$mm", $holidays_href);
+                                    $notable_dates{$bizday} = "$day_is";
+
+                                    $day_is = "Next-to-last business day in $months[$mm]";
+                                    $bizday = business_day(    -1, "${yyyy}$mm", $holidays_href);
+                                    $notable_dates{$bizday} = "$day_is";
+
+                                    $day_is = "Last business day in $months[$mm]";
+                                    $bizday = business_day("last", "${yyyy}$mm", $holidays_href);
+                                    $notable_dates{$bizday} = "$day_is";
+
+                                    #----------------------------------------------------------------#
+                                    # The sprintf suffix to $bizday assignment ensures we won't have #
+                                    # two noteable dates, but are only able to display one of them.  #
+                                    # I do that ONLY because this is a test script--seems unlikely   #
+                                    # that you would to do this as a standard operating procedure.   #
+                                    #----------------------------------------------------------------#
+                                    $day_is = "Eighteenth business day in $months[$mm]";
+                                    $bizday = business_day(18, "${yyyy}$mm", $holidays_href)
+                                      . sprintf("%03d",$n++);
+                                    $notable_dates{$bizday} = "$day_is";
+
+                                    #------------------------------------------------------------------#
+                                    # If today is a business day, get busy.                            #
+                                    #------------------------------------------------------------------#
+                                    if ("${yyyy}${mm}${dd}" eq $bizday)
+                                    { # The "($dd-0)" gives a date minus any leading zero.
+                                      print "Today, $months[$mm] " . ($dd-0) . ", $yyyy is, ",
+                                        $notable_dates{"$bizday"} . ".\nHave a good day.\n";
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # Combine and sort the dates so we can print them by yyyymmdd date.#
+                                    #------------------------------------------------------------------#
+                                    my %combined_dates = (%{$holidays_href}, %notable_dates);
+                                    my @sorted_dates   = sort(keys %combined_dates);
+                                    print "\nHolidays and noteworthy dates for this calendar year:\n";
+                                    $n = 1;
+                                    for (@sorted_dates)
+                                    {
+                                    # next if (/${yyyy}0?${mm}0?${dd}/); # Already done today's?
+                                      next unless /^(\d{4})(\d{2})(\d{2})/;
+                                      printf("%2d. %-10s %-9s %2d, %4d = %s\n"     ,
+                                             $n++                                  , # Numbered list
+                                             $weekdays{day_of_week($1,$2,$3)} . ",", # Weekday
+                                             $months[$2]                           , # Month name
+                                             $3                                    , # Day
+                                             $1                                    , # Year
+                                             $combined_dates{$_});                   # Date name
+                                    }
+
+                                    #------------------------------------------------------------------#
+                                    # For a real test, report all holidays for the 21st century        #
+                                    # (except that 32 bit processors can't handle dates past 2037).    #
+                                    #------------------------------------------------------------------#
+                                    if ($opt_T)
+                                    {
+                                      foreach my $decade (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+                                      {
+                                        foreach my $yr (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+                                        {
+                                          $yyyy = "20${decade}${yr}";
+                                          print "\nHolidays for $yyyy\n";
+                                          $holidays_href = holiday_dates($holiday_file, $yyyy);
+                                          @sorted_dates = sort(keys %{$holidays_href});
+                                          for (@sorted_dates)
+                                          {
+                                            next unless /^(\d{4})(\d{2})(\d{2})/;
+                                            printf("%-10s %-9s %2d, %4d = %s\n"           ,
+                                                    $weekdays{day_of_week($1,$2,$3)} . ",", # Weekday,
+                                                    $months[$2]                           , # Month name
+                                                    $3                                    , # Day
+                                                    $1                                    , # Year
+                                                    ${$holidays_href}{$_});                 # Date name
+                                          } # for (@sorted_dates)
+                                        } # foreach my $yr (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+                                      } # foreach my $decade (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+                                    } # if ($opt_T)
+
+                                    exit $?;
+
+
+                                  #======================================================================#
+                                  #             <b>S U B R O U T I N E S  /  F U N C T I O N S</b>              #
+                                  #                       (in alphabetical order)                        #
+                                  #----------------------------------------------------------------------#
+                                  sub <b>exit_usage</b> # Exits with non-zero status.                           #
+                                                 # Global vars:   $main::notify                          #
+                                                 #                $main::support                         #
+                                  #----------------------------------------------------------------------#
+                                  {
+                                    my $fn_name = "exit_usage";
+                                    my $txt     ;
+
+                                    #--------------------------------------------------------------#
+                                    # Assign to private variable, $notify either $main::support or #
+                                    # $main::notify (takes $main::support over $main::notify).     #
+                                    #--------------------------------------------------------------#
+                                    my $notify;
+                                    if    (defined($main::support)) { $notify = $main::support; }
+                                    elsif (defined($main::notify )) { $notify = $main::notify;  }
+                                    elsif (defined($ENV{LOGNAME} )) { $notify = $ENV{LOGNAME};  }
+                                    else                            { $notify = $ENV{USER};     }
+
+                                  # $options =~ s/://g; # For printing, remove any colons.
+                                    $txt =  "Usage:   $0 -$options [yyyymmdd]\n";
+                                    $txt =  "$_[0]\n   $txt" if ($#_ &gt;= 0); # Prefix message arguments
+                                    $txt .= "\n            -H = Displays full documentation."
+                                         .  "\n            -T = Test operation to demo all."
+                                         .  "\n            -h = Gives usage brief."
+                                         .  "\n            -v = Verbose output."
+                                         .  "\n      yyyymmdd = Optional date (instead of today's date).\n"
+                                         .  "\n   Purpose: Provide example for Perl programs calling"
+                                         .  "\n            holiday and business day routines.\n";
+
+                                    print "$txt"; # No \n here
+
+                                    exit 1;
+                                  } # sub exit_usage
+
+                                  #----------------------------------------------------------------------#
+                                  sub <b>nth</b> # Return n"th", n"st", n"nd", or n"rd" number.                 #
+                                  #----------------------------------------------------------------------#
+                                  {
+                                    my $nth = $_[0] . "th";
+                                    my $nn  = $_[0];
+
+                                    $nn =~ s/^.*(..$)/$1/;
+                                    $nn += 0; # Remove leading zeroes
+
+                                    if    ($nn =~ /1[1-9]$/    ) { $nth = $_[0] . "th"; } # 11th - 19th
+                                    elsif ($nn =~ /(1|[2-9]1)$/) { $nth = $_[0] . "st"; } # 1st or 21st - 91st
+                                    elsif ($nn =~ /(2|[2-9]2)$/) { $nth = $_[0] . "nd"; } # 2nd - 92nd
+                                    elsif ($nn =~ /(3|[2-9]3)$/) { $nth = $_[0] . "rd"; } # 3rd - 93rd
+                                    return $nth;
+                                  }
+
+                                  #----------------------------------------------------------------------#
+                                  sub <b>parse_program_ID</b> # The following code seems awfully clunky to me.  #
+                                  #----------------------------------------------------------------------#
+                                  {
+                                    local $_; # Saves $_ and restores it on subroutine exit.
+                                    use Cwd;                              # Req'd for cwd()
+                                    use File::Basename;                   # Req'd for dirname & basename
+                                    my $ID    = basename($0,"");          # $ID is used throughout.
+                                    my $drive = ($0 =~ /^[A-Za-z]:/) ? $& : ""; # (e.g. 'c:')
+                                    my $name  = $ID;                      # Executable's filename
+                                       $name  =~ s/\..*$//;               #   less its .ext
+                                    my $path  = dirname($0);              # Executable's path (relative?)
+                                       $path  =~ s/^$drive//;             #   from the rest of the
+                                       $path  = cwd() if ($path eq ".");  # Replace '.' with cwd()
+                                    my $n     = $path =~ s|(\.\.)|$1|g;   # Count '../' (parent dirs)
+                                    my $wd    = cwd();                    # Save current working dir (cwd)
+
+                                    #----------------------------------------------------------------#
+                                    # We try to resolve simple relative pathing to absolute here.    #
+                                    # If one or more sequential "../" are in $path, substitute them  #
+                                    # with subdirectories from cwd() by first, removing $n leading   #
+                                    # "../" from $path, then removing $n trailing subdirectories     #
+                                    # from $wd, and finally recreating $path with "$wd/$path".       #
+                                    #----------------------------------------------------------------#
+                                    if ($n &gt; 0)
+                                    {
+                                      $path =~ s/^(\.\.\/){$n}//;
+                                      $wd   =~ s/(\/\w+){$n}$//;
+                                      $path = "$wd/$path";
+                                    }
+
+                                    if ($path !~ /^\//) # If path doesn't begin with a slash,
+                                    {                   # then we have some sort of relative path.
+                                      if ($path =~ /^((\.)?(\.\/)?)/)     # Replace 0|1 "./"s found
+                                      {                                   # at the beginning of the
+                                        $path =~ s|^(\./)?(.*)|${wd}/$2|; # line with cwd path info.
+                                      }
+                                    }
+
+                                    $path =~ s|/(\.\.)*$||;  # Remove any trailing '/..'
+                                    $path =~ s|(/?\./?)*||g; # Remove all '/./'
+                                    $path =~ s|/$||;         # Remove trailing slashes
+                                    $path =~ s/\/+/\//g;     # Squeese multiple slashes
+                                    $path =~ s|^/*|/|;       # Prefix a leading slash if missing
+                                    return ($ID, "${drive}$path", $name);
+                                  } # sub parse_program_ID
+
+                                  #----------------------------------------------------------------------#
+                                  sub <b>show_documentation</b> # Display program documentation at bottom.      #
+                                  #----------------------------------------------------------------------#
+                                  {                        # +--- $-sign must NOT preceed main::DATA
+                                    my $n = 0;             # |
+                                    foreach (my @doc_lines = &lt;main::DATA&gt;)
+                                    {
+                                      print "$_";
+                                    }
+                                    exit $n;
+                                  } # sub show_documentation
+
+
+                                  __END__ # Documentation section follows:
+                                  #======================================================================#
+                                  #                       <b>D O C U M E N T A T I O N</b>                      #
+                                  #======================================================================#
+                                  #                                                                      #
+                                  #      Author: Bob Orlando (<a href="mailto:Bob@OrlandoKuntao.com">Bob@OrlandoKuntao.com</a>)                     #
+                                  #                                                                      #
+                                  #        Date: February 1, 2003                                        #
+                                  #                                                                      #
+                                  #  Program ID: today_is.pl                                             #
+                                  #                                                                      #
+                                  #       Usage: today_is.pl -HThv [yyyymmdd]                            #
+                                  #                                                                      #
+                                  #                       -H = Displays full documentation.              #
+                                  #                       -T = Test operation to demo all.               #
+                                  #                       -h = Gives usage brief."                       #
+                                  #                       -v = Verbose output."                          #
+                                  #                 yyyymmdd = Optional date (overrides today's date)    #
+                                  #                                                                      #
+                                  #     Purpose: Provide example for Perl programs calling various       #
+                                  #              holiday and business day routines.  The routines        #
+                                  #              are presented in this program as local subroutines,     #
+                                  #              however, they all exist in our Perl user library as     #
+                                  #              macros (cross reference list follows).                  #
+                                  #                                                                      #
+                                  #                 Local Function             Perl User Macro           #
+                                  #                 ----------------------     ---------------------     #
+                                  #                 sub holiday_dates       =  <a href="Holiday_dates.pm"      target="_blank">Holiday_dates.pm</a>          #
+                                  #                 sub print_hash          =  <a href="print_hash.html"       target="_blank">Print_hash.pm</a>             #
+                                  #                 sub parse_program_ID    =  <a href="Parse_program_ID.pm"   target="_blank">Parse_program_ID.pm</a>       #
+                                  #                 sub show_documentation  =  <a href="Show_documentation.pm" target="_blank">Show_documentation.pm</a>     #
+                                  #                 sub validate_yyyymmdd   =  <a href="Validate_yyyymmdd.pm"  target="_blank">Validate_yyyymmdd.pm</a>      #
+                                  #                                                                      #
+                                  #     &gt; #------------------------------------------------------------# #
+                                  #     &gt; #  *  DO NOT REMOVE  *  DO NOT REMOVE  *  DO NOT REMOVE  *   # #
+                                  #     &gt; #------------------------------------------------------------# #
+                                  #     &gt; # This file contains values that allow any program to        # #
+                                  #     &gt; # calculate holidays using either fixed month and day or by  # #
+                                  #     &gt; # specifying an occurrence in a month like the 4th Thursday  # #
+                                  #     &gt; # in November or "last" Monday in May. Adjustments also are  # #
+                                  #     &gt; # permitted for those fixed holiday dates that fall on       # #
+                                  #     &gt; # weekends but are observed either the Friday before or the  # #
+                                  #     &gt; # Monday after, as well as days like the Friday after the    # #
+                                  #     &gt; # Thanksgiving Day observance (U.S.).                        # #
+                                  #     &gt; #                                                            # #
+                                  #     &gt; # Leading whitespace is ignored, as is everything following  # #
+                                  #     &gt; # and including the octothorpe (#-sign).                     # #
+                                  #     &gt; #                                                            # #
+                                  #     &gt; # Mm N.D.OnOrA Adj Holiday name            # Comments        # #
+                                  #     &gt; # -- --------- --- ----------------------- ----------------- # #
+                                  #     &gt;   01  1            New Year's              # M-F               #
+                                  #     &gt;   01  1        6-1 New Year's (pre-obs)    # Sat? Use Fri      #
+                                  #     &gt; # 01  1        6+2 New Year's (post-obs)   # Sat? Or Monday    #
+                                  #     &gt;   01  1        0+1 New Year's (post-obs)   # Sun? Use Mon      #
+                                  #     &gt;   01  3.1          M.L.King Jr. Birthday   # 3rd Mon in Jan    #
+                                  #     &gt;   05  last.1       Memorial Day            # Last Mon in May   #
+                                  #     &gt;   07  4            Independence            # M-F               #
+                                  #     &gt;   07  4        6-1 Independence (pre-obs)  # Sat? Use Fri      #
+                                  #     &gt;   07  4        0+1 Independence (post-obs) # Sun? Use Mon      #
+                                  #     &gt;   09  1.1          Labor Day               # 1st Mon in Sep    #
+                                  #     &gt;   11  4.4          Thanksgiving (US)       # 4th Thu in Nov    #
+                                  #     &gt;   11  4.4       +1 Thanksgiving Day II     # Fri after         #
+                                  #     &gt;   12 25            Christmas               # M-F               #
+                                  #     &gt;   12 25        6-1 Christmas (pre-obs)     # Sat? Use Fri      #
+                                  #     &gt;   12 25        0+1 Christmas (post-obs)    # Sun? Use Mon      #
+                                  #     &gt; #------------------------------------------------------------# #
+                                  #     &gt; # Unique dates.                                              # #
+                                  #     &gt; #------------------------------------------------------------# #
+                                  #     &gt; # 04  1.0.6        Falklands ST Beg  # 1st Sun on/after Apr 6  #
+                                  #     &gt; # 09  1.0.8        Falklands DST Beg # 1st Sun on/after Sep 8  #
+                                  #                                                                      #
+                                  #     Credits: $dd=1+($n-1)*7+($day-day_of_week("${yyyy}${mm}01"))%7;  #
+                                  #              and other like algorithms used here are based on those  #
+                                  #              found at http://www.smart.net/~mmontes/ushols.html#ALG  #
+                                  #              (Marcos J. Montes).  Montes credits Claus Tondering,    #
+                                  #              http://www.tondering.dk/claus/calendar.html for the     #
+                                  #              algorithm, and also Timothy Barmann and Bobby Cossum    #
+                                  #              for their contributions in simplifying his equations.   #
+                                  #                                                                      #
+                                  #  Exit Codes: Zero    = Normal   | Success                            #
+                                  #              Nonzero = Abnormal | Failure                            #
+                                  #                                                                      #
+                                  #      Modified: 2011-12-07 Bob Orlando                                #
+                                  #                   v1.9  * Ensure that code in nth() function handles #
+                                  #                           22nd-92nd suffix properly.  Previous code  #
+                                  #                           worked, but updated code works better.     #
+                                  #                                                                      #
+                                  #                2011-03-29 Bob Orlando                                #
+                                  #                   v1.8  * Added Print_hash.pm to documentation.      #
+                                  #                                                                      #
+                                  #                2007-06-01 Bob Orlando                                #
+                                  #                   v1.7  * Fix 23rd-93rd suffix errors in nth()       #
+                                  #                           function.                                  #
+                                  #                                                                      #
+                                  #----------------------------------------------------------------------#
+              </code>
+            </pre>
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              <a href="copyright.html">&copy;Copyright</a> Bob Orlando, 1999-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

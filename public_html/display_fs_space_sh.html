@@ -1,0 +1,199 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, display_fs_space.sh</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="display_fs_space, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, display_fs_space.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_display_fs_space_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              DFS_name="<b>DISPLAY_FS_SPACE</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$DFS_name\(\)\{$'`" != . ] &amp;&amp; DFS_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$DFS_name'[=\(]?/'`" != . ] &amp;&amp; DFS_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$DFS_name'[=\(]?/'`" != . ] &amp;&amp; DFS_loaded=1
+                 fi
+              fi
+              if [ 0${DFS_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>DISPLAY_FS_SPACE</b>() # Function documentation located at bottom.         #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -gt 0 ]; then
+                   DFS_capacity=`$AWK -v fs=$1 \
+                     'BEGIN \
+                      {
+                        #------------------------------#
+                        # Use appropriate "df" command.#
+                        #------------------------------#
+                        "/bin/uname -r 2&gt;&1" | getline os_rel
+                        close("/bin/uname -r 2&gt;&1")
+                        if (os_rel ~ /^(2\.)*5/) # Linix uses "2.2.5-nn"
+                          df_cmd="df -k"         # Solaris 2.x and newer
+                        else
+                          df_cmd="df -t 4.2"     # SunOS 4.x and older
+
+                        #------------------------------#
+                        # Display filesystem info.     #
+                        #------------------------------#
+                        while ("/bin/"df_cmd" "fs" 2&gt;&1" | getline kbytes)
+                        {
+                          close("/bin/"df_cmd" "fs)
+                          if (kbytes ~ /[0-9]%/)
+                          {
+                            n = split(kbytes,kb," ")
+                            if (kb[n] != fs)
+                              mounted_on = " (mounted on "kb[n]")"
+
+                            #------------------------------------------#
+                            # Isolate capacity and remove percent-sign.#
+                            #------------------------------------------#
+                            pct = kb[n-1]
+                            sub(/%/,"",pct)
+
+                            #------------------------------------------#
+                            # Print message and return percent full.   #
+                            #------------------------------------------#
+                            if (fs == "/")
+                            (fs == "/") ? fs = fs" (root) " : fs = fs
+                            print fs""mounted_on" is "pct"% full"
+                            exit pct # Exit with capacity percent
+                          }
+                        }
+                        exit 255 # If we reach this point, we failed.
+                      }'`
+                   DFS_status=$?
+
+                   if [ $DFS_status -lt 255 ]; then
+                      #----------------------------------------------------#
+                      # User can keep or discard this timestamped display. #
+                      #----------------------------------------------------#
+                      echo `date "+%Y-%m-%d %T"` $DFS_capacity
+                      return $DFS_status
+                   fi
+                fi
+
+                #------------------------------------------------------------#
+                # Reaching here means something is amiss.                    #
+                #------------------------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+                DFS_ID="$script_name($DFS_name)"
+
+                if [ $# -lt 1 ]; then
+                   EMAIL_MSG "ERROR (Function): $DFS_ID"                \
+                     "${sp}Insufficient args."                          \
+                     "${sp}Usage: $DFS_name filesystem (or directory)."
+                elif [ $DFS_status -lt 255 ]; then
+                   EMAIL_MSG "ERROR: $DFS_ID" \
+                     "${sp}Problem capturing filesystem space for '$1'."
+                else
+                   echo "ERROR"
+                fi
+
+                return 0
+              } # "DFS_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: display_fs_space.sh                                     #
+              #                                                                      #
+              #       Usage: DISPLAY_FS_SPACE file-system/directory                  #
+              #                                                                      #
+              #    Examples: 1) DISPLAY_FS_SPACE /usr &gt; /dev/null                    #
+              #                 echo "${sp}Filesystem capacity is $?%"               #
+              #              2) DISPLAY_FS_SPACE /usr/local                          #
+              #                 displays "/usr/local (mounted on /usr) is 86% full"  #
+              #                                                                      #
+              #     Purpose: Display filesystem capacity returning percentage free   #
+              #              in return status ($?).                                  #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "DFS_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: Exits with '0' for severe error (e.g. the user          #
+              #              supplies invalid arguments).  Otherwise returns         #
+              #              an integer for file system percentage full.  If the     #
+              #              filesystem is zero percent full, it is incumbant on     #
+              #              the user to check the echoed string for "ERROR" to      #
+              #              determine success of failure in this routine,           #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #                                                                      #
+              #       Notes: On successful completion, the function returns file     #
+              #              system percentage full.  It also echoes the message     #
+              #              "yyyy/mm/dd hh:mm:ss &lt;filesystem&gt; is nn% full".  It     #
+              #              is the responsibility of the caller to process, log,    #
+              #              or discard the message and return value as needed.      #
+              #              On failure, returns zero and the string "ERROR" is      #
+              #              echoed to stdout.                                       #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.8  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

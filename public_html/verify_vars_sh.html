@@ -1,0 +1,201 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, verify_vars.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="verify_vars.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, verify_vars.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_verify_vars_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              VV_name="<b>VERIFY_VARS</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$VV_name\(\)\{$'`" != . ] &amp;&amp; VV_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$VV_name'[=\(]?/'`" != . ] &amp;&amp; VV_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$VV_name'[=\(]?/'`" != . ] &amp;&amp; VV_loaded=1
+                 fi
+              fi
+              if [ 0${VV_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>VERIFY_VARS</b>() # Function documentation located at bottom.              #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                VV_ID="$script_name($VV_name)"
+
+                if [ $# -gt 0 ]; then
+                   #-----------------------------------------------------------------#
+                   # The trick here is to run the entire block of code in background #
+                   # (hence the beginning and end parentheses on separate lines).    #
+                   # Doing this allows us to use environmental variables (the only   #
+                   # ones nawk is capable of seeing) without affecting any that have #
+                   # identical names in foreground which might have the same names.  #
+                   #                                                                 #
+                   VV_errors=`( # Begin background operation.
+                      export $* # Export these dogs so nawk can examine them.
+                    #--------------------------------------------------------------#
+                    # FYI: If you want to sort the variables and eliminate dupes   #
+                    #      you can do the following:                               #
+                    # echo $*|awk "{for (n=1;n&lt;=NF;n++) print $n}"| sort | uniq \  #
+                    #  | $AWK "BEGIN { p = q = 0 } ... (ommitting the RS = "").    #
+                    #--------------------------------------------------------------#
+                      echo $* | $AWK -v sp="$sp" \
+                       'BEGIN { RS = " "; p = q = 0 } # Initialization
+
+                        #----------------------------------------------#
+                        # Action section runs through our variables    #
+                        # and assigns them to our var[] array.         #
+                        #----------------------------------------------#
+                        { var[++q] = $1 }
+
+                        #----------------------------------------------#
+                        # This is where we verify variable assignments.#
+                        #----------------------------------------------#
+                        END \
+                        { err_n = 0
+                          for (p=1; p&lt;=q; p++)
+                          {
+                            sub(/^[\n\r\t ]+/, "",ENVIRON[var[p]])
+                            gsub(/[\n\r\t ]+/," ",ENVIRON[var[p]])
+                            if (ENVIRON[var[p]] == "")
+                            {
+                              print sp"$"var[p]" is unassigned."
+                              err_n++
+                            }
+                          }
+                          exit err_n
+                        }'
+                   ) 2&gt;&1` # End of background export and nawk process.
+                   [ $? -eq 0 ] &amp;&amp; return 0
+                 #                                                                 #
+                 #-----------------------------------------------------------------#
+                fi
+
+                #------------------------------------------------------------#
+                # Reaching this point means that we either have insufficient #
+                # args or the nawk process uncovered an unassigned variable. #
+                #------------------------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh                 # Function dependencies
+                . $SHLIB/email_msg.sh            # Calls $SHLIB/exit.sh
+                . $SHLIB/write_err_to_syslogs.sh
+
+                VV_msg="$script_name terminated."
+                if [ $# -lt 1 ]; then
+                   VV_errors="Insufficient args!"
+                   VV_m1="Usage: $VV_name var ..."
+                   VV_m2="       NOTE: 'var' MUST NOT have a leading '$'."
+                   EMAIL_MSG "FATAL ERROR (Function): $VV_ID" \
+                     "${sp}$VV_errors"                        \
+                     "${sp}$VV_m1"                            \
+                     "${sp}$VV_m2"                            \
+                     "\n${sp}$VV_msg"
+                else
+                   EMAIL_MSG "FATAL ERROR: $VV_ID" \
+                     "${sp}$VV_errors"             \
+                     "${sp}$VV_msg"
+                fi
+
+                if [ ."${TERM}" = . ]; then
+                   WRITE_ERR_TO_SYSLOGS $syslog_emergency \
+                     "ABORT: $VV_ID $VV_errors $VV_msg"
+                fi
+
+                EXIT 1
+              } # "VV_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: October 30, 1997                                        #
+              #                                                                      #
+              #  Program ID: verify_vars.sh                                          #
+              #                                                                      #
+              #       Usage: VERIFY_VARS var ...                                     #
+              #                                                                      #
+              #                 Usually a list, 'var' is a critical variable name    #
+              #                 that we check to ensure it is assigned.              #
+              #                                                                      #
+              #     Purpose: Library function to verify the assignment of critical   #
+              #              process variables.  Because they are critical to the    #
+              #              operation of the process, finding any without           #
+              #              values, terminates the process.  (All the unassigned    #
+              #              variables are reported at that time.)                   #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "VV_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Exits with 1 (failure) for severe error (e.g. user      #
+              #              supplies an invalid argument) or if any of the          #
+              #              variables are unassigned.  Otherwise, returns 0         #
+              #              (success).                                              #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and WRITE_ERR_TO_SYSLOGS library functions.   #
+              #                                                                      #
+              #       Notes: ....................................................    #
+              #              ....................................................    #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.10 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.9  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

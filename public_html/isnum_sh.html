@@ -1,0 +1,140 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, isnum.sh</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="isnum.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, isnum.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1997-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_isnum_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              IN_name="<b>ISNUM</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$IN_name\(\)\{$'`" != . ] &amp;&amp; IN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$IN_name'[=\(]?/'`" != . ] &amp;&amp; IN_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$IN_name'[=\(]?/'`" != . ] &amp;&amp; IN_loaded=1
+                 fi
+              fi
+              if [ 0${IN_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>ISNUM</b>() # Function documentation located at bottom.                    #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -eq 1 ]; then
+                   $AWK 'BEGIN {exit (ARGV[1]~/^[\-+]*[0-9]+\.*[0-9]*$/)?1:0}' $1
+                   return $?
+                fi
+
+                #------------------------------------------------------------#
+                # Reaching here means something is amiss.                    #
+                #------------------------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                IN_ID="$script_name($IN_name)"
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                EMAIL_MSG "ERROR (Function) $IN_ID"                   \
+                  "${sp}Insufficient args.\n"                         \
+                  "${sp}Usage: $IN_name num"                          \
+                  "${sp}       Where 'num' is a string we're to test" \
+                  "${sp}          for numeric truth (signed or)"      \
+                  "${sp}          unsigned, integer or float).\n"
+                return 2
+              } # "IN_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: January 20, 1997                                        #
+              #                                                                      #
+              #  Program ID: isnum.sh                                                #
+              #                                                                      #
+              #       Usage: ISNUM number                                            #
+              #                                                                      #
+              #     Purpose: Determine if the value passed is numeric or no.         #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "IN_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Function error (e.g. user supplies invalid arguments)   #
+              #              return 2.  Otherwise returns true or false (1 or 0).    #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              #       Notes: Valid range is not limited to +2147483647 - -2147483647 #
+              #              because this routine only validates that the value      #
+              #              passed to us is made up of numerals and appropriate     #
+              #              characters (+, -, 0-9, and a decimal point.  To test    #
+              #              for float values within the range above, try something  #
+              #              like the following (my apologies in advance for         #
+              #              squeezing the example into the space provided--it does, #
+              #              however, still work):                                   #
+              #                                                                      #
+              #                $AWK 'BEGIN {                                         #
+              #                  exit ((sprintf("%g",ARGV[1])+0)==ARGV[1])?1:0}' $1  #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.8  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1997-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

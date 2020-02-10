@@ -1,0 +1,412 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, exit_on_process_conflicts.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="exit_on_process_conflicts.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, exit_on_process_conflicts.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_exit_on_process_conflicts_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              EPC_name="<b>EXIT_ON_PROCESS_CONFLICTS</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$EPC_name\(\)\{$'`" != . ] &amp;&amp; EPC_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$EPC_name'[=\(]?/'`" != . ] &amp;&amp; EPC_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$EPC_name'[=\(]?/'`" != . ] &amp;&amp; EPC_loaded=1
+                 fi
+              fi
+              if [ 0${EPC_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>EXIT_ON_PROCESS_CONFLICTS</b>() # Function documentation located at bottom #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh            # Calls $SHLIB/exit.sh
+                . $SHLIB/write_err_to_syslogs.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${yymmddhhmiss:=`date '+%y''%m%d%H''%M''%S'`}
+                : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`}
+                : ${sp:="                    "}
+                : ${dashes:="------------------------------------------------------"}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                EPC_ID="$script_name($EPC_name)"
+
+                #----------------------------#
+                # Parse any function options.#
+                #----------------------------#
+                EPC_option=0
+                EPC_opt_f=""
+                EPC_fileid=""
+                EPC_opt_l=0
+                EPC_opt_p=0
+                EPC_opt_t=0
+                EPC_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                EPC_tag="$logger_t" # within library defaults.sh.
+
+                EPC_root=$tmp/$name_root"_EPC_go_"$id_hex
+                EPC_err=$EPC_root"."$Xtimestamp
+                while getopts f:lp:t: EPC_opt 2&gt;&gt; $EPC_err
+                do
+                   case $EPC_opt in
+                      f ) EPC_opt_f="-f"
+                          EPC_fileid="$OPTARG"
+                          ;;
+                      l ) EPC_opt_l=1
+                          ;;
+                      p ) EPC_opt_p=1
+                          EPC_pri="$OPTARG"
+                          EPC_option=1
+                          ;;
+                      t ) EPC_opt_t=1
+                          EPC_tag="$OPTARG"
+                          EPC_option=1
+                          ;;
+                     \? ) echo "$EPC_ID" \
+                            "Invalid option: -`sed 's/^.*-- //' $EPC_err`" 1&gt;&2
+                          ;;
+                      * ) ;;
+                   esac
+                done
+                [ $EPC_option -ne 0 ] &amp;&amp; shift `expr $OPTIND - 1` # Shift past options to remaining args
+                [ ."$EPC_root" != . ] &amp;&amp; \rm -f $EPC_root* &gt; /dev/null 2&gt;&1
+
+                #----------------------------------------------------------------#
+                # Must reset this dog if this function is apt to be called again #
+                OPTIND=1  # (try and find this fact documented anywhere else).   #
+                #----------------------------------------------------------------#
+
+                #--------------------------------------------------------------------#
+                # Validate options and arguments.  Nawk returns nonzero on failure   #
+                # or zero if all is well.  If there is no problem, then EPC_programs.#
+                # will contain all the programs found in the contentions programs    #
+                # file (plus any added to the command line).  ELse, EPC_programs     #
+                # will have an error message followed by usage text.                 #
+                #--------------------------------------------------------------------#
+                EPC_procs=`$AWK -v sp="$sp"                       \
+                                    -v EPC_name="$EPC_name"       \
+                                    -v script_name="$script_name" \
+                  'BEGIN \
+                   {
+                     if (ARGC &lt; 2)
+                     {
+                       print sp"Insufficient args.\n"
+                       exit_usage()
+                     }
+
+                     if (ARGV[1] == "-f")
+                     {
+                       if (ARGC &gt; 2) # ARGV[0], 1, 2 = progname, -f, fileid
+                       {
+                         #----------------------------------------#
+                         # If file is specified, but missing ...  #
+                         #----------------------------------------#
+                         status = getline line &lt;ARGV[2]
+                         if (status == -1)
+                         {
+                           print sp"File option specified, but "ARGV[2],
+                            "\n"sp"is missing or non-existent.\n"
+                           exit_usage()
+                         }
+                         #----------------------------------------#
+                         # There is no problem if file is empty.  #
+                         #----------------------------------------#
+                         if (status == 0)
+                         {
+                           print sp""ARGV[2]" contains no contentious",
+                            "progcesses (which may or may not be normal)."
+                           exit 251
+                         }
+
+                         #------------------------------------------#
+                         # We should have one arg left, the fileid. #
+                         # If no, then fuss at the user and exit.   #
+                         # Else assign n (for use in ARGV[n].       #
+                         #------------------------------------------#
+                         shift      2
+                         n = ARGC - 2
+                         if (n &lt; 1)
+                         {
+                           print sp"Insufficient args after shift.\n"
+                           print sp"We were expecting a fileid.\n"
+                           exit_usage()
+                         }
+                         n = 3 # Point past filelist argument
+
+                         #------------------------------------------------#
+                         # The do-while allows us to print the first line #
+                         # (already read from the file list), then print  #
+                         # the remaining arguments.                       #
+                         #------------------------------------------------#
+                         do {
+                              sub(/#.*/,"",line)
+                              if (line !~ /^$/) printf("%s ",line) # No \n
+                            } while (getline line &lt;ARGV[2] &gt; 0)
+
+                         #------------------------------------------------#
+                         # In case the user also appended other processes #
+                         # (in addition to those specified in the file),  #
+                         # print them as well.                            #
+                         #------------------------------------------------#
+                         for (; n &lt; ARGC; n++)
+                           if (ARGV[n] !~ /^$/) printf("%s ",ARGV[n]) # No \n
+                         exit 0
+                       }
+                       else
+                       {
+                         print sp"File option specified, but fileid omitted!"
+                         exit_usage()
+                       }
+                     }
+                     else
+                     {
+                       #---------------------------------------------------#
+                       # -f option not specified, so the args must be a    #
+                       # list of contentions processes--so print each one. #
+                       #---------------------------------------------------#
+                       for (n = 1; n &lt; ARGC; n++)
+                         if (ARGV[n] !~ /^$/) printf("%s ",ARGV[n]) # No \n
+                       exit 0
+                     }
+                     #------------------------------------------------------#
+                     # Failsafe.  If we get here, I have an unknown error.  #
+                     #------------------------------------------------------#
+                     print sp"Unknown error "EPC_name"(awk)!"
+                     exit_usage()
+                   } # E.O.BEGIN
+
+                   #--------------------------------------------------------#
+                   function <b>exit_usage</b>()
+                   #--------------------------------------------------------#
+                   {
+                     print sp"Usage:   EPC_name [-l [-p priority] [-t tag]]"    ,
+                       "\n"sp"                  [-f fileid] process ...\n"      ,
+                       "\n"sp"         -l = Notify via logger command"          ,
+                       "\n"sp"              (default is false)"                 ,
+                       "\n"sp"         -p = logger priority string"             ,
+                       "\n"sp"              (default is \047user.err\047)"      ,
+                       "\n"sp"         -t = logger tag string"                  ,
+                       "\n"sp"              (default is \047$LOGNAME[$$]\047)"  ,
+                       "\n"sp"         -f indicates that the following fileid"  ,
+                       "\n"sp"            contains a list of contentious"       ,
+                       "\n"sp"            programs/processes.\n"                ,
+                       "\n"sp"           \047process ...\047 are process name(s) that",
+                       "\n"sp"            we\047re to test for (these may be in",
+                       "\n"sp"            addition to those contained in"       ,
+                       "\n"sp"            fileid).\n"                           ,
+                       "\n"sp"Purpose: Exit if contentious processes are found" ,
+                       "\n"sp"         running.\n"                              ,
+                       "\n"sp""script_name" terminated.\n"
+                     exit 252
+                   }' $EPC_opt_f $EPC_fileid "$@" 2&gt;&1`
+                EPC_status=$?
+
+                #--------------------------------------------------------------------#
+                # If status is 252, we have a problem, so fuss at the user and exit. #
+                #                                                                    #
+                # If status is 251, then there's really no problem (there simply are #
+                # no programs listed in the contentious programs file).              #
+                #                                                                    #
+                # If status is something other than zero, then possibly nawk has     #
+                # some other problem (we use 251 and 252 above in the hope of        #
+                # keeping our errors separate from nawk's).                          #
+                #                                                                    #
+                # Finally, if the status is zero we drop thru and check for          #
+                # processes running that match our list ($EPC_programs).             #
+                #--------------------------------------------------------------------#
+                if   [ $EPC_status -eq 252 ]; then
+                   EPC_errmsg="FATAL ERROR: $EPC_ID"
+                   EMAIL_MSG "$EPC_errmsg" \
+                     "$EPC_procs"
+                   if [ $EPC_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$EPC_pri" -t "$EPC_tag" \
+                        "'ABORT: $EPC_errmsg $EPC_procs'"
+                   fi
+                   EXIT 1
+                elif [ $EPC_status -eq 251 ]; then
+                   echo "$EPC_procs" | $teelog
+                   return 0 # No programs listed in contentious programs file.
+                elif [ $EPC_status -ne 0   ]; then
+                   EPC_errmsg="FATAL ERROR (Unknown): $EPC_ID"
+                   EMAIL_MSG "$EPC_errmsg"                                 \
+                     "${sp}Awk status=$EPC_status.  Awk's output follows:" \
+                     "${sp}$dashes"                                        \
+                     "$EPC_procs"                                          \
+                     "${sp}$dashes"
+                   if [ $EPC_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$EPC_pri" -t "$EPC_tag" \
+                        "$EPC_procs $EPC_procs"
+                   fi
+                   EXIT 1
+                fi
+
+                #------------------------------------------------------#
+                # Loop thru each arg, testing for each program (arg).  #
+                #------------------------------------------------------#
+                EPC_ps_line=`ps -eaf|$AWK -v procs="$EPC_procs" \
+                 'BEGIN \
+                  {
+                    proc_running=0 # Initially false
+                    n = split(procs,proc_array," ")
+                  }
+
+                  {                              #---------------------------#
+                    for (i=1; i &lt;= n; i++)       # For each line returned    #
+                    {                            # by "ps", we loop through  #
+                      proc = proc_array[i]       # our list of contentions   #
+                      vi   = "vi "proc           # processes, exiting as     #
+                      self = "awk -v procs="proc # soon as we discover even  #
+                      if ($0 ~ proc)             # even one.                 #
+                      {                          #---------------------------#
+                        gsub( /[\t ]+/," ",$0)   # Squeeze whitespace
+                        gsub(/^[\t ]+/,"", $0)   # Remove leading spaces
+                        if ($0 ~ vi || $0 ~ self) next # Check the next one.
+
+                        sub(proc_array[i],"=&gt;&gt; "proc_array[i]" &lt;&lt;=")
+                        proc_running = 1 # true
+                        exit # Leaves "action" section and goes to END
+                      }
+                    }
+                  }
+
+                  END \
+                  {
+                    print $0
+                    exit proc_running # true | false
+                  }' 2&gt;&1`
+
+                if [ $? -eq 1 ]; then
+                   EPC_errmsg="FATAL ERROR: $script_name"
+                   EPC_m1="Possible contention with the following process:"
+                   EPC_m2="$EPC_ps_line."
+                   EPC_m3="$script_name terminated."
+                   EMAIL_MSG "$EPC_errmsg" \
+                     "${sp}$EPC_m1"        \
+                     "${sp}$EPC_m2"        \
+                     "${sp}$EPC_m3"
+                   if [ $EPC_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$EPC_pri" -t "$EPC_tag" \
+                        "$EPC_errmsg $EPC_m1 $EPC_m2 $EPC_m3"
+                   fi
+                   EXIT 1
+                fi
+              } # "EPC_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: exit_on_process_conflicts.sh                            #
+              #                                                                      #
+              #       Usage: EXIT_ON_PROCESS_CONFLICTS [-l [-p priority] [-t tag]]   #
+              #                                        [-f fileid] process ...       #
+              #                                                                      #
+              #                           -l = Notify via logger command             #
+              #                                (default is false)                    #
+              #                           -p = logger priority string                #
+              #                                (default is "user.err")               #
+              #                           -t = logger tag string                     #
+              #                                (default is "$LOGNAME[$$]")           #
+              #                           -f = the fileid that follows contains      #
+              #                                a list of contentious programs.       #
+              #                                                                      #
+              #                           "process ..." are process name(s) that we  #
+              #                            are to test for (these may be in addition #
+              #                            to those contained in fileid).            #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede -p and -t.       #
+              #                                                                      #
+              #     Purpose: Query current processes (ps -eaf) reporting any         #
+              #              contentious processes that are currently running        #
+              #              (found in our argument list), and exiting if any are    #
+              #              found.  Edits (vi) of unqualified/unpathed programs     #
+              #              are not counted as running; however, edits of fully     #
+              #              qualified (pathed) process names are counted.           #
+              #              (This information is handy for shutting down those      #
+              #              processes which test for contentious programs.)         #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "EPC_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error, or on finding a        #
+              #              contentious program/process.                            #
+              #                                                                      #
+              #       Notes: Although error notification is via EMAIL_MSG library    #
+              #              function, the report of processes in contention is      #
+              #              displayed via stdout only.  It is up to the caller      #
+              #              to capture and use that output as needed.               #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.13 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.12 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

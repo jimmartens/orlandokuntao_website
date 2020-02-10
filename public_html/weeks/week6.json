@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Shell drill(elbow)",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Butcher knife Sombrada",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"PU Kilap 3 (SHBWC)",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"GR Shove from behind",
+          "starttime":"6:45" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Langka 1A, 3A, 5A (Silat method) (grind, cinch-n'shuffle)",
+          "starttime":""
+        }, 
+        {
+          "name":"1A",
+          "starttime":"6:00"
+        }, 
+        {
+          "name":"1A Application",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"3A",
+          "starttime":"6:25" 
+        },
+        {
+          "name":"3A Application",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"5A",
+          "starttime":"6:55" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"OR Kilap 1+",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Shell (elbow)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"Langka 1 Application",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"Butcher knife Sombrada",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"PU Kilap 3  (SHBWC)",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"GR Shove from behind",
+          "starttime":"11:25" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

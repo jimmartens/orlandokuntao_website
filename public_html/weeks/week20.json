@@ -1,0 +1,81 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Y-right, L/kick",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"Kilap Hands 8B+",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"BL Stiff Wrist Right",
+          "starttime":"6:40" 
+        },
+        {
+          "name":"GR Kick Combo #5",
+          "starttime":"6:55" 
+        },
+        {
+          "name":"Obverse front-kick groin (Kickee in R/lead)",
+          "starttime":"7:05" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Garrote cuarto (3-4)",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Escaping the mount",
+          "starttime":"6:20" 
+        },
+        {
+          "name":"GR Knife (Enam Matjn)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"Slow flow (baton-v-hand)",
+          "starttime":"6:40" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "events" :
+      [{
+          "name":"No class on Saturday or following Mon, Wed - Ron is out of town.",
+          "starttime":""          
+        }]      
+    }
+  ]
+}

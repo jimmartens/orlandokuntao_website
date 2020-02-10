@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <title>Epoch to UTC Time Conversion by Bob Orlando</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Bob Orlando's Epoch to UTC Time Conversion AWK Script">
+    <meta name="keywords"       lang="en" content="Epoch to UTC Time Conversion">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2006-2012, Bob Orlando">
+    <script language="JavaScript">var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="#800080" alink="blue" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_epoch_time.html';">
+    <table cellspacing="0" cellpadding="3" width="850" border="0" align="center">
+      <tr>
+        <td align="center">
+          <font face="Arial,Helvetica" size="-1">
+            &nbsp;
+            <hr size="1" noshade>
+            This program was featured online in UnixReview.com, <i>Shell Corner</i>, Hosted by Ed Schaefer, March 2007.
+            <hr size="1" noshade>
+          </font>
+        </td>
+      </tr>
+      <tr>
+        <td align="center">
+          <font face="Arial,Helvetica" size="-1">
+            <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a>
+            <br>&nbsp;
+          </font>
+        </td>
+      </tr>
+      <tr bgcolor="silver">
+        <td align="left">
+          <font face="Arial,Helvetica" size="+1">
+            <b>Epoch to UTC Time Conversion AWK Program</b><sub>&nbsp;</sub>
+            <br>by Bob Orlando
+          </font>
+        </td>
+      </tr>
+      <tr>
+        <td colSpan="2">
+          <font face="Arial,Helvetica">
+            &nbsp;<br>
+            <br><b>Unix Time</b>, from <i>Wikipedia, The Free Encyclopedia</i><p><blockquote>Unix time, or POSIX time, is a system for describing points in time: it is the number of seconds elapsed since midnight UTC on the morning of January 1, 1970, not counting leap seconds.&nbsp; It is widely used not only on Unix-like operating systems but in many other computing systems, including the Java programming language.</blockquote>
+            <p><b>Epoch (reference date)</b>, from <i>Wikipedia, The Free Encyclopedia</i><p><blockquote>In chronology, an epoch is an instant chosen as the origin of a particular time scale.&nbsp; The epoch serves as a reference point from which time is measured.&nbsp; Days, hours and other time units are counted from the epoch, so that the date and time of events can be specified.&nbsp; Events that took place earlier can be dated by counting negatively from the epoch.&nbsp; Epochs are generally chosen to be convenient or significant by a consensus of the time scale's initial users.</blockquote>
+            <p>My fascination with date algorithms brought me to Unix Epoch time calculations and later, conversions of such dates.&nbsp; At first, this was purely an academic study on my part, done over a really boring weekend.&nbsp; However, months later, it came in handy when I was charged with pruning timestamped logs--the timestamps were in Unix Epoch time format.
+            <p>You can find Epoch to UTC conversion routines online, and although it wouldn't be much help in converting thousands of log lines from Unix epoch time to UTC (Coordinated Universal Time), an online Unix time conversion tool was very helpful in validating the conversions that I came up with during development.&nbsp; ("Online Conversion--Unix time conversion" is available at: <a href="http://www.onlineconversion.com/unix_time.htm" target="_blank">http://www.onlineconversion.com/unix_time.htm</a>.)
+            <p>I chose AWK as my tool for its ease of use and its portability (OK, so "ease of use" is not one of its strong points <img src="images/face_smiley.gif" alt="Smiley face">). Some versions of AWK have a wrapper for the standard C strftime function to convert Unix Epoch time. For example, with Gawk (GNU Awk) you can use the following:
+            <p><font face="courier"><pre>
+                <b>gawk 'BEGIN{print strftime("%c",1144279759)}'</b>
+            </pre></font>
+            <p>This returns "Wed Apr 5 19:29:19 2006".&nbsp; A one-liner is available for such conversions if you're using Gawk, but that function is not available for all versions of AWK.&nbsp; That was enough for me.
+            <p>I've included two versions of the program: A <a href="epoch_time_barren.html">barren version</a> and a <a href="epoch_time_awk.html">fully-documented</a> version.&nbsp; The barren version is, as the term implies, barren.&nbsp; It has no blank lines nor comments.&nbsp; As such it is only 167 lines long.&nbsp; The fully documented and commented version is 329 lines (almost twice as long).&nbsp; I prefer that degree of documentation because I reuse so much code.&nbsp; I don't have time to analyze each program every time I want to use some of its code.&nbsp; Code reuse, by the way, is also why I put so much of the program into functions--again for code reusability.&nbsp; I'll provide examples of that here.
+            <p><b>Epoch_time.awk</b>
+            <p>As the documentation shows (located at the bottom of the script), the purpose of this script is to return either the current Unix Epoch time (ssssssssss) or to convert an Epoch seconds argument (seconds since January 1, 1970 00:00:00) into yyyymmddhhmiss datetime form -- or -- to convert yyyymmddhhmiss datetime argument into Unix Epoch seconds.&nbsp; By default, the script uses the host's time zone, but adjustments can be made via the time zone (-z) option.&nbsp; The optarg is specified in hours and may be specified negatively.
+            <p>Usage (also contained in the documentation) says to call the script as follows:
+            <p><font face="courier"><pre><p>   <b>[gn]awk -f epoch_time.awk -- -h -z [-]hh [yyyymmddhhmiss|ssssssssss]</b></pre></font>
+            <p>You can also use the shebang line method where the first line calls the gawk/nawk program (i.e.,&nbsp; <font face="courier">#!/usr/bin/nawk -f</font>).&nbsp; In which case the script may be called like this:
+            <p><font face="courier"><pre><p>   <b>epoch_time.awk -- -h -z [-]hh [yyyymmddhhmiss|ssssssssss]</b></pre></font>
+            <p>Regardless of how you call the script, the options are as follows:
+            <p><font face="courier"><pre>
+               --             = This option must come first for it tells Awk
+                                to pass on all options that follow to the script
+                                itself.
+               -h             = Help (usage brief)
+               -z [-]hh       = Timezone adjustment in hours
+               yyyymmddhhmiss = Converts UTC datetime to epoch seconds
+               ssssssssss     = Converts Epoch seconds to yyyymmddhhmiss datetime
+            </pre></font>
+            <p>Here are six examples:
+            <p><font face="courier"><pre>
+               Examples: 1. epoch_time.awk # No options or argument
+                         2. epoch_time.awk          1164718505
+                         3. epoch_time.awk          20061128125505
+                         4. epoch_time.awk -- -z  2 1164718505
+                         5. epoch_time.awk -- -z  2 20061128125505
+                         6. epoch_time.awk -- -z -2 1164718505
+
+               Displays: 1. 1164718505     # Current datetime to Epoch seconds
+                         2. 20061128125505 # Epoch seconds to yyyymmddhhmiss
+                         3. 1164718505     # yyyymmddhhmiss to epoch seconds
+                         4. 20061128145505 # Adjusted by 2 hour timezone
+                         5. 1164725705     # Adjusted by 2 hours
+                         6. 20061128105505 # Adjusted by -2 hours
+            </pre></font>
+            <p><b>epoch_sss_log_conversion.awk</b>
+            <p>To see how we can reuse so much of what we've already put together, let's take a look at epoch_sss_log_conversion.awk.&nbsp; This script takes a Nagios log, extracts its epoch time, and outputs log entries with UTC timestamps.&nbsp; You can do any number of things with the output from there.&nbsp; Here are a few input lines, followed by the converted output.
+            <p><font face="courier"><pre>
+               &lt;/nagios&gt; head /logs/nagios-02-02-2007-00.log
+               [1170306001] LOG ROTATION: DAILY
+               [1170306088] SERVICE ALERT: wxpden07;Load;WARNING;HARD;3;CPU Load (30 min. 91%)
+                  (60 min. 91%)
+               [1170306088] SERVICE NOTIFICATION: netcool;wxpden07;Load;WARNING;send-trap-service;
+                  CPU Load (30 min. 91%) (60 min. 91%)
+               [1170306089] SERVICE NOTIFICATION: intel_email;wxpden07;Load;WARNING;notify-by-email;
+                  CPU Load (30 min. 91%) (60 min. 91%)
+               [1170306303] SERVICE FLAPPING ALERT: wxpden66;DiskUsage_Q;STOPPED; Service appears to
+                  have stopped flapping (14.0% change &lt; 15.0% threshold)
+               [1170306513] SERVICE ALERT: wxpden72;DiskUsage_D;CRITICAL;HARD;3;Socket timeout after
+                  10 seconds
+
+               &lt;/nagios&gt; epoch_sss_log_conversion.awk /logs/nagios-02-02-2007-00.log | head
+               [2007-02-01 00:00:01] LOG ROTATION: DAILY
+               [2007-02-01 00:01:28] SERVICE ALERT: wxpden07;Load;WARNING;HARD;3;CPU Load (30 min.
+                  91%) (60 min. 91%)
+               [2007-02-01 00:01:28] SERVICE NOTIFICATION: netcool;wxpden07;Load;WARNING;
+                  send-trap-service;CPU Load (30 min. 91%) (60 min. 91%)
+               [2007-02-01 00:01:29] SERVICE NOTIFICATION: intel_email;wxpden07;Load;WARNING;
+                  notify-by-email;CPU Load (30 min. 91%) (60 min. 91%)
+               [2007-02-01 00:05:03] SERVICE FLAPPING ALERT: wxpden66;DiskUsage_Q;STOPPED; Service
+                  appears to have stopped flapping (14.0% change &lt; 15.0% threshold)
+               [2007-02-01 00:08:33] SERVICE ALERT: wxpden72;DiskUsage_D;CRITICAL;HARD;3;Socket
+                  timeout after 10 seconds
+            </pre></font>
+            <p>Of the seven functions in <a href="epoch_sss_log_conversion.awk" target="_blank">epoch_sss_log_conversion.awk</a>, six were taken directly from epoch_time.awk.
+            <p>
+            <font face="courier" size="+1">
+              <pre>
+             <a href="epoch_time_awk.html#basedate"         >basedate()</a>
+             <a href="epoch_time_awk.html#ddddd_to_yyyymmdd">ddddd_to_yyyymmdd()</a>
+             <a href="epoch_time_awk.html#julian_table"     >julian_table()</a>
+             <a href="epoch_time_awk.html#leap_year"        >leap_year()</a>
+             <a href="epoch_time_awk.html#reduce"           >reduce()</a>
+             <a href="epoch_time_awk.html#shift_ARGV"       >shift_ARGV()</a>
+              </pre>
+            </font>
+            What started out as a purely academic study on my own time, proved useful later--months later, to be sure, but it was useful nevertheless.
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 1 -->
+
+    &nbsp;<p><center><font face="Arial,Verdana" color="firebrick"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 2006-2012
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="firebrick">Last update:</font>
+<!-- Date --> Jan. 1, 2012<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 2 -->
+  </body>
+</html>

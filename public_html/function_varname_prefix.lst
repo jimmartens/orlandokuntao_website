@@ -1,0 +1,372 @@
+# @(#)function_varname_prefix.lst (Bourne shell library prefix list)
+
+              +----------------------------------------+
+              | The following list is in prefix order. |
+              +----------------------------------------+
+
+     69 functions (including internal functions) as of 08-11-2004
+
+Prefix  = Function Name                  Script Name
+-------   -----------------------------  -------------------------------
+CBD_    = COMPRESS_BY_DATE               compress_by_date.sh
+CD_     = CHDIR_EXIT_ERR                 chdir_exit_err.sh
+CDN_    = CHDIR_EXIT_ERR_NOMAIL          chdir_exit_err_nomail.sh
+CG_     = CHGRP_EXIT_ERR                 chgrp_exit_err.sh
+CGN_    = CHGRP_EXIT_ERR_NOMAIL          chgrp_exit_err_nomail.sh
+CM_     = CHMOD_EXIT_ERR                 chmod_exit_err.sh
+CMN_    = CHMOD_EXIT_ERR_NOMAIL          chmod_exit_err_nomail.sh
+CO_     = CHOWN_EXIT_ERR                 chown_exit_err.sh
+CON_    = CHOWN_EXIT_ERR_NOMAIL          chown_exit_err_nomail.sh
+CP_     = CP_EXIT_ERR                    cp_exit_err.sh
+CPN_    = CP_EXIT_ERR_NOMAIL             cp_exit_err_nomail.sh
+CPD_    = CP_DEV_NULL_EXIT_ERR           cp_dev_null_exit_err.sh
+CPDN_   = CP_DEV_NULL_EXIT_ERR_NOMAIL    cp_dev_null_exit_err_nomail.sh
+CTS_    = CHECK_TAPE_STATUS              check_tape_status.sh
+CWF_    = CLEANUP_WORK_FILES             cleanup_work_files.sh
+DFS_    = DISPLAY_FS_SPACE               display_fs_space.sh
+DFZ_    = DISPLAY_FS_SIZE                display_fs_size.sh
+DPL_    = DEBUG_PAUSE_LOOP               debug_pause_loop.sh
+EAR_    = EXIT_IF_ALREADY_RUNNING        exit_if_already_running.sh
+E_      = EXIT                           exit.sh
+EE_     = ECHO_EXEC                      echo_exec.sh
+EM_     = EMAIL_MSG                      email_msg.sh
+EEM_    = EM_ECHO_MSG                    email_msg.sh (INTERNAL)
+EPC_    = EXIT_ON_PROCESS_CONFLICTS      exit_on_process_conflicts.sh
+ET_     = ELAPSED_TIME                   elapsed_time.sh
+FNC_    = FORMAT_NUM_WITH_COMMAS         format_num_with_commas.sh
+FT_     = FRAME_TEXT                     frame_text.sh
+FTPH_   = FTP_HOST                       ftp_host.sh
+GFP_    = GET_FILE_PERMS                 get_file_perms.sh
+GFY_    = GET_FILE_YYMMDDHHMI            get_file_yymmddhhmi.sh
+GNY_    = GET_NEXT_YYYYMMDDHH            get_next_yyyymmddhh.sh
+GO_     = GET_OPTIONS                    get_options.sh
+GPY_    = GET_PREV_YYYYMMDDHH            get_prev_yyyymmddhh.sh
+II_     = ISINT                          isint.sh
+IN_     = ISNUM                          isnum.sh
+KPI_    = KILL_PID                       kill_pid.sh
+LY_     = LEAP_YEAR                      leap_year.sh
+M2N_    = MONTH_MMM_TO_NN                month_mmm_to_nn.sh
+ME_     = MKDIR_EXIT_ERR                 mkdir_exit_err.sh
+MEN_    = MKDIR_EXIT_ERR_NOMAIL          mkdir_exit_err_nomail.sh
+MN2M_   = MONTH_NN_TO_MMM                month_nn_to_mmm.sh
+MV_     = MV_EXIT_ERR                    mv_exit_err.sh
+MVN_    = MV_EXIT_ERR_NOMAIL             mv_exit_err_nomail.sh
+PF_     = PRUNE_FILES                    prune_files.sh
+PH_     = PING_HOST                      ping_host.sh
+PP_     = PARSE_PARAMETERS               parse_parameters.sh
+PSW_    = PS_AUXWW                       ps_auxww.sh
+PV_     = PRINT_VARS                     print_vars.sh
+PYN_    = PAUSE_Y_OR_N                   pause_y_or_n.sh
+RBD_    = REMOVE_BY_DATE                 remove_by_date.sh
+RDN_    = READ_NOECHO                    read_noecho.sh
+RK_     = READKEY                        readkey.sh
+RKN_    = READKEY_NOECHO                 readkey_noecho.sh
+RM_     = RM_EXIT_ERR                    rm_exit_err.sh
+RMN_    = RM_EXIT_ERR_NOMAIL             rm_exit_err_nomail.sh
+RNM_    = RANGE_NUMS                     range_nums.sh
+RV_     = RANGE_VALUES                   range_values.sh
+SD_     = SHOW_DOCUMENTATION             show_documentation.sh
+TE_     = TOUCH_EXIT_ERR                 touch_exit_err.sh
+TEN_    = TOUCH_EXIT_ERR_NOMAIL          touch_exit_err_nomail.sh
+TRM_    = TERMINATE                      terminate.sh
+TRS_    = TERMINATE_SUBPROCESSES         terminate_subprocesses.sh
+TRX_    = TRAP_EXIT                      trap_exit.sh
+VD_     = VALIDATE_DATE                  validate_date.sh
+VNV_    = VERIFY_NUM_VARS                verify_num_vars.sh
+VT_     = VALIDATE_TIME                  validate_time.sh
+VV_     = VERIFY_VARS                    verify_vars.sh
+WES_    = WRITE_ERR_TO_SYSLOGS           write_err_to_syslogs.sh
+WP_     = WAIT_ON_PROCESS                wait_on_process.sh
+
+  1. chdir_exit_err.sh
+       - Changes working directory to the specified directory,
+         reporting errors via email and logger, and exiting
+         on error.
+
+  2. chdir_exit_err_nomail.sh
+       - Changes working directory to specified directory,
+         reporting errors via stderr and exiting on error.
+
+  3. check_tape_status.sh
+       - Checks tape device status with error checking.
+
+  4. chgrp_exit_err.sh
+       - Changes group ownership of one or more files, reporting
+         errors via email and logger, and exiting on error.
+
+  5. chgrp_exit_err_nomail.sh
+       - Changes group ownership of one or more files, reporting
+         errors via stderr and logger, and exiting on error.
+
+  6. chmod_exit_err.sh
+       - Changes (mode) permissions on one or more files,
+         reporting errors via email and logger, and exiting
+         on error.
+
+  7. chmod_exit_err_nomail.sh
+       - Changes (mode) permissions on one or more files,
+         reporting errors via stderr and logger, and exiting
+         on error.
+
+  8. chown_exit_err.sh
+       - Change ownership on one or more files, reporting
+         errors via email and logger, and exiting on error.
+
+  9. chown_exit_err_nomail.sh
+       - Change ownership on one or more files, reporting
+         errors via stderr and logger, and exiting on error.
+
+ 10. cleanup_work_files.sh
+       - Clean up process work files with error checking,
+         reporting any problems via email.
+
+ 11. compress_by_date.sh
+       - Compresses files having yymmdd or yyyymmdd date
+         strings in their fileids that are older than a date
+         nn days old.
+
+ 12. cp_dev_null_exit_err.sh
+       - Copies /dev/null to one or more files with error
+         checking and reporting via email and logger, and
+         exiting on error.
+
+ 13. cp_dev_null_exit_err_nomail.sh
+       - Copies /dev/null to one or more files with error
+         checking and reporting via stderr and logger, and
+         exiting on error.
+
+ 14. cp_exit_err.sh
+       - Copies files/directories with error checking and
+         reporting and errors via email and logger, and
+         exiting on error.
+
+ 15. cp_exit_err_nomail.sh
+       - Copies files/directories with error checking and
+         reporting and errors via stderr and logger, and
+         exiting on error.
+
+ 16. debug_pause_loop.sh
+       - Provides a loop for debugging that executes commands
+         passed to it.
+
+ 17. defaults.sh
+       - Provides default assignments to critical shell library
+         variables that are unassigned by the user.
+
+ 18. display_fs_size.sh
+       - Displays filesystem sizes (total, used, and available)
+         in kbytes.
+
+ 19. display_fs_space.sh
+       - Displays filesystem capacity returning percentage free
+         in return status ($?).
+
+ 20. echo_exec.sh
+       - Echos and executes a command (script, executable,
+         whatever), sending any output to $stdout and $stderr
+         files.
+
+ 21. elapsed_time.sh
+       - Calculates process elapsed times.
+
+ 22. email_msg.sh
+       - Emails subject and message text supplied as arguments
+         to recipients previously assigned to $notify.
+
+ 23. exit.sh
+       - Exits with an (optional) exit status (validating it)
+         and with some basic housekeeping.
+
+ 24. exit_if_already_running.sh
+       - Exits if the current process is already running.
+
+ 25. exit_on_process_conflicts.sh
+       - Queries current processes (ps -eaf) reporting any
+         contentious processes that are currently running and
+         exiting if any are found.
+
+ 26. format_num_with_commas.sh
+       - Formats a given (unsigned) number with commas.
+
+ 27. frame_text.sh
+       - Frames a text string using using either default or
+         user-specified posts and lintel.
+
+ 28. ftp_host.sh
+       - Issues FTP commands on specified "host", checking for
+         common FTP errors, returning success status only when
+         no errors are found.
+
+ 29. get_file_perms.sh
+       - Returns a given file's octal (nnnn) permissions.
+
+ 30. get_file_yymmddhhmi.sh
+       - Returns a fileid's time stamp in yymmddhhmi format.
+
+ 31. get_next_yyyymmddhh.sh
+       - Gets the date and hour that follows the date and hour
+         (yyyymmddhh) passed to us.
+
+ 32. get_options.sh
+       - Processes basic command line options of -H and -h.
+
+ 33. get_prev_yyyymmddhh.sh
+       - Gets the date and hour preceding the date and hour
+         (yyyymmddhh) passed to us.
+
+ 34. isint.sh
+       - Determines if the value passed is an integer or no.
+
+ 35. isnum.sh
+       - Determinesif the value passed is numeric or no.
+
+ 36. kill_pid.sh
+       - Kills process ID with error checking and reporting.
+
+ 37. leap_year.sh
+       - Determine if the given year is leap year or no.
+
+ 38. mkdir_exit_err.sh
+       - Makes directories with error checking and reporting
+         via email and logger, and exiting on error.
+
+ 39. mkdir_exit_err_nomail.sh
+       - Makes directories with error checking and reporting
+         via stderr and logger, and exiting on error.
+
+ 40. month_mmm_to_nn.sh
+       - Converts abbreviated month name to a two-digit month
+         number.
+
+ 41. month_nn_to_mmm.sh
+       - Converts nn month number to three-character month
+         abbreviation.
+
+ 42. mv_exit_err.sh
+       - Moves files/directories with error checking and
+         reporting via email and logger, and exiting on error.
+
+ 43. mv_exit_err_nomail.sh
+       - Moves files/directories with error checking and
+         reporting via stderr and logger, and exiting on error.
+
+ 44. parse_parameters.sh
+       - Extracts tunable/variable program parameters from
+         a parameter file.
+
+ 45. pause_y_or_n.sh
+       - Prompts the user with "text string" and pause until he
+         answers yes or no.
+
+ 46. ping_host.sh
+       - Pings host up to 10 times using specified "seconds"
+         between ping.
+
+ 47. print_vars.sh
+       - Prints variables (both variable name and value) in a
+         neat tabular form.
+
+ 48. prune_files.sh
+       - Prunes files with [yy]yymmdd in the fileid to a given
+         number.
+
+ 49. ps_auxww.sh
+       - Uses UCB 'ps -auxww' to list processes in the process
+         queue, displaying those lines matching our ps target.
+
+ 50. range_nums.sh
+       - Converts numeric ranges, like 1-5, into individual
+         numbers.
+
+ 51. range_values.sh
+       - Converts alphanumeric ranges, like 1-5, s-x,, or I-A
+         into individual characters or numerals.
+
+ 52. read_noecho.sh
+       - Reads an unechoed string from the keyboard.
+
+ 53. readkey.sh
+       - Reads a single key from the keyboard without having to
+         press carriage return.
+
+ 54. readkey_noecho.sh
+       - Reads an unechoed single key from the keyboard without
+         having to press carriage return.
+
+ 55. remove_by_date.sh
+       - Removes files having yymmdd or yyyymmdd date strings
+         in their fileids that are older than a date nn days
+         old.
+
+ 56. rm_exit_err.sh
+       - Removes files with error checking and reporting via
+         email and logger, and exiting on error.
+
+ 57. rm_exit_err_nomail.sh
+       - Removes files with error checking and reporting via
+         stderr and logger, and exiting on error.
+
+ 58. show_documentation.sh
+       - Displays formal documentation section of the calling
+         script.
+
+ 59. terminate.sh
+       - Terminates any process (by PID) that runs longer than
+         the given time limit.
+
+ 60. terminate_subprocesses.sh
+       - Terminate all the current process' subprocesses.
+
+ 61. touch_exit_err.sh
+       - Touches one or more files, reporting any errors via
+         email and logger, and exiting on error.
+
+ 62. touch_exit_err_nomail.sh
+       - Touches one or more files, reporting any errors via
+         stderr and logger, and exiting on error.
+
+ 63. trap_exit.sh
+       - Gracefully exits on trapped signal.
+
+ 64. validate_date.sh
+       - Validates the given date given according to the
+         template provided along with it.
+
+ 65. validate_time.sh
+       - Validates the given time given according to the
+         template provided along with it.
+
+ 66. verify_num_vars.sh
+       - Verifies the assignment of critical numeric process
+         variables.
+
+ 67. verify_vars.sh
+       - Verifies the assignment of critical process variables.
+
+ 68. wait_on_process.sh
+       - Queries current processes, reporting and waiting on
+         those processes in our process list that are currently
+         running.
+
+ 69. write_err_to_syslogs.sh
+       - Writes error message to system log (var/adm/messages)
+         returning logger's exit status.
+
+
+Two other shell scripts are provided as part of this Unix Shell Library
+suite:
+
+     get_signals.sh
+       - Returns signal list (number or number"+"name) excluding
+         EXIT, SEGV, and CHLD or CLD signals.
+
+     example.sh
+       - Provides working example showing declaration and use
+         of all library functions, local user functions, et al.
+         Example.sh also calls the following:
+
+            /usr/local/bin/holidays.awk
+            /usr/local/bin/holidays
+            /usr/local/bin/dateplus
+            /usr/local/scripts/dateplus.awk
+

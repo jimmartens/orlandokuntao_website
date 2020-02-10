@@ -1,0 +1,122 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        },
+        {
+          "name":"Defensive back kick",
+          "starttime":"6:00" 
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"6:15" 
+        },
+        {
+          "name":"BR Round-kick defense (Muslim Woman)",
+          "starttime":"6:35" 
+        },
+        {
+          "name":"Bag uppercuts",
+          "starttime":"6:50" 
+        },
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Doors Open",
+          "starttime":"5:30"          
+        }, 
+        {
+          "name":"Tres estrellas",
+          "starttime":"6:00"
+        },
+        {
+          "name":"Principle: Seating",
+          "starttime":"" 
+        },
+        {
+          "name":"Kilap 8A (strike-left)",
+          "starttime":"6:10" 
+        },
+        {
+          "name":"Kilap 4 (BL & Fwd)",
+          "starttime":"6:30" 
+        },
+        {
+          "name":"BB Pinned to the wall (kuntao)",
+          "starttime":"6:50" 
+        },      
+        {
+          "name":"Sit up's/stretching",
+          "starttime":"7:10"          
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"7:30"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Enam Matjan",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"Langka 2B (Smsh-n'shufl)",
+          "starttime":"10:00"
+        },
+        {
+          "name":"Tres estrellas",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"PU Kilap 5",
+          "starttime":"10:40" 
+        },
+        {
+          "name":"BR Round-kick defense",
+          "starttime":"10:50" 
+        },
+        {
+          "name":"Kilap 8A (strike-left)",
+          "starttime":"11:00" 
+        },
+        {
+          "name":"BB Pinned to wall",
+          "starttime":"11:10" 
+        },
+        {
+          "name":"Bag uppercuts",
+          "starttime":"11:20" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

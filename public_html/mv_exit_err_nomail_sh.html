@@ -1,0 +1,280 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, mv_exit_err_nomail.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="mv_exit_err_nomail.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, mv_exit_err_nomail.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1999-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_mv_exit_err_nomail_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              MVN_name="<b>MV_EXIT_ERR_NOMAIL</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$MVN_name\(\)\{$'`" != . ] &amp;&amp; MVN_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$MVN_name'[=\(]?/'`" != . ] &amp;&amp; MVN_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$MVN_name'[=\(]?/'`" != . ] &amp;&amp; MVN_loaded=1
+                 fi
+              fi
+              if [ 0${MVN_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>MV_EXIT_ERR_NOMAIL</b>() # Function documentation located at bottom.       #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh
+
+                #--------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.  #
+                #--------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                MVN_ID="$script_name($MVN_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                MVN_options="Slpt"
+                MVN_opt_S=0 # Use sudo for mv
+                MVN_opt_l=0
+                MVN_opt_p=0
+                MVN_opt_t=0
+                MVN_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                MVN_tag="$logger_t" # within library defaults.sh.
+                MVN_opts="-f"
+                MVN_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   MVN_n=`expr "$1". : '-.*'`
+                   if [ $MVN_n -gt 0 ]; then
+                      if [ $MVN_n -eq 2 ]; then
+                         MVN_optargs="$1"
+                      else
+                         MVN_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for MVN_optarg in $MVN_optargs
+                      do
+                         case $MVN_optarg in
+                           -S ) MVN_opt_S=1
+                                ;;
+                           -l ) MVN_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $MVN_opt_l -eq 1 -a $MVN_opt_p -eq 0 ]; then
+                                   MVN_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$MVN_options']'` != "--" ]; then
+                                      MVN_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   MVN_opts="$MVN_opts $MVN_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $MVN_opt_l -eq 1 -a $MVN_opt_t -eq 0 ]; then
+                                   MVN_opt_t=1
+                                   MVN_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$MVN_options']'` != "--" ]; then
+                                      MVN_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   MVN_opts="$MVN_opts $MVN_optarg"
+                                fi
+                                ;;
+                           -f ) # Do nothing, we already use this "force" option.
+                                ;;
+                         esac
+                      done # MVN_optarg in $MVN_optargs
+                   else
+                      [ ."$MVN_args" != . ]        \
+                        &amp;&amp; MVN_args="$MVN_args|$1" \
+                        || MVN_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                MVN_opts=`expr "$MVN_opts" : ' *\(.*\)'` # Strip leading blanks
+                MVN_args=`expr "$MVN_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #----------------------------------------------------------------#
+                # If we have sufficient args, then attempt our mv command.       #
+                #----------------------------------------------------------------#
+                MVN_status=0
+                [ $MVN_opt_S -eq 0 ] &amp;&amp; MVN_cmd="mv $MVN_opts" || MVN_cmd="sudo mv $MVN_opts"
+
+                if [ ."$MVN_args" != . ]; then
+                   MVN_fr=`expr "$MVN_args" : '\(.*\)\|.*`
+                   MVN_to=`expr "$MVN_args" : '.*\|\(.*\)`
+                   echo "`date '+%Y-%m-%d %T'`" \
+                              "$MVN_cmd \"$MVN_fr\" \"$MVN_to\"" | $teelog
+                   MVN_stderr=`$MVN_cmd  "$MVN_fr"   "$MVN_to" 2&gt;&1`
+                   MVN_status=$?
+                   [ $MVN_status -eq 0 ] &amp;&amp; return 0
+
+                   MVN_m1="'$MVN_cmd \"$MVN_fr\" \"$MVN_to\"'"
+                   MVN_m2="ERROR=$MVN_stderr"
+                   MVN_m3="$script_name terminated."
+                   echo "`date '+%Y-%m-%d %T'` FATAL ERROR: $MVN_ID" 1&gt;&2
+                   echo "${sp}$MVN_m1"                               1&gt;&2
+                   echo "${sp}$MVN_m2"                               1&gt;&2
+                   echo "${sp}$MVN_m3"                               1&gt;&2
+                   if [ $MVN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                      WRITE_ERR_TO_SYSLOGS -p "$MVN_pri" -t "$MVN_tag" \
+                        "ABORT: $MVN_ID $MVN_m1 $MVN_m2 $MVN_m3"
+                   fi
+                   EXIT 1
+                fi
+
+                #----------------------------------------------------------------#
+                # Reaching this point means we have an insufficient args error.  #
+                #----------------------------------------------------------------#
+                MVN_m1="Insufficient args."
+                MVN_m2="$script_name terminated."
+                echo "`date '+%Y-%m-%d %T'` FATAL ERROR (Function): $MVN_ID"        1&gt;&2
+                echo "${sp}$MVN_m1\n"                                               1&gt;&2
+                echo "${sp}Usage: $MVN_name -l -p priority -t tag"                  1&gt;&2
+                echo "${sp}                      [mv-options] source destination\n" 1&gt;&2
+                echo "${sp}                 -S = Use sudo to perform mv.\n"         1&gt;&2
+                echo "${sp}                 -l = Notify via logger command"         1&gt;&2
+                echo "${sp}                      (default is false)"                1&gt;&2
+                echo "${sp}                 -p = Logger priority string"            1&gt;&2
+                echo "${sp}                      (default is 'user.err')"           1&gt;&2
+                echo "${sp}                 -t = Logger tag string"                 1&gt;&2
+                echo "${sp}                      (default is '$LOGNAME[$$]')\n"     1&gt;&2
+                echo "${sp}Option notes: Option (-l) MUST precede -p and -t."       1&gt;&2
+                echo "${sp}              'mv-options' MUST follow function"         1&gt;&2
+                echo "${sp}               options."                                 1&gt;&2
+                echo "${sp}$MVN_m2"                                                 1&gt;&2
+                if [ $MVN_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$MVN_pri" -t "$MVN_tag" \
+                     "ABORT: $MVN_ID $MVN_m1 $MVN_m2"
+                fi
+
+                EXIT 1
+              } # "MVN_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: October 19, 1999                                        #
+              #                                                                      #
+              #  Program ID: mv_exit_err_nomail.sh                                   #
+              #                                                                      #
+              #       Usage: MV_EXIT_ERR_NOMAIL -S [-l [-p priority] [-t tag]]  \    #
+              #                                     [mv-options] source destination  #
+              #                                                                      #
+              #                                 -S = Use sudo to perform mv.         #
+              #                                                                      #
+              #                                 -l = Notify via logger command       #
+              #                                      (default is false)              #
+              #                                 -p = logger priority string          #
+              #                                      (default is "user.err")         #
+              #                                 -t = logger tag string               #
+              #                                      (default is "$LOGNAME[$$]")     #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede -p and -t.       #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Move files/directories with error checking and          #
+              #              reporting via stderr  and logger, and exiting on error. #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              mv command beyond automatic notification/logging        #
+              #              before exiting on error.  Notification is provided      #
+              #              via echoes thru stderr.  Optionally (-l), the user may  #
+              #              have the error logged in syslogs (/var/adm/messages)    #
+              #              via logger command.  Logger -p and -t options and       #
+              #              option arguments also may be passed (both have defaults #
+              #              if omitted).                                            #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "MVN_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EXIT library function and, optionally,                  #
+              #              WRITE_ERR_TO_SYSLOGS as directed.                       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while moving a file is potentially a          #
+              #              show stopper.  Else returns 0.                          #
+              #                                                                      #
+              #       Notes: .....................................................   #
+              #              .....................................................   #
+              #                                                                      #
+              #    Modified: 2004-07-28 Bob Orlando                                  #
+              #                 v1.15 * Add sudo (-S) option.                        #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1999-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

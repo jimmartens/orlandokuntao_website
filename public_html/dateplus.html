@@ -1,0 +1,616 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Dateplus (C and Awk Programs) by Bob Orlando</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Dateplus (C and Awk Programs) by Bob Orlando">
+    <meta name="keywords"       lang="en" content="Dateplus C AWK adjusted date program adjusting increment decrement">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1995-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="#800080" alink="firebrick" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_dateplus.html';">
+    <div align="justify" style="font-family:Arial,Verdana; font-size: 12pt">
+      <table align="center" border="0" width="725" cellspacing="0" cellpadding="3"> <!-- Table 1 -->
+        <tr>
+          <td align="center">
+            &nbsp;<hr size="-1" noshade>
+            <small>Dateplus featured online in UnixReview.com, <i>Shell Corner</i>, March 2004.</small>
+            <hr size="-1" noshade>
+          </td>
+        </tr>
+        <tr>
+          <td align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a>
+              <br>&nbsp;
+            </font>
+          </td>
+        </tr>
+        <tr bgcolor="silver">
+          <td align="left">
+            <font size="+1">
+              <b>Dateplus: Dates Incremented, Decremented, Repeated, Et al.
+              <br><i>(C and AWK methods)</i></b><sub>&nbsp;</sub>
+              <br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+        <tr>
+          <td align="justify">
+            &nbsp;<br>
+            <br>Although anything but a mathematician, I've always been fascinated by date routines.&nbsp;
+              That fascination, coupled with the frenzied push at the end of the last century to make everything
+              Y2K-compliant, prompted me to make a brief foray into "C" programming and develop some useful date
+              routines.&nbsp; My objective was not to develop libraries or functions that could be easily
+              incorporated into other "C" programs--there are plenty of "C" date libraries out there already.&nbsp;
+              Rather, my objective was to develop a standalone, highly portable program that returned a variety of
+              frequently requested and adjusted dates, suitable for Bourne shell scripts.
+            <p>Bourne shell scripts were my target primarily because in our shop, batch production scripts were
+              written in Bourne.&nbsp; The policy was Korn for interactive use; Bourne for batch.&nbsp;
+              Besides, anything written in Bourne runs in Korn shell and practically any other shell as well.&nbsp;
+              Korn has many fine date tools and features ($SECONDS is one of which I am particularly fond for
+              calculating process elapsed time), but those capabilities are not available in the Bourne shell.&nbsp;
+              Hence, <a href="dateplus_c.html">dateplus.c</a> was <i>Bourne</i>
+              <img src="images/face_smiley.gif" alt="Smiley face">.&nbsp; <i>(See&nbsp;
+              <b><a href="holidays.html">Holiday</a></b>&nbsp;
+              Perl and Awk programs for easy ways to handle holidays as well as calculate nth business days.)</i>
+            <p>Date arithmetic in Unix is, at best, an inconsistent mess.&nbsp; There are myriad methods in Awk,
+              Perl, TCL, etc., for manipulating dates in Unix.&nbsp; Over time, I've developed, collected, and codified
+              "C" techniques into a single, portable utility called dateplus (about 600 lines of "C" code).&nbsp;
+              No special libraries are required for dateplus making it basically a compile and go, off the shelf tool
+              that runs anywhere an ANSI "C" compiler is available.
+              <br>&nbsp;
+
+            <h3>Dateplus Usage and Options</h3>
+              Here are the supported options (together with non-trivial examples):
+            <table cellspacing="0" cellpadding="7" border="0" align="left"> <!-- Table 1a -->
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-b</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Basedate of today (or date specified) since Jan. 1, 0001.<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a1 -->
+                    <tr>
+                      <td align="left"  valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -b 20030818</font> &nbsp;
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        731445
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a1 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-h</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Usage brief or help.
+                  <br>
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-H</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Full documentation including history with a brief,
+                  <br>two-paragraph discussion of the Gregorian correction
+                  <br>to the Julian calendar made in 1582 and universally
+                  <br>adopted in 1752.
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-J</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Julian (yyyyJJJ) to Gregorian (yyyymmdd).<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a2 -->
+                    <tr>
+                      <td align="left"  valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -J 2003230</font></td></tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        20030818
+                      </td>
+                    </tr>
+                  </table> <!-- E.O. Table 1a2 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-j</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Julian day (ddd) for today or yyyymmdd.<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a3 -->
+                    <tr>
+                      <td align="left"  valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -j 20030818</font>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        230
+                      </td>
+                    </tr>
+                  </table> <!-- E.O. Table 1a3 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-s</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Days 'since' (or until) yyyymmdd.<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a4 -->
+                    <tr>
+                      <td align="left"  valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -s 20000101</font> &nbsp; <i>(run Aug. 19, 2003)</i>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        1326 &nbsp; <i>(number of days since Y2K)</i><sub>&nbsp;</sub>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -s 20040819</font> &nbsp; <i>(run Aug. 19, 2003)</i>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        -366 &nbsp; &nbsp;<i>(number of days until Aug. 19, 2004)</i>
+                      </td>
+                    </tr>
+                  </table> <!-- E.O. Table 1a4 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-S</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Unsigned days until (or since) yyyymmdd.<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a5 -->
+                    <tr>
+                      <td align="left"  valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -S 20040819</font> &nbsp; <i>(run Aug. 19, 2003)</i>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left"  valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">366 &nbsp; &nbsp;<i>(number of days until Aug. 19, 2004)</i>
+                      </td>
+                    </tr>
+                  </table> <!-- E.O. Table 1a5 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-t</font> &nbsp;
+                </td>
+                <td align="left" valign="top">Tomorrow's date.</td></tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-u</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Basedate of today (or date specified) since Jan. 1, 1970 (Unix epoch date).<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a6 -->
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -u 20030819</font>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        12283&nbsp; <i>(suitable for 'lastchg' field in password shadow file)</i>
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a6 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-W</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Date's weekday (long name).<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a7 -->
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        dateplus -W 17760704
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        Thursday
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a7 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-w</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Date's weekday (abbreviated).<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a8 -->
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -w 17760704</font>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        Thu
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a8 -->
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">-y</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Yesterday's date.
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top" width="15%">
+                  <font face="courier" size="+1">[-+]days</font> &nbsp;
+                </td>
+                <td align="left" valign="top">
+                  Adjust by +|- nn days.<sub>&nbsp;</sub>
+                  <br>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a9 -->
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -2</font> &nbsp; <i>(Day before yesterday)</i>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus +2</font> &nbsp; <i>(Day after tomorrow)</i>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -1 20030101</font>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        20021231
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Example: &nbsp;
+                      </td>
+                      <td align="left" valign="top">
+                        <font face="courier" size="+1">dateplus -60 20030801</font>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" valign="top">
+                        Result:
+                      </td>
+                      <td align="left" valign="top">
+                        20030602
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a9 -->
+                </td>
+              </tr>
+              <tr valign="top" align="left">
+                <td colSpan="2">
+                  &nbsp;<br><b>To adjust days with iterations (i.e. paydays).</b>
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top">&nbsp;
+                </td>
+                <td>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a10 -->
+                    <tr>
+                      <td>
+                        <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a10a -->
+                          <tr>
+                            <td align="left" valign="top">
+                              Example: &nbsp;
+                            </td>
+                            <td align="left" valign="top">
+                              <font face="courier" size="+1">dateplus +14 20021231 26</font>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="left" valign="top">
+                               Result:
+                            </td>
+                            <td align="left" valign="top">
+                                  20030114
+                              <br>20030211
+                              <br>20030225
+                              <br>20030311
+                              <br>20030325
+                              <br><b>.&nbsp; .&nbsp; .
+                              <br>.&nbsp; .
+                              <br>.</b>
+                              <br>20031202
+                              <br>20031216
+                              <br>20031230
+                              <br>&nbsp;
+                            </td>
+                          </tr>
+                        </table> <!-- E.O.Table 1a10a -->
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        You can use the same method&nbsp; (i.e.&nbsp;
+                        <font face="courier">dateplus&nbsp;+7&nbsp;yyyymmdd&nbsp;nn</font>)
+                        <br>to list, for example, nn Mondays beginning with yyyymmdd.
+                        <br>&nbsp;
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a10 -->
+                </td>
+              </tr>
+              <tr valign="top" align="left">
+                <td colSpan="2">
+                  <b>To return 10 days' dates (days 70-60 days) before Aug. 1.</b>
+                </td>
+              </tr>
+              <tr>
+                <td align="right" valign="top">
+                  <font face="courier" size="+1">&nbsp; &nbsp; &nbsp; &nbsp;</font>
+                </td>
+                <td>
+                  <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a11 -->
+                    <tr>
+                      <td>
+                        <table cellspacing="0" cellpadding="0" border="0" align="left"> <!-- Table 1a11a -->
+                          <tr>
+                            <td align="left" valign="top">
+                              Example: &nbsp;
+                            </td>
+                            <td align="left" valign="top">
+                              <font face="courier" size="+1">dateplus -1 `dateplus -60 20030801` 10</font>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="left" valign="top">
+                              Result:
+                            </td>
+                            <td align="left" valign="top">
+                                  20030601
+                              <br>20030531
+                              <br>20030530
+                              <br>20030529
+                              <br>20030528
+                              <br>20030527
+                              <br>20030526
+                              <br>20030525
+                              <br>20030524
+                              <br>20030523
+                              <br>&nbsp;
+                            </td>
+                          </tr>
+                        </table> <!-- E.O.Table 1a11a -->
+                      </td>
+                    </tr>
+                  </table> <!-- E.O.Table 1a11 -->
+                </td>
+              </tr>
+            </table> <!-- E.O. Table 1a -->
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+
+      <table align="center" border="0" width="725" cellspacing="1" cellpadding="1"> <!-- Table 2 -->
+        <tr>
+          <td align="justify">
+            For all options except weekday (-w), success is in indicated with a zero exit atatus.&nbsp; Nonzero indicates failure.&nbsp; With the weekday option, success returns an exit status of 0-6 (zero-based weekdays with Sunday being zero).&nbsp; Any other status indicates failure.
+            <p>The strength of dateplus is that most of the options support any properly formatted date--not just today.&nbsp; I use dateplus for all of my date arithmetic needs in shell programming.&nbsp; I've run dateplus on Solaris 5-9, Red Hat Linux 8, SCO Open Server V, and Windows 9x through XP.
+            <p>Dateplus comes with its own built-in usage brief (-h) and complete online documentation (-H).&nbsp; The documentation display is some 120 lines long so you may want to page it (pipe it through "more").
+            <p>For all practical purposes, any date the user wishes to use as a yyyymmdd (from 01-01-0001 through 12-31-9999) is accepted.&nbsp; The resultant date is returned via stdout in yyyymmdd form.&nbsp; The program is especially useful for calculating yesterday's, tomorrow's, or any other desired date.&nbsp; Additionally, by specifying an iteration value (the last argument) the program generates that number of dates, each adjusted on the previous date (handy for calculating paydays and the like).&nbsp; Because the program writes to stdout, its output is easily redirected to a file where the results can be subsequently edited or munged as needed.&nbsp; The program also comes with help options (-h and -H for summary and detailed outputs, respectively).<br>&nbsp;
+
+            <h3>History</h3>
+              The Gregorian correction to the Julian calendar made in October, 1582 dropped 10 days.&nbsp; That is, October 4, 1582 was followed immediately by October 15.&nbsp; This papal correction, although scientifically correct, was not adopted by non-Catholic countries until almost two centuries later in 1752.&nbsp; In September, 1752 the English calendar was adjusted to Pope Gregory's method of correction and 11 days were dropped (September 14, followed September 2).<p>While this routine easily calculates the date that far back, it does not drop October 5-14, 1582 or September 3-13, 1752.&nbsp; If this routine is used to calculate dates that far back, the previously adjusted and dropped dates will appear as if no calendar corrections were ever made.&nbsp; Neither does dateplus address the calendar adjustment that will likely happen around the year 4000&nbsp;A.D.&nbsp; Those technical purists who will be around then can handle that <img src="images/face_smiley.gif" alt="Smiley face">.&nbsp; Since most real world applications don't come anywhere near those extremes, dateplus' accuracy is sufficient for most.<br>&nbsp;
+
+            <h3>Testing</h3>
+              To test the numerous dateplus options, simply run the following commands (or put them into a script):
+            <pre>
+              <code>
+      Command line               Returns
+      ------------------------   ---------------------
+      dateplus -t                Tomorrow's yyyymmdd
+      dateplus +2                Day after tomorrow
+      dateplus -y                Yesterday's yyyymmdd
+      dateplus -2                Day before yesterday
+      dateplus +14 20021231 26   Biweekly paydays for 2003
+      dateplus -b                Today's base date
+                                  (days since Jan. 1, 0001)
+      dateplus -b 20000101       Basedate for Jan. 1, 2000
+                                  (days since Jan. 1, 0001)
+      dateplus -u                Today's Unix epoch base date
+                                  (days since Jan. 1, 1970)
+      dateplus -u 20000101       Basedate for Jan. 1, 2000
+                                  (days since Jan. 1, 1970)
+      dateplus -s 19441026       Days since Oct. 26, 1944
+      dateplus -s 20141026       Days until Oct. 26, 2014 (signed result)
+      dateplus -S 20141026       Days until Oct. 26, 2014 (unsigned result)
+      dateplus -W 19991231       Day of week (long name),   Dec. 31, 1999
+      dateplus -w 19991231       Day of week (abbreviated), Dec. 31, 1999
+      dateplus -j 19441026       300 (ddd) for Oct. 26, 1944
+      dateplus -J 1944300        yyyymmdd for 1944300 Julian
+      dateplus -h                Usage brief (help)
+      dateplus -H | more         Full Documentation (HELP)
+              </code>
+            </pre>
+            Doubtless, there are more efficient, date routines out there.&nbsp; But portability and ease of use
+            were my only goals, and dateplus meets them.&nbsp; Dateplus is as portable as ANSI "C", which means
+            it produces the same results in practically any operating system:  Unix, Windows, you name it.&nbsp;
+            It's also easy to use.&nbsp; Standard libraries are all you need--just compile and go.<br>&nbsp;
+
+            <h3>AWK Version</h3>
+            Having worked in shops where access to "C" was frowned upon, I&nbsp;developed an AWK version of this
+            same program, <a href="dateplus_awk.html">dateplus.awk</a>.&nbsp; It offers all but
+            the little-used Julian to Gregorian date conversion (-J) option, and iterations argument functionality
+            (iterations are easily handled using a simple shell loop).&nbsp; For example, the following shell code
+            prints the next 26 paydays following December 31, 2003.
+            <pre>
+              <code>
+      payday="20031231"
+      paydays=""
+      for n in . . . . . . . . . . . . . . . . . . . . . . . . . 26
+      do
+         payday="`dateplus.awk -- +14 $payday`"
+         paydays="$paydays\n$payday"
+      done
+      echo "Pay Days: $paydays"
+              </code>
+            </pre>
+            The "C" program is roughly 3 times faster than the Awk script, but the results are the same.&nbsp;
+            Also, if your OS recognizes the '<font face="courier">#!</font>' (she-bang) syntax, you can place a&nbsp;
+            '<font face="courier">#!/usr/bin/nawk -f</font>'&nbsp; (or gawk) at the start of this program thereby
+            skipping the&nbsp; '<font face="courier">nawk -f</font>'&nbsp; during invocation.&nbsp; It doesn't speed
+            it up any, but running
+            <br><img src="images/b.gif" alt="" align="top" width="50" height="25" border="0">'<font face="courier">dateplus.awk&nbsp;--&nbsp;+14</font>'
+            <br>just looks cleaner than
+            <br><img src="images/b.gif" alt="" align="top" width="50" height="25" border="0">'<font face="courier">nawk&nbsp;-f&nbsp;dateplus.awk&nbsp;--&nbsp;+14</font>'.<sub>&nbsp;</sub>
+
+            <h3>Conclusion</h3>
+              The actual code in dateplus is not new; neither are the techniques.&nbsp; However, the functionality,
+              encapsulated in a single, highly portable, self-documented program is.&nbsp; That's the value of
+              dateplus.&nbsp; Other articles have told us how to use date mathematics.&nbsp; Dateplus does it.<br>&nbsp;
+
+            <h3>Footnote</h3>
+              Please, feel free to send comments/suggestions to
+              <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>.&nbsp; That said, acceptance
+              is based on readable, easy to follow code.&nbsp; Highly efficient, but difficult to follow code [read
+              <i>obfuscated</i>] is unacceptable since readable code (even <b><i>if</i></b>&nbsp; less efficient) eases the
+              maintenance chore.
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 2 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              <a href="copyright.html">&copy;Copyright</a> Bob Orlando, 1995-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

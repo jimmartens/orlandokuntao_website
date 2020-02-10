@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Perl and AWK Holiday Determination Routines by Bob Orlando</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Perl and AWK Holiday Determination Routines by Bob Orlando">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="keywords"       lang="en" content="Perl module holiday dates business day holidays program script Holidays Perl program">
+    <meta name="description"    lang="en" content="Bob Orlando's Perl and AWK Holiday Determination Programs">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2003-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="#800080" alink="blue" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_holidays.html';">
+    <div align="justify" style="font-family:Arial,Verdana; font-size: 12pt">
+      <table cellspacing="0" cellpadding="3" width="725" border="0" align="center"> <!-- Table 1 -->
+        <tr>
+          <td align="center">
+            &nbsp;
+            <hr size="-1" noshade>
+            <small>These programs were featured online at UnixReview.com, <i>Shell Corner</i>, September 2003.</small>
+            <hr size="-1" noshade>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a>
+              <br>&nbsp;
+            </font>
+          </td>
+        </tr>
+        <tr bgcolor="silver">
+          <td align="left">
+            <big><b>Perl and AWK Holiday Determination Routines</b><sub>&nbsp;</sub>
+            <br>by Bob Orlando</big>
+          </td>
+        </tr>
+        <tr>
+          <td align="justify">
+            &nbsp;<br>
+            <br><b>Shortcuts</b> to the code (skip the descriptions for now <img src="images/smiley.gif" alt="Smiley face" border="0" width="15" height="15"> ):
+            <table cellspacing="0" cellpadding="3" width="95%" border="0" align="center"> <!-- Table 1a -->
+              <tr><td align="left" valign="top"> &nbsp; &nbsp; <a href="dateplus.html"     >Dateplus</a>           </td><td align="left" valign="top">Easy date manipulation program</td></tr>
+              <tr><td align="left" valign="top"> &nbsp; &nbsp; <a href="today_is.html"     >today_is.html</a>      </td><td align="left" valign="top">Test program showing how to use Holiday_dates.pm</td></tr>
+              <tr><td align="left" valign="top"> &nbsp; &nbsp; <a href="holidays_file.html">holidays&nbsp;file</a> </td><td align="left" valign="top">Hopefully self-explanatory</td></tr>
+              <tr><td align="left" valign="top"> &nbsp; &nbsp; <a href="holiday_dates.html">Holiday_dates.html</a> </td><td align="left" valign="top">Perl Macro that processes the holidays file</td></tr>
+              <tr><td align="left" valign="top"> &nbsp; &nbsp; <a href="holidays_awk.html" >holidays.awk</a>       </td><td align="left" valign="top">AWK version that processes the same file</td></tr>
+              <tr><td align="left" valign="top"> &nbsp; &nbsp; <a href="holidays_sh.html"  >Holidays.sh</a>        </td><td align="left" valign="top">Executes holidays.awk, providing examples of holiday and<br>business day testing</td></tr>
+            </table> <!-- E.O. Table 1a -->
+            <p>The following describes both Perl and AWK scripts developed for determining whether a given date is a holiday, or the n<sup>th</sup> business day of the month.&nbsp; These routines are based on holiday algorithms from Marcos J. Montes (&quot;<a href="http://www.smart.net/%7Emmontes/ushols.html#ALG" target="_blank">American Secular Holidays</a>&quot;) and Claus Tondering (&quot;<a href="http://www.tondering.dk/claus/calendar.html" target="_blank">Frequently Asked Questions about Calendars</a>&quot;).
+            <p><b>Holiday Scheduling</b><sub>&nbsp;</sub><br>Job scheduling around holidays has always been a pain.&nbsp; To prevent messing around with crons several times a year, I used to place a "holidays" file in, for example, /usr/local/bin.&nbsp; The file contained the holiday date in <i>yyyymmdd</i> format, followed by the holiday name.&nbsp; <i>(See <b><a href="dateplus.html">Dateplus</a></b>&nbsp; program for easy date manipulation.)</i>&nbsp; That worked, but every year I had to refresh the file with those dates that fall on, for example, the last Monday in May.&nbsp; This meant remembering to edit the holidays file after the company calendar was set for the year.&nbsp; Then, I came across the <i>American Secular Holidays</i> web site by Marcos&nbsp;J. Montes.
+            <p><b>American Secular Holidays in Perl</b><sub>&nbsp;</sub><br>Montes cites Claus Tondering as his primary source, and Timothy Barmann, and Bobby Cossum for their contributions in simplifying the equations used in the alorithms.&nbsp; This is significant for these algorithms provide a robust yet elegant method for identifying whether a given date is a holiday without constantly updating a configuration file.
+            <p>Initially, I coded the algorithms in a Perl program function or subroutine, &amp;holiday_date (in <a href="today_is.html">today_is.pl</a>).&nbsp; Later I added another function, &amp;load_holiday_array, to pull the necessary information from a <a href="holidays_file.html">holidays&nbsp;file</a>.&nbsp; Lastly, I put together a third function, &amp;business_day, to return the n<sup>th</sup> business day's date (in the form <i>yyyymmdd</i>) for a given year and month (yyyymm).&nbsp; All three functions (called in today_is.pl) were subsequently rolled up into a single Perl macro, <a href="holiday_dates.html">Holiday_dates.html</a> (<a href="holiday_dates.html#business_day">Business_day</a>, which calls holiday_dates, has proven to be as useful as the holiday routine itself for those processes that must run, for example, on the second business day of the month.)
+            <p><b>American Secular Holidays in AWK</b><sub>&nbsp;</sub><br>To make these algorithms and routines as portable as possible (as long as the porting OS has nawk or gawk), I rewrote the whole thing in [gn]awk.&nbsp; Now practically any program with access to AWK can avail itself of these holiday date capabilities.&nbsp; The <a href="holidays_awk.html">AWK&nbsp;version</a> of the program can return the nth business day, a multi-line yyyymmdd date list, or a single line of yyyymmdd holiday dates.&nbsp; With those, you can easily determine whether the date you have is a holiday or specific business day.
+            <p><b>Calculating Business Days</b><sub>&nbsp;</sub><br>I incorporated the business day calculation into my date routines because of a need to run a given process on the second business day of the month.&nbsp; Once the holidays are known, business day calculation is relatively simple--just grab the month's days and remove holidays, Saturdays and Sundays.&nbsp; For example, to provide the second business day, just pass a&nbsp; "<font face="courier">-b 2</font>"&nbsp; option to the program:
+
+            <pre>
+   bizday=`nawk -f holidays.awk -- -b 2 holidays`
+   if [ `date "+%Y%m%d"` = $bizday ]; then
+      echo "Today is the 2nd business day of the month."
+      # Do whatever
+   fi
+            </pre>
+
+            Last business day and business day offset from the last business day (negative numbers) is also available in <a href="holidays_awk.html">holidays.awk</a>.&nbsp; To retrieve the last business day of the month, specify the "<font face="courier">last</font>" option argument (optarg) for <font face="courier">-b</font> option (i.e., "<font face="courier">-b last</font>").&nbsp; For the next-to-last business day of the month, provide "<font face="courier">-b -1</font>" as an option and optarg.
+            <p>Holidays.awk is a well-behaved program in that it uses exit status to indicate success or failure.&nbsp; As indicated in the documentation, all options except business day (-b), returning a zero status means the program completed successfully; non-zero indicates failure.&nbsp; However, with the business day option, non-zero indicates success because it is the day of the month on which the business day falls.&nbsp; Therefore, use the holidays.awk the exit status as the test comparand:
+
+            <pre>
+   nawk -f holidays.awk -- -b last holidays > /dev/null 2>&1
+
+   if [ $? -eq `date +%d` ]; then
+      echo "Today is the last business day of the month."
+      # Do whatever
+   fi
+            </pre>
+
+            You can also combine <font face="courier">-b</font> with <font face="courier">-m</font> and <font face="courier">-y</font> to return the nth business day for a given month and year.  If you request a business day (positive or negative) that is not found in the month, you receive an error message, and a 0 exit status indicating an error.
+            <p>For those needing only an indication that today is a given business day, you can use the <font face="courier">-t</font> option in conjunction with <font face="courier">-b</font>.  For example, using Unix cron (scheduler) we combine those options to set up a job to run only on the second business day of the month with as little as the following:
+
+            <pre>
+   00 02 2-5 * * /usr/local/bin/holidays.awk -- -b 2 -t \
+     || some_program &gt; some_program.out 2&gt;&amp;1
+            </pre>
+
+            In this example, no holidays file is specified because we use the default, /usr/local/bin/holidays (you can change the program to point to wherever you wish to locate the file).&nbsp; No <font face="courier">nawk&nbsp;-f</font> is used because the first line of holidays.awk uses the shebang syntax (<font face="courier">#!/usr/bin/nawk&nbsp;-f</font>) to execute itself.&nbsp; (<i>Obviously, the program must have the necessary execution permissions to run this way.</i>)&nbsp; With the <font face="courier">-t</font> option, holidays.awk returns true or false (which is not the same as success or failure), only running the called program if the day is, indeed, the second business day of the month.
+            <p><b>Returning The Nth Weekday&nbsp; (Awk Method)</b><sub>&nbsp;</sub>
+            <br>There appears to be as much interest in determining the nth weekday day as there is in business days, so I added an option to holidays.awk to return that.&nbsp; To get the first Monday in the current month, simply pass a&nbsp; "<font face="courier">-d&nbsp;1.Mon</font>"&nbsp; option to the program:
+
+            <pre>
+   fst_monday=`nawk -f holidays.awk -- -d 1.Mon`
+            </pre>
+
+            An alternative syntax is also provided:&nbsp; <font face="courier">nawk&nbsp;-f&nbsp;holidays.awk&nbsp;--&nbsp;-d&nbsp;1.1</font>
+            <p>You can expand this to report the first Monday in any month and year like this.
+
+            <pre>
+   yyyy=2005
+   for mm in 1 2 3 4 5 6 7 8 9 10 11 12
+   do
+      nawk -f holidays.awk -- -y $yyyy -m $mm -d 1.1
+   done
+            </pre>
+
+            For the last Sunday in a month use&nbsp;
+
+            <pre>
+   nawk -f holidays.awk -- -d last.Sun
+            </pre>
+
+            For those preferring a simpler syntax: If your OS recognizes the&nbsp; <font face="courier">#!</font>&nbsp; (shebang) syntax, you can place a&nbsp; <font face="courier">#!/usr/bin/nawk&nbsp;-f</font>&nbsp; (or gawk) at the start of <a href="holidays_awk.html">holidays.awk</a>, thereby allowing you skip the&nbsp; <font face="courier">[gn]awk&nbsp;-f</font>&nbsp; during invocation and simply call it like this,
+
+            <pre>
+   holidays.awk -- -d last.Sun
+   holidays.awk -- -d last.0
+   holidays.awk -- -d 5.0
+            </pre>
+
+            <b>The Perl Method</b><sub>&nbsp;</sub>
+            <br>Nth day capability exists in <a href="today_is.html">today_is.pl</a>, (see <i><a href="today_is.html#fst_monday">fst_monday</a></i> in today_is.pl), but essentially, for the last Friday in May, call <a href="holiday_dates.html#holiday_yyyymmdd">holiday_yyyymmdd</a> subroutine like this:
+
+            <pre>
+   $last_friday = holiday_yyyymmdd(200405,"last",6);
+   $last_sunday = holiday_yyyymmdd(200502,     5,0);
+   $second_mon  = holiday_yyyymmdd(200502,     2,1);
+            </pre>
+
+            <b>Testing with Holidays.sh</b><sub>&nbsp;</sub><br><a href="holidays_sh.html">Holidays.sh</a> executes <a href="holidays_awk.html">holidays.awk</a>, providing examples of holiday and business day testing.&nbsp; Provided the <a href="holidays_file.html">holidays</a> file is located properly, executing&nbsp; holidays.sh&nbsp; on June 21, 2003 displays:
+
+            <pre>
+   Today's no holiday, get busy. :-((
+   20030101 Wed. New Year's Day
+   20030120 Mon. M.L.King Jr. Birthday
+   20030526 Mon. Memorial Day
+   20030704 Fri. Independence Day
+   20030901 Mon. Labor Day
+   20031127 Thu. Thanksgiving Day (US)
+   20031128 Fri. Thanksgiving Day II (US)
+   20031225 Thu. Christmas Day
+   Today is NOT the 2nd business day (20030603) of the month.
+   Today is NOT the last business day (20030630) of the month.
+   Today is NOT the next-to-the-last business day (20030627) of the month.
+            </pre>
+
+            As a real acid test, I include the next-to-last and last business days of every month from 2000 to 2010.&nbsp; The&nbsp; holidays.sh&nbsp; script concludes with a report for all holidays for the 21st century.&nbsp;
+            <p><b>The Holidays File</b><sub>&nbsp;</sub><br>Although second to the algorithms, the <i>holidays</i> file is central to both my Perl and AWK routines.&nbsp; The file's directives allow for the handling of, for example, the Friday after U.S. Thanksgiving Day (Thursday).&nbsp; For those organizations and companies that grant a Friday holiday when a day like Christmas or New Year's Day falls on a Saturday, or give a Monday holiday when those holidays fall on a Sunday, the holidays file provides the necessary vehicle.
+            <p>After a brief description of holidays file layout, I'll discuss the the file itself, and see how three holidays are handled: Memorial Day, Thanksgiving Day (including the Friday after), and Christmas.
+            <p>The file itself is a simple ASCII file available to to all programs.&nbsp; It contains values that allow the calling program to calculate holidays either by given (fixed) month and day, or by day of a given week.&nbsp; The general layout is as follows:
+
+            <pre>
+ # Mm N.Day Adj Holiday name # Comments
+
+   Mm           = Month number (leading zeros NOT required)
+   N.day        = Nth day (1-5 and "last") "." weekday (0-6)
+                  (Not every part is required.)
+   Adj          = Can be either a +|- n days,
+                  or weekday followed immediately by a +|- n days,
+   Holiday name = How you want it spelled out--your call.
+   Comments     = ignored.
+          </pre>
+
+          <p>Leading white space is ignored, as is everything following and including the octothorpe (#-sign). Here are the entries for the three holidays:
+
+          <pre>
+ #-----------------------------------------------------------------------#
+ # Mm N.Day.OnOrA Adj Holiday name                     # Comments        #
+ # -- ----------- --- -------------------------------- ----------------- #
+   05 last.1          Memorial Day                     # Last Mon in May
+   11 4.4             Thanksgiving Day (US)            # 4th Thu in Nov
+   11 4.4          +1 Thanksgiving Day II (US)
+   12 25              Christmas Day                    # M-F
+   12 25          6-1 Christmas Day (pre-holiday obs)  # Sat?  Use Fri
+   12 25          0+1 Christmas Day (post-holiday obs) # Sun?  Use Mon
+            </pre>
+
+            <b>Memorial Day</b><sub>&nbsp;</sub><br>Memorial Day is the last Monday in May.&nbsp; In the table the month is "05" (again, leading zero is unnecessary).&nbsp; The last Monday is specified by the word "last" and not a 5 because the last Monday may not be the 5th Monday (there is no 5th Monday in May, 2003).&nbsp; Monday is identified by the 1 following the dot ("<font face="courier">.1</font>").&nbsp; This is based on the 0-6 convention for representing Sunday through Saturday.
+            <p><b>Thanksgiving Day</b><sub>&nbsp;</sub><br>Thanksgiving Day (U.S. observance) is the forth Thursday in November.&nbsp; November is identified by the "11".&nbsp; The fourth (nth) day is the first "4".&nbsp; Thursday is the "<font face="courier">.4</font>".&nbsp; Same method as was used for Memorial Day.&nbsp; The day after Thanksgiving, Friday, is a little tricky.
+            <p><b>Friday After Thanksgiving [Thurs]Day</b><sub>&nbsp;</sub><br>Contrary to what you might think, you cannot specify:
+
+            <pre>
+   11 4.5 Thanksgiving Day II (Friday)
+            </pre>
+
+            since the fourth Friday might not follow the fourth Thursday of a given month.&nbsp; Consider Thanksgiving Day, 2002--the fourth Thursday was November 28.&nbsp; The fourth Friday fell on the 22nd.&nbsp; So, to accurately capture the Friday after Thanksgiving Day, specify the same parameters for Thanksgiving, and an adjustment of +1:
+
+            <pre>
+   11 4.5 +1 Thanksgiving Day II (Friday)
+            </pre>
+            <b>Christmas</b><sub>&nbsp;</sub><br>Christmas is December 25.&nbsp; Like New Year's Day (January 1) and Independence Day (July 4), Christmas is a fixed date.&nbsp; Simply specifying&nbsp; "<font face="courier">12&nbsp;25&nbsp;Christmas&nbsp;Day</font>"&nbsp; in the holidays file returns "yyyy1225".&nbsp; However, with many companies, if Christmas falls on a Saturday (day 6), the Friday before is observed by adjusting it by <font face="courier">-1</font>.&nbsp; If it falls on a Sunday (day 0), the Monday following is observed by adjusting it by <font face="courier">+1</font>.&nbsp; Hence, the three entries:
+
+            <pre>
+   12 25     Christmas Day                     # M-F
+   12 25 6-1 Christmas Day (pre-holiday obs)   # Sat? Use Fri
+   12 25 0+1 Christmas Day (post-holiday obs)  # Sun? Use Mon
+            </pre>
+
+            <b>New Year's Day</b><sub>&nbsp;</sub><br>New Year's Day is a fixed date, January 1, and like Christmas and Independence Day, it can be observed on the Friday before a Saturday occurrence or the Monday after a Sunday occurrence simply by setting it up like the Christmas example above.&nbsp; However, some organizations use a post-holiday observance of New Year's Day when it falls on a Saturday simply so the holiday falls in the correct year.&nbsp; You can do that by specifying New Year's Day as follows:
+
+            <pre>
+   01 01     New Year's Day                    # M-F
+   01 01 6+2 New Year's Day (post-holiday obs) # Sat? Use Mon
+   01 01 0+1 New Year's Day (post-holiday obs) # Sun? Also Mon
+            </pre>
+
+            Remember, the&nbsp; "<font face="courier">6</font>" &nbsp;in our&nbsp; "<font face="courier"><b>6+2</b></font>"&nbsp; means the actual date, January 1st, falls on a Saturday (day 6 in the 0-6 day-numbering schema), so adjust that date by <font face="courier">+2</font> days (i.e. <i>Saturday's date (01/01) plus two days (01/03)</i>.
+            <p><b>Daylight Savings Time</b><sub>&nbsp;</sub><br>While the program is incapable of handling Daylight Savings dates in Iran where DST starts on the first day of Farvardin and ends the first day of Mehr,
+            holidays.awk (v1.22) is capable of handling at least one set of unique Daylight Savings Time (DST) dates.&nbsp; In the Falkland Islands, DST begins on the first Sunday on or after September 8th and ends on the first Sunday on or after April 6th.&nbsp;
+            Those exceptions (starting on or after a date in the month) are handled by specifying a holidays line like this:
+
+            <pre>
+   04 1.0.6 Falklands ST  # 1st Sun on/after Apr 6
+   09 1.0.8 Falklands DST # 1st Sun on/after Sep 8
+            </pre>
+
+            <p>The&nbsp; "<font face="courier">.6</font>" &nbsp;in our&nbsp; "<font face="courier"><b>1.0.6</b></font>"&nbsp; means Standard Time (ST) begins on the first Sunday (<font face="courier"><b>1.0</b></font>) in April that falls on or after the 6th of April.
+            Likewise, the&nbsp; "<font face="courier">.8</font>" &nbsp;in our&nbsp; "<font face="courier"><b>1.0.8</b></font>"&nbsp; means DST begins on the first Sunday in September that comes on or after the 8th of September.
+            <p>Since Daylight Savings dates are not usually holidays, you can also retrieve the Daylight Savings Time dates via the&nbsp; <font face="courier">-d</font> option and bypass the need for the holidays file altogether.&nbsp;
+            Here are Daylight Savings Times for the United States (begins the second Sunday in March) and
+            the Faulklands (begins on the first Sunday on/after September 8).
+
+            <pre>
+   holidays.awk -- -d 2.0   -m 3
+   holidays.awk -- -d 1.0.8 -m 9
+            </pre>
+
+            You can even set up a cron to test for Daylight Savings Time and perform some action if true.
+            <pre>
+   05 00 * 03 * [ `/usr/local/bin/holidays.awk -- -d 2.0 -m 3 -t` -eq 1 ] \
+      &amp;&amp; ... Some action ...
+            </pre>
+            <p><b>Conclusion</b><sub>&nbsp;</sub><br>Clearly, none of my holiday work is possible without the algorithms presented by Montes, Tondering, Barmann, and Cossum.&nbsp; The <i>holidays file</i>&nbsp; and the logic to process that, are my contributions.  Between the file and its processing methods, we are able to centralize holiday dates and manage their often troublesome adjustments.<br>&nbsp;
+          </td>
+        </tr>
+      </table> <!-- E.O. Table 1 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              &copy;<a href="copyright.html">Copyright</a> Bob Orlando, 2003-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

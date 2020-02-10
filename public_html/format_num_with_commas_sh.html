@@ -1,0 +1,204 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, format_num_with_commas.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="format_num_with_commas.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, format_num_with_commas.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_format_num_with_commas_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              FNC_name="<b>FORMAT_NUM_WITH_COMMAS</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$FNC_name\(\)\{$'`" != . ] &amp;&amp; FNC_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$FNC_name'[=\(]?/'`" != . ] &amp;&amp; FNC_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$FNC_name'[=\(]?/'`" != . ] &amp;&amp; FNC_loaded=1
+                 fi
+              fi
+              if [ 0${FNC_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>FORMAT_NUM_WITH_COMMAS</b>() # Function documentation located at bottom.   #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ $# -gt 0 ]; then
+                   FNC_status=1
+                   FNC_formatted=`$AWK -v number=$1 \
+                     'BEGIN                         \
+                      {
+                        if (number == "")
+                        {
+                          print "Insufficient args"
+                          exit 1
+                        }
+
+                        if (match(number,/^-*[0-9]*\.*[0-9]+$/) == 0)
+                        {
+                          print "Invalid number ("number")"
+                          exit 2
+                        }
+
+                        #---------------------------------------------------#
+                        # Split number at the decimal point (if it has one) #
+                        #---------------------------------------------------#
+                        num_array[0] = split(number,num_array,".")
+                        integer      =              num_array[1]
+                        decimal      =              num_array[2]
+                        if (integer == "")
+                        {
+                          print number
+                          exit 0
+                        }
+
+                        if (substr(integer,0,1) == "-")
+                        {
+                          sign = "-"
+                          integer = substr(integer,2)
+                        }
+                        else if (substr(integer,0,1) == "+")
+                        {
+                          sign = "+"
+                          integer = substr(integer,2)
+                        }
+                        else
+                          sign = ""
+
+                        formatted_int = ""
+                        while (length(integer) &gt; 0)
+                        {
+                          int_len       = length(integer)
+                          triplet       = substr(integer,int_len-2)
+                          formatted_int = triplet","formatted_int
+                          integer       = substr(integer,1,int_len-3)
+                        }
+                        sub(/^,/,"",formatted_int)  # Remove leading comma
+                        sub(/,*$/,"",formatted_int) # Remove trailing comma
+
+                        if (decimal == "")
+                          number = formatted_int
+                        else
+                          number = formatted_int"."decimal
+                        print sign""number
+                        exit 0
+                      }'`
+                   FNC_status=$?
+
+                   if [ $FNC_status -eq 0 ]; then # Spit out the formatted number
+                      echo "$FNC_formatted"
+                      return 0
+                   fi
+                fi
+
+                #------------------------------------------#
+                # Reaching here means something is amiss.  #
+                #------------------------------------------#
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/exit.sh      # Function dependencies
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #-------------------------------------------------------------#
+                # If the following variables are not set, use these defaults. #
+                #-------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${sp:="                    "}
+
+                FNC_ID="$script_name($FNC_name)"
+                FNC_msg="${sp}Usage: $FNC_ID number (integer or float)"
+
+                if [ $# -lt 1 ]; then
+                   EMAIL_MSG "ERROR (Function): $FNC_ID" \
+                     "${sp}$FNC_ID Insufficient args." "$FNC_msg"
+                else
+                   EMAIL_MSG "ERROR: $FNC_ID" \
+                     "${sp}$FNC_formatted." "$FNC_msg"
+                fi
+
+                return 1
+              } # "FNC_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: format_number_with_commas.sh                            #
+              #                                                                      #
+              #       Usage: FORMAT_NUM_WITH_COMMAS number                           #
+              #                                                                      #
+              #     Purpose: Format a given number with commas.  The number may      #
+              #              be either integer or float value, however, it must      #
+              #              be a number and it must be unsigned.                    #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "FNC_" prefix identifies local function variables.      #
+              #                                                                      #
+              #       Calls: EMAIL_MSG library function.                             #
+              #                                                                      #
+              # Exit_status: Returns with failure (1) on error (e.g. user supplies   #
+              #              invalid arguments).  Else returns success (0), echoing  #
+              #              the formatted number to stdout.                         #
+              #                                                                      #
+              #       Notes: This function is probably best used like this:          #
+              #                                                                      #
+              #                 test_num=`FORMAT_NUM_WITH_COMMAS "123456789.10"`     #
+              #                                                                      #
+              #              $test_num will then contain 123,456,789.10.             #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.8  * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.7  * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

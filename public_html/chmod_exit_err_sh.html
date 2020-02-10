@@ -1,0 +1,319 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, chmod_exit_err.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="chmod_exit_err, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, chmod_exit_err.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_chmod_exit_err_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CM_name="<b>CHMOD_EXIT_ERR</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CM_name\(\)\{$'`" != . ] &amp;&amp; CM_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CM_name'[=\(]?/'`" != . ] &amp;&amp; CM_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CM_name'[=\(]?/'`" != . ] &amp;&amp; CM_loaded=1
+                 fi
+              fi
+              if [ 0${CM_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CHMOD_EXIT_ERR</b>() # Function documentation located at bottom.           #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${dashes:="------------------------------------------------------"}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                CM_ID="$script_name($CM_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                CM_options="lptv"
+                CM_opt_l=0
+                CM_opt_p=0
+                CM_opt_t=0
+                CM_opt_v=0
+                CM_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                CM_tag="$logger_t" # within library defaults.sh.
+                CM_opts=""
+                CM_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   CM_n=`expr "$1". : '-.*'`
+                   if [ $CM_n -gt 0 ]; then
+                      if [ $CM_n -eq 2 ]; then
+                         CM_optargs="$1"
+                      else
+                         CM_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for CM_optarg in $CM_optargs
+                      do
+                         case $CM_optarg in
+                           -l ) CM_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $CM_opt_l -eq 1 -a $CM_opt_p -eq 0 ]; then
+                                   CM_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$CM_options']'` != "--" ]; then
+                                      CM_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   CM_opts="$CM_opts $CM_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $CM_opt_l -eq 1 -a $CM_opt_t -eq 0 ]; then
+                                   CM_opt_t=1
+                                   CM_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$CM_options']'` != "--" ]; then
+                                      CM_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   CM_opts="$CM_opts $CM_optarg"
+                                fi
+                                ;;
+                           -v ) CM_opt_v=1
+                                ;;
+                         esac
+                      done # for CM_optarg in $CM_optargs
+                   else
+                      [ ."$CM_args" != . ]       \
+                        &amp;&amp; CM_args="$CM_args|$1" \
+                        || CM_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                CM_opts=`expr "$CM_opts" : ' *\(.*\)'` # Strip leading blanks
+                CM_args=`expr "$CM_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #------------------------------------------------------------#
+                # If we still have args, then the first MUST be the perms.   #
+                #------------------------------------------------------------#
+                if [ ."$CM_args" != . ]; then
+                   CM_perms=""
+                   echo "$CM_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read CM_file
+                      do
+                         if [ ."$CM_perms" = . ]; then
+                            CM_perms="$CM_file" # 1st arg MUST be the perms.
+                            CM_cmd="chmod $CM_opts $CM_perms"
+                            continue            # Got it, so iterate our for-loop.
+                         fi
+
+                         CM_status=0
+                         if [ ! \( -f "$CM_file" -o -d "$CM_file" \) ]; then
+                            CM_m1="Skipping $CM_cmd '$CM_file'."
+                            CM_m2="'$CM_file' not found!"
+                            CM_m3="$script_name continues."
+                            EMAIL_MSG "WARNING: $CM_ID" \
+                              "${sp}$CM_m1"             \
+                              "${sp}$CM_m2"             \
+                              "${sp}$CM_m3"
+                         elif [ -w "$CM_file" ]; then # If writable, then do ...
+                            [ $verbose -eq 1 -o $CM_opt_v -eq 1 ] \
+                              &amp;&amp; echo "`date '+%Y-%m-%d %T'` $CM_cmd \"$CM_file\"" \
+                                | $teelog
+                            CM_stderr=`$CM_cmd "$CM_file" 2&gt;&1`
+                            CM_status=$?
+                            if [ $CM_status -ne 0 ]; then
+                               CM_m1="'$CM_cmd \"$CM_file\"'"
+                               CM_m2="ERROR=$CM_stderr."
+                               CM_m3="$script_name terminated."
+                               CM_m4=`ls -al "$CM_file"|sed "s/^/$sp/"`
+                               EMAIL_MSG "FATAL ERROR: $CM_ID"              \
+                                 "${sp}$CM_m1"                              \
+                                 "${sp}$CM_m2"                              \
+                                 "${sp}$CM_m3  File list (if any) follows:" \
+                                 "${sp}$dashes"                             \
+                                 "$CM_m4"
+
+                               if [ $CM_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                                  WRITE_ERR_TO_SYSLOGS -p "$CM_pri" -t "$CM_tag" \
+                                    "ABORT: $CM_ID $CM_m1 $CM_m2 $CM_m3"
+                               fi
+                               EXIT 1
+                            fi # if [ $CM_status -ne 0 ]; then
+                         else
+                            CM_m1="Skipping '$CM_cmd \"$CM_file\"'"
+                            CM_m2="$CM_file not writable!"
+                            CM_m3="$script_name continues."
+                            EMAIL_MSG "WARNING: $CM_ID" \
+                              "${sp}$CM_m1"             \
+                              "${sp}$CM_m2"             \
+                              "${sp}$CM_m3"
+                         fi # if [ -w $CM_file ]; then, else
+                      done # while read CM_file
+                   return 0
+                fi # if [ ."$CM_args" != . ]; then
+
+                #--------------------------------------------------------------------#
+                # Reaching this point with zero status means insufficient args error.#
+                #--------------------------------------------------------------------#
+                CM_m1="Insufficient args."
+                CM_m2="$script_name terminated."
+                EMAIL_MSG "FATAL ERROR (Function): $CM_ID"                 \
+                  "${sp}$CM_m1.\n"                                         \
+                  "${sp}Usage: $CM_name -l -p priority -t tag -v"          \
+                  "${sp}                     permissions fileid [...]\n"   \
+                  "${sp}                -l = Notify via logger command"    \
+                  "${sp}                     (default is false)"           \
+                  "${sp}                -p = Logger priority string"       \
+                  "${sp}                     (default is 'user.err')"      \
+                  "${sp}                -t = Logger tag string"            \
+                  "${sp}                     (default is '$LOGNAME[$$]')"  \
+                  "${sp}                -v = Verbose\n"                    \
+                  "${sp}Option notes: Option (-l) MUST precede -p and -t." \
+                  "${sp}$CM_m2"
+                if [ $CM_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$CM_pri" -t "$CM_tag" \
+                     "ABORT: $CM_ID $CM_m1 $CM_m2"
+                fi
+
+                EXIT 1
+              } # "CM_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: chmod_exit_err.sh                                       #
+              #                                                                      #
+              #       Usage: CHMOD_EXIT_ERR -l -p priority -t tag -v \               #
+              #                                   permissions fileid ...             #
+              #                                                                      #
+              #                             -l = Notify via logger command           #
+              #                                  (default is false)                  #
+              #                             -p = Logger priority string              #
+              #                                  (default is "user.err")             #
+              #                             -t = Logger tag string                   #
+              #                                  (default is "$LOGNAME[$$]")         #
+              #                             -v = Verbose                             #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede other options.   #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Change (mode) permissions on one or more files,         #
+              #              reporting errors via email and logger, and exiting      #
+              #              on error.                                               #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              chmod command beyond automatic notification/logging     #
+              #              before exiting on error, and the ability to chmod on    #
+              #              one file at a time.  That last capability means that    #
+              #              we can report the file responsible for the error.       #
+              #              Notification is provided via the EMAIL_MSG library      #
+              #              function.  Optionally (-l), the user may have the       #
+              #              error logged in syslogs (/var/adm/messages) via         #
+              #              logger command.  Logger -p and -t options and option    #
+              #              arguments also may be be passed (both have defaults     #
+              #              if omitted).                                            #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CM_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while changing file permissions is            #
+              #              potentially a show stopper.  Else, returns 0.           #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              #       Notes: DO NOT use this routine to chgrp $log and $mailmsg.     #
+              #              Use CHMOD_EXIT_ERR_NOMAIL instead.  This is because     #
+              #              this function calls EMAIL_MSG function (a function      #
+              #              which uses both $log and $mailmsg to report problems).  #
+              #              Any problems changing $log and $mailmsg, therefore,     #
+              #              cannot be reported by EMAIL_MSG using mailx.            #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.19 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.18 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

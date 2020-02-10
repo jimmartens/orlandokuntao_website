@@ -1,0 +1,189 @@
+<html>
+  <head>
+    <title>Bob Orlando's Janitor Unix Shell Script Parameter File</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Bob Orlando's Janitor Unix Shell Script Parameter File">
+    <meta name="keywords"       lang="en" content="Janitor.sh, unix, shell, library, function, script">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1995-2011, Bob Orlando">
+    <script language="JavaScript">var statusLine='Artificial intelligence is no match for natural stupidity.';var msg='      ' + statusLine + '     .  .  .  .';window.defaultStatus=statusLine;</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_janitor_par.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # JANITOR_PARFILE_TIME=2006-09-13 07:58:11 #=&gt; ALL
+              #----------------------------------------------------------------------# #=&gt; ALL
+              #  * DO NOT REMOVE * DO NOT REMOVE * DO NOT REMOVE * DO NOT REMOVE *   # #=&gt; ALL
+              #----------------------------------------------------------------------# #=&gt; ALL
+              # This parameter file is used by the program bearing its name. It is   # #=&gt; ALL
+              # a generated file.  The master parameter file used to create it is    # #=&gt; ALL
+              # 'janitor_master.par'.  Make no permanent alterations to this file    # #=&gt; ALL
+              # as any changes not put in the master will be lost the very next      # #=&gt; ALL
+              # time a new master is distributed (the master is distributed from     # #=&gt; ALL
+              # DMC's source code repository--currently mach1).  Now, here's how     # #=&gt; ALL
+              # all this updating is done.                                           # #=&gt; ALL
+              #                                                                      # #=&gt; ALL
+              # Appended to the end of each significant line in the master monitor   # #=&gt; ALL
+              # configuration file is a unique string ('#=&gt; ') followed by ..        # #=&gt; ALL
+              #                                                                      # #=&gt; ALL
+              #   1. One or more hostnames, or                                       # #=&gt; ALL
+              #   2. The word "ALL", or optionally,                                  # #=&gt; ALL
+              #   3. The word "ALL" followed by "!"some_hostname ...                 # #=&gt; ALL
+              #      (e.g. "#=&gt; ALL !geatoir !solinus"                               # #=&gt; ALL
+              #       meaning ALL but geatoir and solinus)                           # #=&gt; ALL
+              #                                                                      # #=&gt; ALL
+              # That unique string is used by janitor.sh to create a runtime         # #=&gt; ALL
+              # parfile mapped specifically for the host on which it runs.           # #=&gt; ALL
+              # The actual update is triggered when a difference between the         # #=&gt; ALL
+              # "JANITOR_TIME" timestamp line in janitor.par and the master,         # #=&gt; ALL
+              # janitor_master.par is detected.  Again, on detecting a difference    # #=&gt; ALL
+              # in that timestamp, janitor.sh creates a new runtime parfile from     # #=&gt; ALL
+              # the master on its very next run.  (A control file mechanism in       # #=&gt; ALL
+              # janitor.sh prevents multiple monitor processes simultaneously        # #=&gt; ALL
+              # creating a new parameter file.)                                      # #=&gt; ALL
+              #                                                                      # #=&gt; ALL
+              # Parameter format is "keyword = value ..." where whitespace           # #=&gt; ALL
+              # adjacent to the equal sign is ignored (removed).  Extra whitespace   # #=&gt; ALL
+              # among the values is concatenated to single space.  Keywords may be   # #=&gt; ALL
+              # specified in any order, but they MUST be in UPPERCASE.  Multiple     # #=&gt; ALL
+              # keyword lines are allowed and if present, the associated value is    # #=&gt; ALL
+              # assumed to be all of the values presented.  Moreover, parameter      # #=&gt; ALL
+              # values (everything to the right of the equal sign) may, contain      # #=&gt; ALL
+              # variable names (e.g.  $HOME and $name_root) since those values are   # #=&gt; ALL
+              # evaluated during processing.                                         # #=&gt; ALL
+              #----------------------------------------------------------------------# #=&gt; ALL
+                WORKING_DIR  = /usr/local/etc                            #=&gt; ALL
+                LOG_DIR      = /var/logs                                 #=&gt; ALL
+                TMP          = /tmp                                      #=&gt; ALL
+                SHLIB_PATH   = /usr/local/scripts                        #=&gt; ALL
+                SHBIN_PATH   = /usr/local/bin                            #=&gt; ALL
+                SUPPORT      = Bob.Orlando@whoever.com                   #=&gt; ALL
+                SUPPORT      = dba@whoever.com                           #=&gt; windowsux
+                STATUS_FILE  = $working_dir/$name_root.active            #=&gt; ALL
+                KEEP_LOGS    = 10  # Process logs to keep on hand        #=&gt; ALL
+                FIND_MAX_TM  = 600 # Max time find is allowed to run     #=&gt; ALL !athena
+                FIND_MAX_TM  = 900 # Max time find is allowed to run     #=&gt; athena
+                RHOSTS_FILES = .rhosts hosts.equiv .srhosts shosts.equiv #=&gt; ALL
+                0600_PERMS   = $rhosts_files .forward .netrc             #=&gt; ALL
+
+                MAIL_DIR     = /var/mail                                 #=&gt; ALL !normul.whoever.com !normul
+                MAIL_DIR     = /var/spool/mail                           #=&gt; normul.whoever.com normul
+
+                PS_OPTS      = -eaf -o pid,time,args                     #=&gt; ALL
+                PS_OPTS      = -aux                                      #=&gt; normul.whoever.com normul
+
+                CRON_DEMON   = /usr/sbin/cron # rm /etc/cron.d/FIFO      #=&gt; ALL !normul.whoever.com
+                CRON_DEMON   = crond                                     #=&gt; normul.whoever.com normul
+
+                CRON_STOP    = /etc/init.d/cron stop                     #=&gt; ALL !normul.whoever.com
+                CRON_STOP    = /etc/rc.d/init.d/crond stop               #=&gt; normul.whoever.com normul
+
+                CRON_START   = /usr/sbin/cron                            #=&gt; ALL !normul.whoever.com
+              # CRON_START   = /etc/init.d/cron start # This fails
+                CRON_START   = /etc/rc.d/init.d/crond start              #=&gt; normul.whoever.com normul
+
+                CRONLOG      = /var/cron/log                             #=&gt; ALL !normul.whoever.com
+                CRONLOG      = /var/log/cron                             #=&gt; normul.whoever.com normul
+
+                CRONLOG_SIZE = 10000000  # Roll when exceeds             #=&gt; ALL
+                CRONLOG_NUM  = 2         # Num backup cron logs          #=&gt; ALL
+
+                WTMP_DIR     = /var/adm                                  #=&gt; ALL
+                WTMP_DIR     = /var/log                                  #=&gt; normul.whoever.com normul
+
+                WTMP_SIZE    = 10000000  # Roll when exceeds             #=&gt; ALL
+                WTMP_NUM     = 2         # Num backup wtmp logs          #=&gt; ALL
+
+                SYSLOG_DIR   = /var/adm/                                 #=&gt; ALL
+                SYSLOG_DIR   = /var/log/                                 #=&gt; normul.whoever.com normul
+
+                SYSLOGS      = ${syslog_dir}messages /var/log/syslog     #=&gt; ALL
+
+                LOGINS       = root daemon bin sys adm lp smtp           #=&gt; ALL
+                LOGINS       = uucp nuucp nobody noaccess                #=&gt; ALL
+                LOGINS       = sync shutdown halt mail news operator     #=&gt; normul.whoever.com normul
+                LOGINS       = games gopher ftp nobody xfs               #=&gt; normul.whoever.com normul
+                LOGINS       = gdm squid sdirk krich jhunt dmc           #=&gt; normul.whoever.com normul
+
+                MESSAGES     = /var/adm/messages                         #=&gt; ALL !normul.whoever.com !normul
+                MESSAGES     = /var/log/messages                         #=&gt; normul.whoever.com normul
+
+              #----------------------------------------------------------------------#
+              # Using FILE_PERMS as a name because this same method might later be   #
+              # used for checking several directory's permissions (for example,      #
+              # DIR_PERMS    = $working_dir/$name_root.dirperms).                    #
+              #----------------------------------------------------------------------#
+                FILE_PERMS   = $working_dir/$name_root.fileperms         #=&gt; ALL
+
+              #----------------------------------------------------------------------#
+              # WW_ dirs are directories we to scan looking for world-writable files #
+              # (and those we exclude from that search -- subdirs within the dirs.   #
+              #----------------------------------------------------------------------#
+                WW_30_DIRS   = fridge:/home fridge:/export/home          #=&gt; ALL
+                WW_DIRS      = /home /export/home                        #=&gt; ALL
+                WW_DIRS      = /x/home /y/home /z/home                   #=&gt; ALL
+                WW_DIRS      = /usr/informix /informix                   #=&gt; ALL
+                WW_DIRS      = /export/home/informix                     #=&gt; ALL
+                WW_EXCL_DIRS = /ibes                                     #=&gt; ALL
+                MTIME        = 180                                       #=&gt; ALL
+                OLD_CORE     =  30                                       #=&gt; ALL
+
+              #----------------------------------------------------------------------#
+              # MSGS_BACK are the number of days back we scan /var/adm/messages for  #
+              # errors (the string "error").                                         #
+              #----------------------------------------------------------------------#
+                MSGS_BACK    = 5                                         #=&gt; ALL
+                                                                         #=&gt; ALL
+                EXCLUDE_FS   = -fstype nfs -prune -o                     #=&gt; ALL
+                EXCLUDE_FS   = -name /cdrom -prune -o                    #=&gt; ALL
+                EXCLUDE_FS   = -name /proc -prune -o                     #=&gt; ALL
+                EXCLUDE_FS   = -name /net -prune -o                      #=&gt; ALL
+
+              #----------------------------------------------------------------------#
+              # OPERATIONS requiring options must be specified with the string,      #
+              # "_DASH_" (e.g. "df -lk" must be spelled out as "df_DASH_lk").        #
+              #----------------------------------------------------------------------#
+                OPERATIONS   = /usr/sbin/mount_DASH_p                    #=&gt; ALL
+                OPERATIONS   = /usr/bin/df_DASH_lk                       #=&gt; ALL
+                OPERATIONS   = $working_dir/prtvtoc.sh                   #=&gt; ALL
+                OPERATIONS   = /usr/sbin/vxprint_DASH_l                  #=&gt; ALL
+                OPERATIONS   = /usr/local/bin/sar.sh                     #=&gt; ALL !aphrodite-tec
+                OPERATIONS   = /bin/cat_SP_/etc/profile                  #=&gt; ALL
+                OPERATIONS   = /bin/cat_SP_/etc/passwd_SP_/etc/shadow    #=&gt; ALL
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="firebrick"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1995-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="firebrick">Last update:</font>
+<!-- Date --> Jan. 15, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O.Table 2 -->
+  </body>
+</html>

@@ -1,0 +1,107 @@
+{
+  "days": 
+  [
+    { 
+      "datedesc": "Monday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [{
+          "name":"Langka 1B, 3B, 5B (Kuntao method)",
+          "starttime":""          
+        },
+        {
+          "name":"1B (Smash-n step)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"Application",
+          "starttime":"6:15"          
+        },
+        {
+          "name":"3B",
+          "starttime":"6:25"          
+        },
+        {
+          "name":"Application",
+          "starttime":"6:40"          
+        },
+        {
+          "name":"5B",
+          "starttime":"6:55"          
+        }]
+    },
+    { 
+      "datedesc": "Wednesday  Evening,  6:00 - 7:30 P.M.",
+      "events" : 
+        [
+          {
+          "name":"Shell drill (hacksaw)",
+          "starttime":"6:00"          
+        },
+        {
+          "name":"PU Kilap 3 (Switch)",
+          "starttime":"6:10"          
+        },
+        {
+          "name":"BR Expand, Compress",
+          "starttime":"6:30"          
+        },
+        {
+          "name":"Sinawali (single baton)",
+          "starttime":"6:50"          
+        },
+        {
+          "name":"Sinawali (double HLH)",
+          "starttime":"7:00"          
+        }]
+    },
+    { 
+      "datedesc": "Saturday  morning,  9:00 - 11:30 A.M.",
+      "form":
+      [{
+        "name":"Leg Manuevers",
+        "starttime":"9:00"          
+      }],
+      "events" :
+      [{
+          "name":"Doors Open (pre-class  warm-up/questions  time)",
+          "starttime":"8:30"          
+        },
+        {
+          "name":"Punching sit up's",
+          "starttime":"9:55"          
+        },
+        {
+          "name":"PU Kilap 4 (block-up)",
+          "starttime":"10:00" 
+        },
+        {
+          "name":"Shell drill (hacksaw)",
+          "starttime":"10:30" 
+        },
+        {
+          "name":"PU Kilap 3 (SHBWC)",
+          "starttime":"10:35" 
+        },
+        {
+          "name":"BR Expand, Compress",
+          "starttime":"10:45" 
+        },
+        {
+          "name":"Sinawali (single)",
+          "starttime":"10:55" 
+        },
+        {
+          "name":"Sinawali (double)",
+          "starttime":"11:05" 
+        },
+        {
+          "name":"Langka 1B, 3B, 5B",
+          "starttime":"11:15" 
+        },
+        {
+          "name":"Class Dismissed",
+          "starttime":"11:30"          
+        }]      
+    }
+  ]
+}

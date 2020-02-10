@@ -1,0 +1,317 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, chgrp_exit_err.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="chgrp_exit_err, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, chgrp_exit_err.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1996-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_chgrp_exit_err_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              CG_name="<b>CHGRP_EXIT_ERR</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$CG_name\(\)\{$'`" != . ] &amp;&amp; CG_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$CG_name'[=\(]?/'`" != . ] &amp;&amp; CG_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$CG_name'[=\(]?/'`" != . ] &amp;&amp; CG_loaded=1
+                 fi
+              fi
+              if [ 0${CG_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>CHGRP_EXIT_ERR</b>() # Function documentation located at bottom.           #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${logger_p="user.err"}
+                : ${logger_t="$LOGNAME[$$]"}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${dashes:="------------------------------------------------------"}
+                : ${tmp:=/var/tmp}
+
+                if [ ."$log" = . ]; then
+                   log=$name_root.log
+                   [ ."$teelog" = . ] &amp;&amp; teelog="cat"
+                fi
+
+                CG_ID="$script_name($CG_name)"
+
+                #--------------------------------------------------------------------#
+                #               Process function options and arguments               #
+                #               --------------------------------------               #
+                # We use while-loop instead of getopts because -p (logger priority)  #
+                # option and -t (logger tag option) may or may not have an optarg    #
+                # (the user may just want the defaults).                             #
+                #--------------------------------------------------------------------#
+                CG_options="lptv"
+                CG_opt_l=0
+                CG_opt_p=0
+                CG_opt_t=0
+                CG_opt_v=0
+                CG_pri="$logger_p" # $logger_p and $logger_t are assigned defaults
+                CG_tag="$logger_t" # within library defaults.sh.
+                CG_opts=""
+                CG_args=""
+                while [ ."$1" != . ]
+                do
+                   #-------------------------------------------------------------#
+                   # If we have an option list (e.g. "-xyz") change that list to #
+                   # individual "-x -y -z" options.  Else, just pass the option  #
+                   # along.                                                      #
+                   #-------------------------------------------------------------#
+                   CG_n=`expr "$1". : '-.*'`
+                   if [ $CG_n -gt 0 ]; then
+                      if [ $CG_n -eq 2 ]; then
+                         CG_optargs="$1"
+                      else
+                         CG_optargs=`echo "$1"|sed 's/[a-zA-Z]/-& /g;s/--*/-/'`
+                      fi
+
+                      for CG_optarg in $CG_optargs
+                      do
+                         case $CG_optarg in
+                           -l ) CG_opt_l=1
+                                . $SHLIB/write_err_to_syslogs.sh
+                                ;;
+                           -p ) if [ $CG_opt_l -eq 1 -a $CG_opt_p -eq 0 ]; then
+                                   CG_opt_p=1
+                                   if [ -`expr "$2" : '\(\-\)['$CG_options']'` != "--" ]; then
+                                      CG_pri="$2"
+                                      shift
+                                   fi
+                                else
+                                   CG_opts="$CG_opts $CG_optarg"
+                                fi
+                                ;;
+                           -t ) if [ $CG_opt_l -eq 1 -a $CG_opt_t -eq 0 ]; then
+                                   CG_opt_t=1
+                                   CG_tag="$2"
+                                   if [ -`expr "$2" : '\(\-\)['$CG_options']'` != "--" ]; then
+                                      CG_tag="$2"
+                                      shift
+                                   fi
+                                else
+                                   CG_opts="$CG_opts $CG_optarg"
+                                fi
+                                ;;
+                           -v ) CG_opt_v=1
+                                ;;
+                         esac
+                      done # for CG_optarg in $CG_optargs
+                   else
+                      [ ."$CG_args" != . ]       \
+                        &amp;&amp; CG_args="$CG_args|$1" \
+                        || CG_args="$1"
+                   fi
+                   shift
+                done # while [ ."$1" != . ]
+                CG_opts=`expr "$CG_opts" : ' *\(.*\)'` # Strip leading blanks
+                CG_args=`expr "$CG_args" : '|*\(.*\)'` # Strip leading stiles
+
+                #----------------------------------------------------------#
+                # If we still have args, then the first MUST be the group. #
+                #----------------------------------------------------------#
+                CG_status=0
+                if [ ."$CG_args" != . ]; then
+                   CG_group=""
+                   echo "$CG_args"|awk -F\| '{for (i=1;i&lt;=NF;i++) print $i}' \
+                    | while read CG_file
+                      do
+                         if [ ."$CG_group" = . ]; then
+                            CG_group="$CG_file" # 1st arg MUST be the perms.
+                            CG_cmd="chgrp $CG_opts $CG_group"
+                            continue            # Got it, so iterate our for-loop.
+                         fi
+
+                         CG_status=0
+                         if [ ! \( -f "$CG_file" -o -d "$CG_file" \) ]; then
+                            CG_m1="Skipping $CG_cmd '$CG_file'."
+                            CG_m2="'$CG_file' not found!"
+                            CG_m3="$script_name continues."
+                            EMAIL_MSG "WARNING: $CG_ID" \
+                              "${sp}$CG_m1"             \
+                              "${sp}$CG_m2"             \
+                              "${sp}$CG_m3"
+                         elif [ -w "$CG_file" ]; then # If writable, then do ...
+                            [ $verbose -eq 1 -o $CG_opt_v -eq 1 ] \
+                              &amp;&amp; echo "`date '+%Y-%m-%d %T'` $CG_cmd \"$CG_file\"" \
+                                | $teelog
+                            CG_stderr=`$CG_cmd "$CG_file" 2&gt;&1`
+                            CG_status=$?
+                            if [ $CG_status -ne 0 ]; then
+                               CG_m1="'$CG_cmd \"$CG_file\"'"
+                               CG_m2="ERROR=$CG_stderr."
+                               CG_m3="$script_name terminated."
+                               CG_m4=`ls -al "$CG_file"|sed "s/^/$sp/"`
+                               EMAIL_MSG "FATAL ERROR: $CG_ID"              \
+                                 "${sp}$CG_m1"                              \
+                                 "${sp}$CG_m2"                              \
+                                 "${sp}$CG_m3  File list (if any) follows:" \
+                                 "${sp}$dashes"                             \
+                                 "$CG_m4"
+
+                               if [ $CG_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                                  WRITE_ERR_TO_SYSLOGS -p "$CG_pri" -t "$CG_tag" \
+                                    "ABORT: $CG_ID $CG_m1 $CG_m2 $CG_m3"
+                               fi
+                               EXIT 1
+                            fi # if [ $CG_status -ne 0 ]; then
+                         else
+                            CG_m1="Skipping '$CG_cmd \"$CG_file\"'"
+                            CG_m2="$CG_file not writable!"
+                            CG_m3="$script_name continues."
+                            EMAIL_MSG "WARNING: $CG_ID" \
+                              "${sp}$CG_m1"             \
+                              "${sp}$CG_m2"             \
+                              "${sp}$CG_m3"
+                         fi # if [ -w $CG_file ]; then, else
+                      done # while read CG_file
+                   return 0
+                fi # if [ ."$CG_args" != . ]; then
+
+                #--------------------------------------------------------------------#
+                # Reaching this point with zero status means insufficient args error.#
+                #--------------------------------------------------------------------#
+                CG_m1="Insufficient args."
+                CG_m2="$script_name terminated."
+                EMAIL_MSG "FATAL ERROR (Function): $CG_ID"                 \
+                  "${sp}$CG_m1.\n"                                         \
+                  "${sp}Usage: $CG_name -l -p priority -t tag -v"          \
+                  "${sp}                     group fileid [...]\n"         \
+                  "${sp}                -l = Notify via logger command"    \
+                  "${sp}                     (default is false)"           \
+                  "${sp}                -p = Logger priority string"       \
+                  "${sp}                     (default is 'user.err')"      \
+                  "${sp}                -t = Logger tag string"            \
+                  "${sp}                     (default is '$LOGNAME[$$]')"  \
+                  "${sp}                -v = Verbose\n"                    \
+                  "${sp}Option notes: Option (-l) MUST precede -p and -t." \
+                  "${sp}$CG_m2"
+                if [ $CG_opt_l -eq 1 ]; then # Logger option? (1 = yes)
+                   WRITE_ERR_TO_SYSLOGS -p "$CG_pri" -t "$CG_tag" \
+                     "ABORT: $CG_ID $CG_m1 $CG_m2"
+                fi
+
+                EXIT 1
+              } # "CG_" prefix identifies this function's local variables.
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando (Bob@OrlandoKuntao.com)                     #
+              #                                                                      #
+              #        Date: December 14, 1996                                       #
+              #                                                                      #
+              #  Program ID: chgrp_exit_err.sh                                       #
+              #                                                                      #
+              #       Usage: CHGRP_EXIT_ERR -l -p priority -t tag -v \               #
+              #                                   group fileid ...                   #
+              #                                                                      #
+              #                             -l = Notify via logger command           #
+              #                                  (default is false)                  #
+              #                             -p = Logger priority string              #
+              #                                  (default is "user.err")             #
+              #                             -t = Logger tag string                   #
+              #                                  (default is "$LOGNAME[$$]")         #
+              #                             -v = Verbose                             #
+              #                                                                      #
+              #              Option notes: Option (-l) MUST precede other options.   #
+              #                            'UNIX command options' MUST follow        #
+              #                            function options.  If command option      #
+              #                            is -l, -p, or -t, and you've specified    #
+              #                            function option -l, then you must also    #
+              #                            supply both function options, -p and -t.  #
+              #                                                                      #
+              #     Purpose: Change group ownership of one or more files,            #
+              #              reporting errors via email and logger, exiting          #
+              #              on error.                                               #
+              #                                                                      #
+              # Description: This function adds no new functionality to the UNIX     #
+              #              chgrp command beyond automatic notification/logging     #
+              #              before exiting on error.  Notification is provided      #
+              #              via the EMAIL_MSG library function.  Optionally         #
+              #              (-l), the user may have the error logged in syslogs     #
+              #              (/var/adm/messages) via logger command.  Logger -p      #
+              #              and -t options and option arguments also may be         #
+              #              be passed (both have defaults if omitted).              #
+              #                                                                      #
+              #     Globals: No global variables assigned from this function.        #
+              #              "CG_" prefix identifies local function variables.       #
+              #                                                                      #
+              # Exit_status: Exits with failure (1) on error.  This is because       #
+              #              any error while changing group file permissions is      #
+              #              potentially a show stopper.                             #
+              #                                                                      #
+              #       Calls: EMAIL_MSG and EXIT library functions.                   #
+              #              Optionally, WRITE_ERR_TO_SYSLOGS is also called.        #
+              #                                                                      #
+              #       Notes: DO NOT use this routine to chgrp $log and $mailmsg.     #
+              #              Use CHGRP_EXIT_ERR_NOMAIL instead.  This is because     #
+              #              this function calls EMAIL_MSG function (a function      #
+              #              which uses both $log and $mailmsg to report problems).  #
+              #              Any problems changing $log and $mailmsg, therefore,     #
+              #              cannot be reported by EMAIL_MSG using mailx.            #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.17 * Expand $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-03-03 Bob Orlando                                  #
+              #                 v1.16 * Change set|egrep|awk to just set|egrep.      #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1996-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>

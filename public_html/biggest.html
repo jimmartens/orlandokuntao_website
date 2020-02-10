@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="SHORTCUT ICON" href="http://www.orlandokuntao.com/favicon.ico">
+    <title>Finding Large Files with Bob Orlando's Biggest.sh Shell Script</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="description"    lang="en" content="Finding Large Files with Bob Orlando's Biggest.sh Shell Script">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="keywords"       lang="en" content="Finding Large Files with biggest.sh">
+    <meta name="copyright"      lang="en" content="(c) Copyright 1995-2016, Bob Orlando">
+    <script type="text/javascript" language="javascript">
+      var statusLine="Artificial intelligence is no match for natural stupidity.";var msg="      " + statusLine + "     .  .  .  .";window.defaultStatus=statusLine;
+    </script>
+  </head>
+
+  <body bgcolor="white" link="blue" vlink="#800080" alink="firebrick" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_biggest.html';">
+    <div align="justify" style="font-family:Arial,Verdana; font-size: 12pt">
+      <table cellspacing="0" cellpadding="3" width="725" border="0" align="center"> <!-- Table 1 -->
+        <tr>
+          <td align="center">
+            &nbsp;
+            <hr size="-1" noshade>
+            <small>This program featured online in UnixReview.com, <i>Shell Corner</i>, Hosted by Ed Schaefer, April 2005.</small>
+            <hr size="-1" noshade>
+          </td>
+        </tr>
+        <tr>
+          <td align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a>
+              <br>&nbsp;
+            </font>
+          </td>
+        </tr>
+        <tr bgcolor="silver">
+          <td align="left">
+            <font size="+1">
+              <b>Finding Large Files With Biggest.sh</b><sub>&nbsp;</sub>
+              <br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+        <tr>
+          <td colSpan="2" align="justify">
+            &nbsp;<br>
+            <br>How many times has a file system filled up causing you to spend more time than you liked finding
+              that hernia file or files?&nbsp; I'll wager more times than you care to remember.&nbsp; After living
+              with that aggravation for way too long, I put together
+              <a href="biggest_sh.html">biggest.sh</a>.
+            <p>Biggest.sh searches a given file system and lists the biggest files it finds in size order
+              -- biggest first -- displaying up to 500 lines of output.&nbsp; Five hundred lines of output
+              may be a bit much, but biggest comes with a suite of options, one of which
+              ( <font face="courier"><b>-l</b></font> ) allows you to specify precisely how many lines you want
+              returned.&nbsp; We do exactly that with our monitoring software.&nbsp; When a file system reaches
+              alert level, we have the monitoring program call biggest.sh like this:&nbsp;
+              <font face="courier"><b>biggest.sh -l 10 /usr</b></font>.&nbsp;
+              This returns the ten&nbsp; <i>biggest</i>&nbsp; files in /usr.
+            <p>Biggest.sh has run successfully on Sun Solaris and Linux.&nbsp; It is written in Bourne shell
+              (instead of Korn or Bash) for one reason only -- portability.&nbsp; The script runs under Bourne,
+              Korn, and Bash environments without modification.
+            <p>Besides the lines ( <font face="courier"><b>-l</b></font> ) option (already shown),&nbsp; biggest.sh
+              comes with six additional options.&nbsp; Here is the usage listing with a brief description of each.
+            <p>
+  <pre>
+      Usage: biggest.sh -fHh -l &lt;nn&gt; -v -t &lt;dir&gt; -s &lt;nnn&gt; fs
+                        -f = Follow links
+                        -H = Displays detailed documentation
+                        -h = Provides usage brief
+                        -l = Displays &lt;nn&gt; lines (default is 500)
+                        -s = Minimum file size is &lt;nnn&gt; (default is 500K)
+                        -t = Use &lt;dir&gt; as temp/work directory (default is /var/tmp)
+                        -v = Edit (vi) file list
+                        fs = Required file system argument
+  </pre>
+            <big><b>Options</b><sub>&nbsp;</sub></big>
+          </td>
+        </tr>
+        <tr>
+          <td colSpan="2">
+            <table border="0" align="left" width="655" cellspacing="0" cellpadding="5"> <!-- Table 1a -->
+              <tr>
+                <td valign="top" align="left">
+                  <font face="courier" size="+1"><b>-f&nbsp;</b></font>
+                </td>
+                <td valign="top" align="justify">
+                  My experience with this link-following option is that it is used only rarely.&nbsp;
+                  Frequently followed links often turn into wild goose chases on mounted or remote drives.&nbsp;
+                  However, for those times where this capability is necessary, link following
+                  (&nbsp;<font face="courier"><b>-f</b></font>&nbsp;) is your option.
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" align="left">
+                  <font face="courier" size="+1"><b>-H&nbsp;</b></font>
+                </td>
+                <td valign="top" align="justify">
+                  Detailed documentation is available for those wanting more than just the usage brief.
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" align="left">
+                  <font face="courier" size="+1"><b>-h&nbsp;</b></font>
+                </td>
+                <td valign="top" align="justify">
+                  Provides a usage brief that lists the command and its options as shown above.
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" align="left">
+                  <font face="courier" size="+1"><b>-s&nbsp;</b></font>
+                </td>
+                <td valign="top" align="justify">
+                  Specified in K-bytes, this option allows the user to specify a greater minimum file size
+                  than the 500K default.
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" align="left">
+                  <font face="courier" size="+1"><b>-t&nbsp;</b></font>
+                </td>
+                <td valign="top" align="justify">
+                  To specify a working directory other than the /var/tmp default,
+                  use the&nbsp; <font face="courier"><b>-t</b></font>&nbsp; option
+                  (i.e.,&nbsp; <font face="courier"><b>-t $HOME/temp</b></font>&nbsp;).&nbsp;
+                  This "option" may be critical when the offending file system
+                  is /var/tmp, again, our default working directory.
+                </td>
+              </tr>
+              <tr>
+                <td valign="top" align="left">
+                  <font face="courier" size="+1"><b>-v&nbsp;</b></font>
+                </td>
+                <td valign="top" align="justify">
+                  If you prefer seeing the result in&nbsp; <font face="courier"><b>vi</b></font>&nbsp;
+                  instead of having it scroll up the screen, then use this&nbsp;
+                  <font face="courier"><b>-v</b></font>&nbsp; (verbose) option.
+                </td>
+              </tr>
+            </table> <!-- E.O.Table 1a -->
+          </td>
+        </tr>
+        <tr>
+          <td colSpan="2" align="justify">
+            <p>The file system specified must be a local file system.&nbsp;This is enforced by use of the display
+              file systems (&nbsp;<font face="courier"><b>df</b></font>&nbsp;) command&nbsp;
+              <font face="courier"><b>-l</b></font>&nbsp; or local option.&nbsp; This prevents us from searching
+              through a remotely mounted file system (a real wild goose chase!).
+
+            <p><big><b>Description</b></big>
+              <img src="images/b.gif" alt="" align="top" width="2" height="30" border="0"> <!-- A little space after the header -->
+            <br>Using the find command, biggest.sh descends through the specified file system listing all files
+              whose sizes exceed either the default minimum size (500K) or the minimum value provided via size
+              (&nbsp;<font face="courier"><b>-s</b></font>&nbsp;) option.&nbsp; The file list is created in
+              /var/tmp by default as it usually much larger than /tmp.&nbsp; However, in the event that /var
+              is the file system that's full (or is not writable to the user), the temp dir
+              (&nbsp;<font face="courier"><b>-t</b></font>&nbsp;) option is available to redirect the
+              output elsewhere.
+            <p>When root is the directory being searched, -xdev is supplied automatically as a&nbsp;
+              <font face="courier"><b>find</b></font>&nbsp; command argument so only the root directory, and none of
+              its subdirectories, is searched.&nbsp; Without&nbsp; <font face="courier"><b>-xdev</b></font>&nbsp;,
+              you can easily find a file in another directory (and possibly another file system) that is larger
+              than the file that is actually the culprit.
+            <p>Remember that a file system can fill up in other ways; for example, instead of the culprits being
+              one or two hernia files, the real problem may be a directory with many large files, none of which
+              is the biggest.
+            <p>For that, I recommend the use of&nbsp; dispus, a Perl program developed by Scott Rochford that traverses
+              disks locating the directories that are the fullest.&nbsp; Between&nbsp; <a href="biggest_sh.html">biggest.sh</a>
+              and&nbsp; <i>dispus</i>,&nbsp; if you cannot find the the offending files, then they are probably your own
+              files and you really don't want to see them listed anyway.
+          </td>
+        </tr>
+      </table> <!-- E.O.Table 1 -->
+
+      <center><font color="firebrick"><i><b>Artificial&nbsp; intelligence&nbsp; is&nbsp; no&nbsp; match&nbsp; for&nbsp; natural&nbsp; stupidity.</b></i></font></center>&nbsp;
+
+      <table align="center" width="725" border="0" cellspacing="0" cellpadding="10"> <!-- Copyright Table -->
+        <tr>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="left">
+            <font size="-2">
+              &copy;<a href="copyright.html">Copyright</a> Bob Orlando, 1995-2016<br>All rights reserved.
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="top"    align="center">
+            <font size="-1">
+              <a href="http://www.orlandokuntao.com" target="_top"><b>http://www.OrlandoKuntao.com</b></a><br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+            </font>
+          </td>
+          <td style="font-family:Verdana,Arial" width="33%" valign="bottom" align="right">
+            <font size="-2">
+              <font color="firebrick">Last update:</font>&nbsp;
+  <!-- Date --> Feb.  2, 2016<br>by Bob Orlando
+            </font>
+          </td>
+        </tr>
+      </table>
+
+      <font color="white" size="-2">
+        Web Site of Bob Orlando: Instructor in Kuntao-Silat (Chinese kuntao and Dutch-Indonesian pukulan pentjak silat), author of two popular martial art books: "Indonesian Fighting Fundamentals" and "Martial Arts America: A Western Approach to Eastern Arts"; and producer of four martial art videos: Fighting Arts of Indonesia, Reflex Action, Fighting Footwork of Kuntao and Silat, Fighting Forms of Kuntao-Silat.
+        Offering practical martial arts instruction to adults living in and throughout the Denver metropolitan area including, Lakewood, Littleton, Morrison, and Golden Colorado.
+      </font>
+    </div>
+  </body>
+</html>

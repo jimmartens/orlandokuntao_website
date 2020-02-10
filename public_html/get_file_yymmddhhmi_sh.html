@@ -1,0 +1,288 @@
+<html>
+  <head>
+    <title>Bob Orlando's Unix Shell Library function/script, get_file_yymmddhhmi.sh</title>
+    <meta http-equiv="Content-Type"       content="text/html; charset=iso-8859-1">
+    <meta name="classification" lang="en" content="Computer Programming">
+    <meta name="keywords"       lang="en" content="get_file_yymmddhhmi.sh, unix, shell, library, function, script">
+    <meta name="description"    lang="en" content="Bob Orlando's Unix Shell Library function/script, get_file_yymmddhhmi.sh">
+    <meta name="author"         lang="en" content="Bob Orlando">
+    <meta name="copyright"      lang="en" content="(c) Copyright 2004-2011, Bob Orlando">
+    <script language="javascript">var statusLine='Artificial intelligence is no match for natural stupidity.'; var msg='      ' + statusLine + '     .  .  .  .';</script>
+  </head>
+  <body bgcolor="white" link="blue" vlink="blue" alink="darkred" onLoad="window.defaultStatus=statusLine;if (parent.frames.length==0) top.location='mf_get_file_yymmddhhmi_sh.html';">
+    <table border="0" width="850" align="center" cellspacing="1" cellpadding="1"> <!-- Table 1 -->
+      <tr>
+        <td width="650">
+          <code>
+            <pre>
+              # SccsId[] = "%W% (USL function) %G%"
+              GFY_name="<b>GET_FILE_YYMMDDHHMI</b>"
+              if [ ".${SECONDS}" = "." ]; then # Bourne function already loaded?
+                 [ ."`set|egrep '^$GFY_name\(\)\{$'`" != . ] &amp;&amp; GFY_loaded=1
+              else # Korn or Bash shell and function already loaded?
+                 if [ `expr "\`uname -s\`" : "[Ll][Ii][Nn][Uu][Xx]"` -eq 0 ]; then
+                    [ ."`typeset +f|awk '/^'$GFY_name'[=\(]?/'`" != . ] &amp;&amp; GFY_loaded=1
+                 else # Linux
+                    [ ."`typeset -F|awk '/^'$GFY_name'[=\(]?/'`" != . ] &amp;&amp; GFY_loaded=1
+                 fi
+              fi
+              if [ 0${GFY_loaded} -eq 0 ]; then
+              #----------------------------------------------------------------------#
+              <b>GET_FILE_YYMMDDHHMI</b>() # Function documentation located at bottom.      #
+              #----------------------------------------------------------------------#
+              { [ ."${AWK}" = . ] &amp;&amp; { { [ -x /usr/bin/nawk ] &amp;&amp; AWK=/usr/bin/nawk; } \
+                                  ||   { [ -x /bin/gawk     ] &amp;&amp; AWK=/bin/gawk    ; } \
+                                  ||   { [ -x /usr/bin/awk  ] &amp;&amp; AWK=/usr/bin/awk ; }; }
+
+                if [ .${SHLIB} = . ]; then SHLIB=/usr/local/scripts; export SHLIB; fi
+
+                . $SHLIB/email_msg.sh # Calls $SHLIB/exit.sh for us.
+
+                #------------------------------------------------------------#
+                # If the following variables are not set, use these defaults.#
+                #------------------------------------------------------------#
+                : ${id_num=`id|sed 's/^\(uid=\)\([0-9]*\)\(.*\)/\2/'`}
+                : ${id_hex=`echo "obase=16;$id_num"|bc`}
+                : ${script_name:=`basename $0`}
+                : ${name_root:=`echo $script_name|$AWK '{sub(/^\.+/,"");sub(/\..*/,"");print}'`}
+                : ${yymmddhhmiss:=`date '+%y''%m%d%H''%M''%S'`}
+                : ${Xtimestamp:=`echo "obase=16;$yymmddhhmiss+$$"|bc`}
+                : ${verbose:=0}
+                : ${sp:="                    "}
+                : ${tmp:=/var/tmp}
+
+                GFY_ID="$script_name($GFY_name)"
+
+                #----------------------------#
+                # Parse any function options.#
+                #----------------------------#
+                GFY_opt_q=0 # Quiet (does not display output; assigns to var only)
+                GFY_opt_x=0 # Exit on error
+                GFY_root=$tmp/$name_root"_GFY_go_"$id_hex
+                GFY_err=$GFY_root"."$Xtimestamp
+                while getopts qx GFY_opt 2&gt;&gt; $GFY_err
+                do
+                   case $GFY_opt in
+                      q ) GFY_opt_q=1;;
+                      x ) GFY_opt_x=1;;
+                     \? ) echo "$GFY_ID" \
+                            "Invalid option: -`sed 's/^.*-- //' $GFY_err`" 1&gt;&2
+                          ;;
+                      * ) ;;
+                   esac
+                done
+                shift `expr $OPTIND - 1` # Shift past options to remaining args
+
+                #----------------------------------------------------------------#
+                # Must reset this dog if this function is apt to be called again #
+                OPTIND=1   # (try and find this fact documented anywhere else).  #
+                #----------------------------------------------------------------#
+                [ ."$GFY_root" != . ] &amp;&amp; \rm -f $GFY_root* &gt; /dev/null 2&gt;&1
+
+                [ $GFY_opt_x -eq 1 ] &amp;&amp; GFY_quit="EXIT" || GFY_quit="return"
+
+                #--------------------------------------#
+                # List the file and parse the results. #
+                #--------------------------------------#
+                GFY_yymmddhhmi=`ls -al "$@" 2&gt;&1|$AWK -v file="$@" \
+                  'BEGIN \
+                   {
+                           "date +\%y\%m\%S" | getline yymmss
+                     close("date +\%y\%m\%S")
+                     yy      = substr(yymmss,1,2)
+                     curr_mm = substr(yymmss,3,2)
+                   # curr_ss = substr(yymmss,5,2)
+                     if (file == "")
+                     {
+                       print "No fileid specified!"
+                       exit 2
+                     }
+                   }
+
+                   /[Nn]o such file or directory/ \
+                   {
+                     print $0
+                     exit 3
+                   }
+
+                   #------------------------------------------#
+                   # If it looks like we have a Jan-Dec date, #
+                   # then convert it to yymmdd and exit.      #
+                   #------------------------------------------#
+                   /^-/ &amp;&amp; $6 ~ /^[ADFJMNOS][aceopu][bcglnprtvy]$/ \
+                   {
+                     mm = Mmm_to_mm($6)
+                     dd = $7
+                     if ($8 ~ /[0-2][0-9]:[0-5][0-9]/)
+                     {
+                       hh = substr($8,1,2)
+                       mi = substr($8,4,2)
+                       if (mm &gt; curr_mm) yy--
+                       printf("%02d%02d%02d%02d%02d\n", yy,mm,dd,hh,mi)
+                       exit 0
+                     }
+
+                     print "\047ls -al\047 returned no hh:mi for \047"file"\047."
+                     exit 1
+                   }
+
+                   #-----------------------------------------------------------#
+                   # We test one and only one line.  This is not a fishing     #
+                   # expedition--the user is expected to supply a valid fileid.#
+                   # If the action sections above have not found the file we   #
+                   # seek for, then we exit without reading any other lines.   #
+                   #-----------------------------------------------------------#
+                   {
+                     print "\047ls -al\047 found no \047"file"\047."
+                     exit 5
+                   }
+
+                   #------------------------------------------#
+                   function Mmm_to_mm(MMM, mon_table,mon_idx) #
+                   #------------------------------------------#
+                   {
+                     mon_table = "Jan01Feb02Mar03Apr04May05Jun06" \
+                                 "Jul07Aug08Sep09Oct10Nov11Dec12"
+                     mon_idx   = index(mon_table,MMM)
+                     if (mon_idx &lt; 1)
+                     {
+                       printf("Invalid Month: %s\n", MMM)
+                       exit 4
+                     }
+                     return sprintf("%02d", substr(mon_table,mon_idx+3,2))
+                   }'`
+                GFY_status=$?
+
+                if [ $GFY_status -eq 0 ]; then
+                   [ $GFY_opt_q  -eq 1 ] || echo "$GFY_yymmddhhmi"
+                   return 0
+                else
+                   EMAIL_MSG "ERROR: $GFY_ID" \
+                        "$GFY_yymmddhhmi"
+                   $GFY_quit $GFY_status
+                fi
+              }
+              fi
+
+              #======================================================================#
+              #                       <b>D O C U M E N T A T I O N</b>                      #
+              #======================================================================#
+              #                                                                      #
+              #      Author: Bob Orlando                                             #
+              #                                                                      #
+              #        Date: Match 30, 2004                                          #
+              #                                                                      #
+              #  Program ID: get_file_yymmddhhmi.sh                                  #
+              #                                                                      #
+              #       Usage: GET_FILE_YYMMDDHHMI -qx fileid                          #
+              #                                  -q  = Quiet--No yymmddhhmi display  #
+              #                                   -x = Exit on error                 #
+              #                                                                      #
+              #     Purpose: Return fileid's time stamp in yymmddhhmi format.        #
+              #                                                                      #
+              # Description: This function is probably best called like this:        #
+              #                                                                      #
+              #                GET_FILE_YYMMDDHHMI -qx some.file                     #
+              #                yymmddhhmi=$GFY_yymmddhhmi                            #
+              #                                                                      #
+              #              -q prevents the yymmddhhni output from displaying.      #
+              #                                                                      #
+              #              -x terminates the function and exits the calling        #
+              #                 program on error.                                    #
+              #                                                                      #
+              #              The yymmddhhmi-formatted timestamp result is available  #
+              #              thru the local variable, $GFY_yymmddhhmi.  To say the   #
+              #              variable is "local" is true only in the sense that its  #
+              #              name is unique to this function and all the other       #
+              #              functions in the USL (User Shell Library).  It is       #
+              #              still available globally and can even be clobbered by   #
+              #              the careless.  Still, this method is, in my opinion,    #
+              #              the best way to call this function.  You can, however,  #
+              #              also call this function another way.                    #
+              #                                                                      #
+              #                yymmddhhmi=`GET_FILE_YYMMDDHHMI -x some.file`         #
+              #                status=$?                                             #
+              #                if [ $status -eq $success ]; then                     #
+              #                   # . . . do sumthin with $yymmddhhmi                #
+              #                else                                                  #
+              #                   echo "$yymmddhhmi" # Contains error text           #
+              #                   exit # Perhaps?                                    #
+              #                fi                                                    #
+              #                                                                      #
+              #              Assigning the output to a yymmddhhmi variable via       #
+              #              background operation (i.e. via backquotes) works, but   #
+              #              it requires greater diligence on the caller's part.     #
+              #              This is because termination of the background process   #
+              #              on error (-x) accomplishes no more that calling this    #
+              #              function without the "-x".  If that's what you want,    #
+              #              then drop the "-x" and simply test the exit status      #
+              #              as shown and proceed accordingly.                       #
+              #                                                                      #
+              #     Testing: The following script shows the results of both the      #
+              #              preceding implemention methods.  Simply pass the        #
+              #              script a fileid (or none) and watch the results (the    #
+              #              background operation will never terminate the script).  #
+              #                                                                      #
+              #                #!/bin/sh                                             #
+              #                . ./get_file_yymmddhhmi.sh                            #
+              #                                                                      #
+              #                myymmddhhmi=`GET_FILE_YYMMDDHHMI -x "$@"`             #
+              #                echo "1. \$?=$?"                                      #
+              #                echo "1. \$GFY_yymmddhhmi=|$GFY_yymmddhhmi|"          #
+              #                echo "1. \$myymmddhhmi=|$myymmddhhmi|"                #
+              #                                                                      #
+              #                GET_FILE_YYMMDDHHMI -qx "$@"                          #
+              #                echo "2. \$?=$?"                                      #
+              #                echo "2. \$GFY_yymmddhhmi=|$GFY_yymmddhhmi|"          #
+              #                myymmddhhmi=$GFY_yymmddhhmi                           #
+              #                echo "2. \$myymmddhhmi=|$myymmddhhmi|"                #
+              #                                                                      #
+              #     Globals: No global variables are assigned in this function.      #
+              #              "GFY_" prefix identifies local function variables.      #
+              #                                                                      #
+              # Exit_status: yymmddhhmi with return status = 0  on success or        #
+              #              error message with return status &gt; 0  on failure.       #
+              #              Exits on failure if -x option provided.                 #
+              #                                                                      #
+              #       Calls: EMAIL_MSG as needed.                                    #
+              #                                                                      #
+              #    Modified: 2004-04-02 Bob Orlando                                  #
+              #                 v1.2  * Change $AWK testing and assignment.          #
+              #                                                                      #
+              #              2004-04-01 Bob Orlando                                  #
+              #                 v1.1  * Initial release.                             #
+              #                                                                      #
+              #----------------------------------------------------------------------#
+            </pre>
+          </code>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 1 -->
+
+    <center><font face="Arial,Verdana" color="darkred"><i><b>Artificial Intelligence is no match for natural stupidity.</b></i></font></center>
+
+    <table border="0" width="850" align="center" cellspacing="0" cellpadding="10"> <!-- Table 2 -->
+      <tr>
+        <td width="33%" valign="top">
+          <font size="-2" face="Arial,Verdana">
+            <b>&copy;<a href="copyright.html">Copyright</a> Bob Orlando, 2004-2011
+            <br>All rights reserved.</b>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="center">
+          <font size="-1" face="Arial,Verdana">
+            <b><a href="http://www.orlandokuntao.com" target="_top">http://www.OrlandoKuntao.com</a></b>
+            <br>E-mail: <a href="mailto:bob@orlandokuntao.com">Bob@OrlandoKuntao.com</a>
+          </font>
+        </td>
+        <td width="33%" valign="top" align="right">
+          <font size="-2" face="Arial,Verdana">
+            <b>
+            <font color="darkred">Last update:</font>
+<!-- Date --> Jan. 26, 2011<br>by Bob Orlando</b>
+          </font>
+        </td>
+      </tr>
+    </table> <!-- E.O. Table 2 -->
+  </body>
+</html>
